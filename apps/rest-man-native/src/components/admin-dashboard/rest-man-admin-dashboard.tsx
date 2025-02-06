@@ -14,7 +14,6 @@ export default function UsersManagement() {
   const { data: bussiness } = useBusinesses(1);
  const{data:employees}= useUsersByAdmin(1);
  const{data:admin = {}}= useUserById(1);
-  console.log(admin);
   const renderEmployee = ({ item }) => (
     <View style={styles.employeeRow}>
       <Text style={styles.employeeText}>{item.name}</Text>
