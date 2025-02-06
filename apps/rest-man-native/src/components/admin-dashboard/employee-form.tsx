@@ -1,9 +1,6 @@
 import React from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
 import useSaveEmployee from '../../queries/use-save-employee';
-
-
-
 export const AddEmployeeForm = ({ businessId }) => {
   const { mutate } = useSaveEmployee();
   const [name, setName] = React.useState('');
