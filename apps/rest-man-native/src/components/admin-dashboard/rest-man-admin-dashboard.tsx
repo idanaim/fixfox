@@ -11,13 +11,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useBusinesses, useUserById, useUsersByAdmin } from '../../queries/react-query-wrapper/use-get-business';
 
 export default function UsersManagement() {
-
-  // const admin = {
-  //   name: 'John Doe',
-  //   mobile: '054-9292544',
-  //   email: 'idan@gmail.com',
-  //   role: 'Admin',
-  // };
   const { data: bussiness } = useBusinesses(1);
  const{data:employees}= useUsersByAdmin(1);
  const{data:admin = {}}= useUserById(1);
