@@ -13,5 +13,16 @@ export interface User{
   email: string;
   mobile: string;
   businessId: number;
+  adminId?: number;
   password?: string;
+}
+
+export const InitUser: User = {
+  name: '',
+  role: '',
+  email: '',
+  mobile: '',
+  businessId: 0,
+  adminId: 0,
+  password: ''
 }

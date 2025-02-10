@@ -15,7 +15,7 @@ import {
   useUsersByAdmin,
 } from '../../queries/react-query-wrapper/use-users';
 import { styles } from './admin-dashboard-styles';
-import { User } from '../../interfaces/business';
+import { InitUser, User } from '../../interfaces/business';
 import { useNavigation } from '@react-navigation/native';
 
 export function EmployeeSection({ businessId }: { businessId?: number }) {
@@ -26,13 +26,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
   const [isAddEmployeeModalVisible, setAddEmployeeModalVisible] =
     useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<User | null>(null);
-  const [employeeForm, setEmployeeForm] = useState<User>({
-    name: '',
-    email: '',
-    role: '',
-    mobile: '',
-    businessId,
-  });
+  const [employeeForm, setEmployeeForm] = useState<User>(InitUser);
   const navigation = useNavigation();
   const isAdding = false;
   const isUpdating = false;
@@ -55,14 +49,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
       onSuccess: () => {
         Alert.alert('Success', 'Employee added successfully');
         setAddEmployeeModalVisible(false);
-        setEmployeeForm({
-          name: '',
-          email: '',
-          role: '',
-          mobile: '',
-          password: '',
-          businessId,
-        });
+        setEmployeeForm(InitUser);
       },
       onError: () => {
         Alert.alert('Error', 'Failed to add employee');
@@ -105,39 +92,49 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
   };
 
   const renderEmployee = ({ item }: { item: User }) => (
-    <View style={styles.employeeRow}>
-      <Text style={styles.employeeText}>{item.name}</Text>
-      <Text style={styles.employeeText}>{item.role}</Text>
-      <Text style={styles.employeeText}>{item.email}</Text>
-      <View style={styles.actionIcons}>
+    <View style={styles.employeeCard}>
+      {/* Main Content */}
+      <View style={styles.employeeInfo}>
+        <View style={styles.nameRow}>
+          <Text style={styles.employeeName} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text style={styles.employeeRole}>{item.role}</Text>
+        </View>
+        <Text style={styles.employeeEmail} numberOfLines={1}>
+          {item.email}
+        </Text>
+      </View>
+
+      {/* Action Menu */}
+      <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => {
-            navigation.navigate('permissions', { user: item });
-          }}
+          style={[styles.actionButton, styles.permissionButton]}
+          onPress={() => navigation.navigate('permissions', { user: item })}
         >
-          <MaterialIcons name="key" size={24} color="blue" />
+          <MaterialIcons name="admin-panel-settings" size={20} color="white" />
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.actionButton, styles.editButton]}
           onPress={() => {
             setSelectedEmployee(item);
             setEmployeeForm(item);
             setEditEmployeeModalVisible(true);
           }}
         >
-          <MaterialIcons name="edit" size={24} color="blue" />
+          <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.actionButton, styles.deleteButton]}
           onPress={() => handleDeleteEmployee(item.id)}
         >
-          <MaterialIcons name="delete" size={24} color="red" />
+          <MaterialIcons name="delete-outline" size={20} color="white" />
         </TouchableOpacity>
       </View>
     </View>
   );
-
   if (isLoading) return <ActivityIndicator size="large" color="#0000ff" />;
   if (error) return <Text>Error loading employees</Text>;
 
@@ -164,8 +161,16 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
       <Modal
         visible={isAddEmployeeModalVisible}
         animationType="slide"
+        onDismiss={() => {
+          setSelectedEmployee(null);
+          setEmployeeForm(InitUser);
+        }}
         transparent={true}
-        onRequestClose={() => setAddEmployeeModalVisible(false)}
+        onRequestClose={() => {
+          setAddEmployeeModalVisible(false);
+          setSelectedEmployee(null);
+          setEmployeeForm(InitUser);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -195,7 +200,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
               onChangeText={(text) =>
                 setEmployeeForm({ ...employeeForm, password: text })
               }
-              keyboardType="password"
+              // keyboardType="password"
             />
             <TextInput
               style={styles.input}
@@ -240,11 +245,18 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
         visible={isEditEmployeeModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setEditEmployeeModalVisible(false)}
+        onDismiss={() => {
+          setSelectedEmployee(null);
+          setEmployeeForm(InitUser);
+        }}
+        onRequestClose={() => {
+          setEditEmployeeModalVisible(false);
+
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Employee</Text>
+            <Text style={styles.modalTitle}>Edit </Text>
             <TextInput
               style={styles.input}
               placeholder="Full Name"
@@ -263,6 +275,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
               keyboardType="email-address"
             />
             <TextInput
+              secureTextEntry={true}
               style={styles.input}
               placeholder="Password"
               value={employeeForm.password}

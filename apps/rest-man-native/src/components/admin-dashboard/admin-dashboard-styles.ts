@@ -6,6 +6,66 @@ export const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
+  employeeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    padding: 16,
+    marginVertical: 4,
+    borderRadius: 12,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  employeeInfo: {
+    flex: 1,
+    marginRight: 12
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 4
+  },
+  employeeName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#2D3748',
+    marginRight: 8,
+    maxWidth: '60%'
+  },
+  employeeRole: {
+    fontSize: 12,
+    color: '#718096',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  employeeEmail: {
+    fontSize: 14,
+    color: '#4A5568',
+    opacity: 0.9
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 8
+  },
+  actionButton: {
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  permissionButton: {
+    backgroundColor: '#4299E1' // Blue
+  },
+  editButton: {
+    backgroundColor: '#48BB78' // Green
+  },
+  deleteButton: {
+    backgroundColor: '#F56565' // Red
+  },
   /* Employee Section Specific Styles */
   sectionHeader: {
     flexDirection: 'row',
@@ -71,14 +131,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#ecf0f1',
-  },
-  employeeName: {
-    fontSize: 14,
-    color: '#2c3e50',
-  },
-  employeeRole: {
-    fontSize: 14,
-    color: '#7f8c8d',
   },
   userItem: {
     flexDirection: 'row',

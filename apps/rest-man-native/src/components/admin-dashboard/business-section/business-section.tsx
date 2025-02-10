@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useUsersByAdmin } from '../../queries/react-query-wrapper/use-users';
+import { useUsersByAdmin } from '../../../queries/react-query-wrapper/use-users';
 import {
   useAddEmployeesToBusiness,
   useGetBusinesses,
-} from '../../queries/react-query-wrapper/use-get-business';
-import { styles } from './admin-dashboard-styles';
+} from '../../../queries/react-query-wrapper/use-get-business';
+import { styles } from '../admin-dashboard-styles';
+import { AddBusinessModal } from './add-business';
 
 export function BusinessSection() {
   const { data: businesses } = useGetBusinesses(8);
@@ -16,6 +17,8 @@ export function BusinessSection() {
   const [selectedBusiness, setSelectedBusiness] = useState<number | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [isUserSelectModalVisible, setUserSelectModalVisible] = useState(false);
+  const [isAddBusinessModalVisible, setAddBusinessModalVisible] =
+    useState(false);
 
   const handleAddEmployees = () => {
     if (selectedBusiness && selectedUsers.length > 0) {
@@ -42,13 +45,13 @@ export function BusinessSection() {
   return (
     <View>
       <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>Businesses</Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => console.log('Add Business')}
-      >
-        <MaterialIcons name="add-business" size={24} color="white" />
-      </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Businesses</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setAddBusinessModalVisible(true)}
+        >
+          <MaterialIcons name="add-business" size={24} color="white" />
+        </TouchableOpacity>
       </View>
       {businesses?.map((business) => (
         <View style={styles.sectionCard} key={business.id}>
@@ -85,6 +88,11 @@ export function BusinessSection() {
         </View>
       ))}
 
+      {/* Add Business Modal */}
+      <AddBusinessModal
+        isAddBusinessModalVisible={isAddBusinessModalVisible}
+        setAddBusinessModalVisible={setAddBusinessModalVisible}
+      />
       {/* User Selection Modal */}
       <Modal
         visible={isUserSelectModalVisible}
