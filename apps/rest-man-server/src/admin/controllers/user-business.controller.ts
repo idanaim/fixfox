@@ -1,5 +1,5 @@
 // src/user-business/user-business.controller.ts
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { UserBusinessService } from '../services/user-business.service';
 
 @Controller('user-business')

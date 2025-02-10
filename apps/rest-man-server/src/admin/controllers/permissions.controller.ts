@@ -1,18 +1,23 @@
-// import { Controller, Post, Get, Body } from '@nestjs/common';
-// import { PermissionsService } from '../services/permissions.service';
-// import { Permission } from '../entities/permission.entity';
-//
-// @Controller('permissions')
-// export class PermissionsController {
-//   constructor(private readonly permissionsService: PermissionsService) {}
-//
-//   @Post()
-//   async createPermission(@Body() body: { action: string }): Promise<Permission> {
-//     return this.permissionsService.createPermission(body.action);
-//   }
-//
-//   @Get()
-//   async findAllPermissions(): Promise<Permission[]> {
-//     return this.permissionsService.findAllPermissions();
-//   }
-// }
+// src/permissions/permissions.controller.ts
+import { Controller, Get, Param, Put, Body, NotFoundException } from '@nestjs/common';
+import { PermissionsService } from '../services/permissions.service';
+import { PermissionDto } from '../DTO/permission.dto';
+
+@Controller('permissions')
+export class PermissionsController {
+  constructor(private readonly permissionsService: PermissionsService) {}
+
+  @Get(':userId')
+  async getPermissions(@Param('userId') userId: number) {
+    return this.permissionsService.getPermissions(userId);
+  }
+
+  @Put(':userId')
+  async updatePermissions(
+    @Param('userId') userId: number,
+    @Body() permissionDto: PermissionDto,
+  ) {
+    debugger
+    return this.permissionsService.updatePermissions(userId, permissionDto);
+  }
+}

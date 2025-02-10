@@ -1,6 +1,7 @@
 /* eslint-disable-next-line */
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { View } from 'react-native';
 
 export interface ReactQueryWrapperProps {
   children: ReactNode;
@@ -44,7 +45,9 @@ export function ReactQueryWrapper({ children, onMfeRender, whiteList }: ReactQue
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/*<View style={{height:'100%'}}>*/}
       {children}
+      {/*</View>*/}
     </QueryClientProvider>
   );
 }

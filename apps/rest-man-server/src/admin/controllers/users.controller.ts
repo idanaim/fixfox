@@ -11,6 +11,16 @@ export class UserController {
     private readonly businessesService: BusinessesService,
   ) {}
 
+  @Get('all/:adminId')
+  async findAllUserByAdminId(@Param('adminId') adminId: number): Promise<User[]> {
+    return this.usersService.findAllByAdmin(adminId);
+  }
+  @Post(':adminId')
+  async create(@Param('adminId') adminId: number,@Body() data: User) {
+    data.adminId = adminId;
+    return this.usersService.create(data);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: number) {
     const user = await this.usersService.findOne(id);
@@ -50,4 +60,5 @@ export class UserController {
 
     return { message: 'Admin, businesses, and employees created successfully' };
   }
+
 }

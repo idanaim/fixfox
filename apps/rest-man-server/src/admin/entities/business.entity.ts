@@ -16,6 +16,9 @@ export class Business {
   @Column()
   type: string;
 
+  @Column()
+  address: string;
+
   @ManyToOne(() => User, (user) => user.businesses)
   admin: User;
 

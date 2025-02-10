@@ -1,52 +1,75 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { FAB } from 'react-native-paper';
 import { TicketsManagement } from '../tickets-management/fixfox-tickets-management';
-import UsersManagement from '../admin-dashboard/rest-man-admin-dashboard';
+import UsersManagement from '../admin-dashboard/admin-dashboard';
 
 // Main Admin Dashboard Component
 export function MainContainer() {
-  const [activeTab, setActiveTab] = useState('tickets');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const navigation = useNavigation();
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>FixFox</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
+        {/*/!* Header *!/*/}
+        {/*<View style={styles.header}>*/}
+        {/*  <Text style={styles.headerTitle}>FixFox</Text>*/}
+        {/*</View>*/}
+
+        {/* Navigation Bar */}
+        <View style={styles.navContainer}>
+          <TouchableOpacity
+            style={[
+              styles.navItem,
+              activeTab === 'tickets' && styles.activeNav,
+            ]}
+            onPress={() => setActiveTab('tickets')}
+          >
+            <Text
+              style={[
+                styles.navText,
+                activeTab === 'tickets' && styles.activeNavText,
+              ]}
+            >
+              Tickets
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.navItem,
+              activeTab === 'dashboard' && styles.activeNav,
+            ]}
+            onPress={() => setActiveTab('dashboard')}
+          >
+            <Text
+              style={[
+                styles.navText,
+                activeTab === 'dashboard' && styles.activeNavText,
+              ]}
+            >
+              Dashboard
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Content Area */}
+
+        <View style={styles.content}>
+          {activeTab === 'tickets' ? (
+            <TicketsManagement />
+          ) : (
+            <UsersManagementContainer />
+          )}
+        </View>
       </View>
-
-      {/* Navigation Bar */}
-      <View style={styles.navContainer}>
-        <TouchableOpacity
-          style={[styles.navItem, activeTab === 'tickets' && styles.activeNav]}
-          onPress={() => setActiveTab('tickets')}>
-          <Text style={[styles.navText, activeTab === 'tickets' && styles.activeNavText]}>
-            Tickets
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.navItem, activeTab === 'users' && styles.activeNav]}
-          onPress={() => setActiveTab('users')}>
-          <Text style={[styles.navText, activeTab === 'users' && styles.activeNavText]}>
-            Dashboard
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Content Area */}
-      <View style={styles.content}>
-        {activeTab === 'tickets' ? <TicketsManagement /> : <UsersManagementContainer />}
-      </View>
-
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        color="#fff"
-        onPress={() => navigation.navigate(activeTab === 'tickets' ? 'Add Ticket' : 'Add User')}
-      />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -55,7 +78,7 @@ function UsersManagementContainer() {
   return (
     <View style={styles.usersContainer}>
       <Text style={styles.sectionTitle}>User Management</Text>
-     <UsersManagement/>
+      <UsersManagement />
     </View>
   );
 }
@@ -63,8 +86,9 @@ function UsersManagementContainer() {
 // Updated Styles
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#FFFFFF',
+    height: '100%',
   },
   header: {
     padding: 24,
@@ -125,4 +149,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#6200EE',
   },
 });
-

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserBusiness } from '../entities/user-business.entity';
-import { Business } from '../entities/business.entity';
+import { Permission } from '../entities/permission.entity';
 
 @Injectable()
 export class UsersService {
@@ -11,10 +11,19 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(UserBusiness)
-    private userBusinessRepository: Repository<UserBusiness>,
+    private userBusinessRepository: Repository<UserBusiness>
   ) {}
 
   async create(user: Partial<User>): Promise<User> {
+    // Create default permissions
+    const permission = new Permission();
+    permission.createTicket = false;
+    permission.readTicket = false;
+    permission.updateTicket = false;
+    permission.deleteTicket = false;
+    permission.manageUsers = false;
+
+    user.permission = permission;
     return this.usersRepository.save(user);
   }
 
@@ -25,6 +34,13 @@ export class UsersService {
       relations: ['businesses'],
     });
   }
+
+  async findAllByAdmin(adminId: number): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { adminId },
+    });
+  }
+
   async assignBusiness(userId: number, businessId: number): Promise<void> {
     const userBusiness = this.userBusinessRepository.create({
       user: { id: userId },
