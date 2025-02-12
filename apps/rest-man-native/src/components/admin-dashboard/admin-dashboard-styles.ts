@@ -6,6 +6,87 @@ export const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
+  content:{
+    padding: 16,
+  },
+  /*Admin Section */
+  adminCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  avatarContainer: {
+    backgroundColor: '#48BB78',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  adminName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+  adminRole: {
+    fontSize: 14,
+    color: '#718096',
+    marginTop: 4,
+  },
+  detailsContainer: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDF2F7',
+  },
+  detailText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#4A5568',
+  },
+  AdminEditButton: {
+    padding: 6,
+  },
+  // actionsContainer: {
+  //   flexDirection: 'row',
+  //   gap: 12,
+  // },
+  AdminActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#4299E1',
+    padding: 12,
+    borderRadius: 8,
+  },
+  actionButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
   employeeCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -64,7 +145,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#48BB78' // Green
   },
   deleteButton: {
-    backgroundColor: '#F56565' // Red
+    backgroundColor: '#F56565', // Red
+    marginVertical: 8,
   },
   /* Employee Section Specific Styles */
   sectionHeader: {
@@ -171,8 +253,121 @@ export const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
   },
-
-
+/* Business Card*/
+  businessCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
+  businessName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+  businessType: {
+    fontSize: 14,
+    color: '#718096',
+    marginTop: 2,
+  },
+  addEmployeeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#48BB78',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  detailsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F7FAFC',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    minWidth: '45%',
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#4A5568',
+  },
+  employeesSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#EDF2F7',
+    paddingTop: 16,
+  },
+  employeesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  employeesTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D3748',
+  },
+  seeAllText: {
+    color: '#4299E1',
+    fontSize: 14,
+  },
+  employeeBadge: {
+    alignItems: 'center',
+    marginRight: 16,
+    width: 80,
+  },
+  employeeAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#4299E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  avatarText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  employeeBadgeName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#2D3748',
+    textAlign: 'center',
+  },
+  employeeBadgeRole: {
+    fontSize: 10,
+    color: '#718096',
+    textAlign: 'center',
+  },
+  emptyEmployeesText: {
+    color: '#A0AEC0',
+    fontStyle: 'italic',
+    marginVertical: 8,
+  },
 
   /* Modal Styles */
   modalContainer: {

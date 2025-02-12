@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Put } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { BusinessesService } from '../services/businesses.service';
 import { User } from '../entities/user.entity';
-import { Business } from '../entities/business.entity';
+import { UpdateUserDto } from '../DTO/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -15,6 +15,7 @@ export class UserController {
   async findAllUserByAdminId(@Param('adminId') adminId: number): Promise<User[]> {
     return this.usersService.findAllByAdmin(adminId);
   }
+
   @Post(':adminId')
   async create(@Param('adminId') adminId: number,@Body() data: User) {
     data.adminId = adminId;
@@ -29,33 +30,41 @@ export class UserController {
     }
     return user;
   }
+  @Put(':id')
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.usersService.update(id, updateUserDto);
+  }
 
-  @Post('signup')
+  @Post('admin/signUp')
   async signUp(@Body() data: any) {
-    const { admin, businesses } = data;
-
+debugger
+    const { admin, businesses, users } = data;
+    debugger
     // Create Admin
     const adminUser = await this.usersService.create({
       ...admin,
       role: 'admin',
     });
 
-    // Create Businesses and Employees
+    // Create Businesses (no employees here)
     for (const businessData of businesses) {
-      const business = await this.businessesService.create({
+      await this.businessesService.create({
         ...businessData,
-        admin: adminUser,
+        admin: adminUser, // Link business to admin
       });
+    }
+    debugger
+    // Create Employees (no businesses here)
+    for (const employeeData of users) {
 
-      for (const employeeData of businessData.employees) {
-        const employee = await this.usersService.create({
-          ...employeeData,
-          role: 'employee',
-        });
-
-        // Associate employee with business
-        await this.usersService.assignBusiness(employee.id, business.id);
-      }
+      await this.usersService.create({
+        ...employeeData,
+        role: employeeData.role || 'Employee',
+        admin: adminUser, // Link employee to admin
+      });
     }
 
     return { message: 'Admin, businesses, and employees created successfully' };

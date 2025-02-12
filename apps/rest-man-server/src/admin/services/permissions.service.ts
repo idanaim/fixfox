@@ -2,31 +2,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Permission } from '../entities/permission.entity';
+import { Permissions } from '../entities/permissions.entity';
 import { PermissionDto } from '../DTO/permission.dto';
 
 @Injectable()
 export class PermissionsService {
   constructor(
-    @InjectRepository(Permission)
-    private permissionRepository: Repository<Permission>,
+    @InjectRepository(Permissions)
+    private permissionRepository: Repository<Permissions>,
   ) {}
 
-  async updatePermissions(userId: number, permissionDto: PermissionDto): Promise<Permission> {
-    const permission = await this.permissionRepository.findOne({ where: { user: { id: userId } } });
-debugger;
-    if (!permission) {
+  async updatePermissions(userId: number, permissionDto: PermissionDto): Promise<Permissions> {
+    const permissions = await this.permissionRepository.findOne({ where: { user: { id: userId } } });
+    if (!permissions) {
       throw new NotFoundException('Permissions not found');
     }
 
     // Update fields
-    Object.assign(permission, permissionDto);
-    permission.updatedAt = new Date(); // Update timestamp
+    Object.assign(permissions, permissionDto);
+    permissions.updatedAt = new Date(); // Update timestamp
 
-    return this.permissionRepository.save(permission);
+    return this.permissionRepository.save(permissions);
   }
 
-  async getPermissions(userId: number): Promise<Permission> {
+  async getPermissions(userId: number): Promise<Permissions> {
     const permission = await this.permissionRepository.findOne({ where: { user: { id: userId } } });
 
     if (!permission) {

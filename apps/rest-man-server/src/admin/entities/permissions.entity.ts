@@ -1,9 +1,9 @@
-// src/entities/permission.entity.ts
+// src/entities/permissions.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
-export class Permission {
+export class Permissions {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,7 +28,7 @@ export class Permission {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.permission, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.permissions, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 }

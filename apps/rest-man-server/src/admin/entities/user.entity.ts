@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
 import { UserBusiness } from '../entities/user-business.entity';
-import { Permission } from './permission.entity';
+import { Permissions } from './permissions.entity';
+import { IsOptional } from 'class-validator';
 
 @Entity()
 export class User {
@@ -19,7 +20,8 @@ export class User {
   @Column()
   mobile: string;
 
-  @Column()
+@Column({ nullable: true })
+@IsOptional()
   adminId: number;
 
   @Column()
@@ -28,6 +30,9 @@ export class User {
   @OneToMany(() => UserBusiness, (userBusiness) => userBusiness.user)
   businesses: UserBusiness[];
 
-  @OneToOne(() => Permission, (permission) => permission.user, { cascade: true })
-  permission: Permission;
+  @OneToOne(() => Permissions, (permissions) => permissions.user, {
+    cascade: true, // Enable cascading for create and update
+    eager: true,   // Automatically load permissions when fetching a user
+  })
+  permissions: Permissions;
 }

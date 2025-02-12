@@ -56,7 +56,7 @@ export const useGetBusinessEmployees = (businessId: string | number) => {
 
 export const useAddEmployeesToBusiness = () => {
   return useMutation({
-    mutationFn: (employees) => postCall('employees', employees),
+    mutationFn: (employees) => postCall('employees/associate', employees),
     onSuccess: (data) => {
       console.log('Employees added successfully:', data);
       // Handle success, e.g., show a success message or redirect
