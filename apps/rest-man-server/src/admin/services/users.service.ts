@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserBusiness } from '../entities/user-business.entity';
-import { Permission } from '../entities/permission.entity';
+import { Permissions } from '../entities/permissions.entity';
 import { UpdateUserDto } from '../DTO/update-user.dto';
 
 @Injectable()
@@ -12,19 +12,23 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(UserBusiness)
-    private userBusinessRepository: Repository<UserBusiness>
+    private userBusinessRepository: Repository<UserBusiness>,
+    @InjectRepository(Permissions)
+    private readonly permissionsRepository: Repository<Permissions>
   ) {}
 
   async create(user: Partial<User>): Promise<User> {
-    // Create default permissions
-    const permission = new Permission();
-    permission.createTicket = false;
-    permission.readTicket = false;
-    permission.updateTicket = false;
-    permission.deleteTicket = false;
-    permission.manageUsers = false;
+    user.role = user.role || 'employee';
+    const permissions = new Permissions();
+    permissions.createTicket = user?.permissions?.createTicket || false;
+    permissions.readTicket = user?.permissions?.readTicket || false;
+    permissions.updateTicket = user?.permissions?.updateTicket || false;
+    permissions.deleteTicket = user?.permissions?.deleteTicket || false;
+    permissions.manageUsers = user?.permissions?.manageUsers || false;
 
-    user.permission = permission;
+    user.permissions = permissions;
+
+    // Save the user (permissions will be saved automatically due to cascade)
     return this.usersRepository.save(user);
   }
 
@@ -53,7 +57,7 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['permission'], // Ensure permission is loaded
+      relations: ['permissions'], // Ensure permission is loaded
     });
 
     if (!user) {
@@ -66,32 +70,32 @@ export class UsersService {
     if (updateUserDto.password) user.password = updateUserDto.password;
     if (updateUserDto.mobile) user.mobile = updateUserDto.mobile;
     if (updateUserDto.role) user.role = updateUserDto.role;
-  debugger
+
     // Update permissions if they exist in DTO
-    if (updateUserDto.permissions && user.permission) {
+    if (updateUserDto.permissions && user.permissions) {
       const { permissions } = updateUserDto;
 
       if (typeof permissions.createTicket !== 'undefined') {
-        user.permission.createTicket = permissions.createTicket;
+        user.permissions.createTicket = permissions.createTicket;
       }
       if (typeof permissions.readTicket !== 'undefined') {
-        user.permission.readTicket = permissions.readTicket;
+        user.permissions.readTicket = permissions.readTicket;
       }
       if (typeof permissions.updateTicket !== 'undefined') {
-        user.permission.updateTicket = permissions.updateTicket;
+        user.permissions.updateTicket = permissions.updateTicket;
       }
       if (typeof permissions.deleteTicket !== 'undefined') {
-        user.permission.deleteTicket = permissions.deleteTicket;
+        user.permissions.deleteTicket = permissions.deleteTicket;
       }
       if (typeof permissions.manageUsers !== 'undefined') {
-        user.permission.manageUsers = permissions.manageUsers;
+        user.permissions.manageUsers = permissions.manageUsers;
       }
     }
 
     await this.usersRepository.save(user);
     return this.usersRepository.findOne({
       where: { id },
-      relations: ['permission', 'businesses'], // Include relationships
+      relations: ['permissions', 'businesses'], // Include relationships
     });
   }
 }

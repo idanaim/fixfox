@@ -14,7 +14,6 @@ export const usePermissions = (userId: number) => {
         ...data,
         userId,
       }
-      return data;
     },
     enabled: !!userId, // Only fetch when userId exists
   });
@@ -22,7 +21,6 @@ export const usePermissions = (userId: number) => {
   // Update permissions
   const updatePermissions = useMutation({
     mutationFn: async (updatedPermissions: any) => {
-      debugger
       const { data } = await postCall(
         `permissions/${userId}`,
         updatedPermissions,

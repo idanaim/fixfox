@@ -4,7 +4,7 @@ import { useUserById } from '../../queries/react-query-wrapper/use-users';
 import { styles } from './admin-dashboard-styles';
 import { MaterialIcons } from '@expo/vector-icons';
 export function AdminSection() {
-  const { data: admin = {} } = useUserById(6);
+  const { data: admin = {} } = useUserById(22);
 
   return (
     <View style={styles.adminCard}>

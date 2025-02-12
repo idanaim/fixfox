@@ -6,9 +6,9 @@ export const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
-  // content:{
-  //   padding: 16,
-  // },
+  content:{
+    padding: 16,
+  },
   /*Admin Section */
   adminCard: {
     backgroundColor: '#FFF',

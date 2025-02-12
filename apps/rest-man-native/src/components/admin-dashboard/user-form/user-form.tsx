@@ -11,16 +11,17 @@ import {
 import { Appbar, List, Switch, useTheme } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Controller, useForm } from 'react-hook-form';
-import { usePermissions } from '../../queries/use-permissions';
-import { User } from '../../interfaces/business';
-import { styles } from '../admin-dashboard/admin-dashboard-styles';
-import { useUpdateUser } from '../../queries/react-query-wrapper/use-users';
+import { usePermissions } from '../../../queries/use-permissions';
+import { styles } from '../admin-dashboard-styles';
+import { useUpdateUser, useAddUser } from '../../../queries/react-query-wrapper/use-users';
+import { useQueryClient } from '@tanstack/react-query';
 
-const PermissionsManagementScreen = () => {
+const UserForm = () => {
   const theme = useTheme();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const route = useRoute();
-  const { user, adminId } = route?.params;
+  const { user, adminId } = route.params;
   const { updatePermissions, permissions } = usePermissions(user?.id);
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id);
   const { mutate: addNewUser } = useAddUser(adminId);
@@ -73,10 +74,10 @@ const PermissionsManagementScreen = () => {
   }, [permissions, reset]);
 
   const onSubmit = (data) => {
-    console.log('Updated Permissions:', data);
   if(user?.id){
     updateUser(data, {
       onSuccess: () => {
+        queryClient.invalidateQueries(['users', adminId]).then();
         navigation.goBack();
         Alert.alert('Success', 'Employee updated successfully');
         // setEmployeeForm({ name: '', email: '', role: '', mobile: '', businessId });
@@ -88,6 +89,7 @@ const PermissionsManagementScreen = () => {
   } else {
     addNewUser(data, {
       onSuccess: () => {
+        queryClient.invalidateQueries(['users', adminId]).then();
         Alert.alert('Success', 'Employee added successfully');
         navigation.goBack();
         // setEmployeeForm(InitUser);
@@ -112,7 +114,6 @@ const PermissionsManagementScreen = () => {
         contentContainerStyle={styles.content}
       >
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Edit </Text>
           <Controller
             control={control}
             name="name"
@@ -204,7 +205,7 @@ const PermissionsManagementScreen = () => {
                     value={value}
                     onValueChange={(newValue) => {
                       onChange(newValue);
-                      setValue(`user.permissions.${permission}`, newValue);
+                      setValue(`permissions.${permission}`, newValue);
                     }}
                   />
                 )}
@@ -265,19 +266,4 @@ const getPermissionIcon = (permission) => {
   }
 };
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   content: {
-//     padding: 16,
-//   },
-//   saveButton: {
-//     backgroundColor: "#6200ea",
-//     padding: 12,
-//     borderRadius: 5,
-//     alignItems: "center",
-//   },
-// });
-
-export default PermissionsManagementScreen;
+export default UserForm;

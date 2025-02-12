@@ -10,7 +10,7 @@ import {
 import { Controller, useForm } from 'react-hook-form';
 import useRegisterEmployee from '../../queries/use-save-admin-reg';
 
-export const AdminRegisterWizard = () => {
+export const AdminRegistration = () => {
   const { mutate } = useRegisterEmployee();
   const {
     control,
@@ -80,12 +80,12 @@ export const AdminRegisterWizard = () => {
         address: business.address,
         mobile: business.mobile,
         type: business.type,
-        employees: data.users.map((user) => ({
-          name: user.name,
-          email: user.email,
-          password: user.password || 'defaultPassword',
-          mobile: user.mobile,
-        })),
+      })),
+      employees: data.users.map((employee) => ({
+        name: employee.name,
+        email: employee.email,
+        password: employee.password || 'defaultPassword',
+        mobile: employee.mobile,
       })),
     };
 
@@ -95,15 +95,15 @@ export const AdminRegisterWizard = () => {
 
   const renderAdminDetails = () => (
     <>
-      <Text style={styles.label}>שם המנהל</Text>
+      <Text style={styles.label}>Admin Name</Text>
       <Controller
         control={control}
         name="admin.name"
-        rules={{ required: 'השם נדרש' }}
+        rules={{ required: 'Name is required' }}
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={[styles.input, errors.admin?.name && styles.errorBorder]}
-            placeholder="הזן שם המנהל"
+            placeholder="Enter Admin Name"
             value={value}
             onChangeText={onChange}
           />
@@ -113,18 +113,18 @@ export const AdminRegisterWizard = () => {
         <Text style={styles.errorText}>{errors.admin.name.message}</Text>
       )}
 
-      <Text style={styles.label}>אימייל המנהל</Text>
+      <Text style={styles.label}>Admin Email</Text>
       <Controller
         control={control}
         name="admin.email"
         rules={{
-          required: 'אימייל נדרש',
-          pattern: { value: /^\S+@\S+$/, message: 'פורמט אימייל לא תקין' },
+          required: 'Email is required',
+          pattern: { value: /^\S+@\S+$/, message: 'Invalid email format' },
         }}
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={[styles.input, errors.admin?.email && styles.errorBorder]}
-            placeholder="הזן אימייל המנהל"
+            placeholder="Enter Admin Email"
             value={value}
             onChangeText={onChange}
           />
@@ -134,15 +134,15 @@ export const AdminRegisterWizard = () => {
         <Text style={styles.errorText}>{errors.admin.email.message}</Text>
       )}
 
-      <Text style={styles.label}>סיסמת המנהל</Text>
+      <Text style={styles.label}>Admin Password</Text>
       <Controller
         control={control}
         name="admin.password"
-        rules={{ required: 'סיסמה נדרשת' }}
+        rules={{ required: 'Password is required' }}
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={[styles.input, errors.admin?.password && styles.errorBorder]}
-            placeholder="הזן סיסמת המנהל"
+            placeholder="Enter Admin Password"
             value={value}
             onChangeText={onChange}
             secureTextEntry={true}
@@ -152,22 +152,22 @@ export const AdminRegisterWizard = () => {
       {errors.admin?.password && (
         <Text style={styles.errorText}>{errors.admin.password.message}</Text>
       )}
-      <Text style={styles.label}>טלפון נייד של המנהל</Text>
+      <Text style={styles.label}>Admin Mobile Number</Text>
       <Controller
         control={control}
         name="admin.mobile"
         rules={{
-          required: 'מספר נייד נדרש',
+          required: 'Mobile number is required',
           pattern: {
             value: /^[0-9]{10}$/,
-            message: 'פורמט מספר נייד לא תקין',
+            message: 'Invalid mobile number format',
           },
         }}
         keyboardType="phone-pad"
         render={({ field: { onChange, value } }) => (
           <TextInput
             style={[styles.input, errors.admin?.mobile && styles.errorBorder]}
-            placeholder="הזן מספר נייד"
+            placeholder="Enter Mobile Number"
             maxLength={10}
             value={value}
             onChangeText={onChange}
@@ -185,59 +185,59 @@ export const AdminRegisterWizard = () => {
     return (
       <>
         <TouchableOpacity style={styles.addButton} onPress={addBusiness}>
-          <Text style={styles.buttonText}>הוסף עסק</Text>
+          <Text style={styles.buttonText}>Add Business</Text>
         </TouchableOpacity>
         {businesses.map((_, index) => (
           <View key={index} style={styles.box}>
-            <Text style={styles.boxTitle}>עסק {index + 1}</Text>
-            <Text style={styles.label}>שם העסק</Text>
+            <Text style={styles.boxTitle}>Business {index + 1}</Text>
+            <Text style={styles.label}>Business Name</Text>
             <Controller
               control={control}
               name={`businesses.${index}.name`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן שם העסק"
+                  placeholder="Enter Business Name"
                   value={value}
                   onChangeText={onChange}
                 />
               )}
             />
-            <Text style={styles.label}>כתובת העסק</Text>
+            <Text style={styles.label}>Business Address</Text>
             <Controller
               control={control}
               name={`businesses.${index}.address`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן כתובת העסק"
+                  placeholder="Enter Business Address"
                   value={value}
                   onChangeText={onChange}
                 />
               )}
             />
-            <Text style={styles.label}>טלפון העסק</Text>
+            <Text style={styles.label}>Business Phone</Text>
             <Controller
               control={control}
               name={`businesses.${index}.mobile`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן טלפון העסק"
+                  placeholder="Enter Business Phone"
                   value={value}
                   onChangeText={onChange}
                 />
               )}
             />
 
-            <Text style={styles.label}>סוג העסק</Text>
+            <Text style={styles.label}>Business Type</Text>
             <Controller
               control={control}
               name={`businesses.${index}.type`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן סוג העסק"
+                  placeholder="Enter Business Type"
                   value={value}
                   onChangeText={onChange}
                 />
@@ -247,7 +247,7 @@ export const AdminRegisterWizard = () => {
               style={styles.removeButton}
               onPress={() => removeBusiness(index)}
             >
-              <Text style={styles.buttonText}>הסר עסק</Text>
+              <Text style={styles.buttonText}>Remove Business</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -260,53 +260,53 @@ export const AdminRegisterWizard = () => {
     return (
       <>
         <TouchableOpacity style={styles.addButton} onPress={addUser}>
-          <Text style={styles.buttonText}>הוסף משתמש</Text>
+          <Text style={styles.buttonText}>Add User</Text>
         </TouchableOpacity>
         {users.map((_, index) => (
           <View key={index} style={styles.box}>
-            <Text style={styles.boxTitle}>משתמש {index + 1}</Text>
-            <Text style={styles.label}>שם המשתמש</Text>
+            <Text style={styles.boxTitle}>User {index + 1}</Text>
+            <Text style={styles.label}>User Name</Text>
             <Controller
               control={control}
               name={`users.${index}.name`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן שם המשתמש"
+                  placeholder="Enter User Name"
                   value={value}
                   onChangeText={onChange}
                 />
               )}
             />
-            <Text style={styles.label}>אימייל המשתמש</Text>
+            <Text style={styles.label}>User Email</Text>
             <Controller
               control={control}
               name={`users.${index}.email`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.input}
-                  placeholder="הזן אימייל המשתמש"
+                  placeholder="Enter User Email"
                   value={value}
                   onChangeText={onChange}
                 />
               )}
             />
-            <Text style={styles.label}>טלפון נייד של המשתמש</Text>
+            <Text style={styles.label}>User Mobile Number</Text>
             <Controller
               control={control}
               name={`users.${index}.mobile`}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   rules={{
-                    required: 'מספר נייד נדרש',
+                    required: 'Mobile number is required',
                     pattern: {
                       value: /^[0-9]{10}$/,
-                      message: 'פורמט מספר נייד לא תקין',
+                      message: 'Invalid mobile number format',
                     },
                   }}
                   keyboardType="phone-pad"
                   style={styles.input}
-                  placeholder="הזן טלפון נייד של המשתמש"
+                  placeholder="Enter User Mobile Number"
                   value={value}
                   onChangeText={onChange}
                 />
@@ -316,7 +316,7 @@ export const AdminRegisterWizard = () => {
               style={styles.removeButton}
               onPress={() => removeUser(index)}
             >
-              <Text style={styles.buttonText}>הסר משתמש</Text>
+              <Text style={styles.buttonText}>Remove User</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -326,7 +326,7 @@ export const AdminRegisterWizard = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>מדריך רישום עובד</Text>
+      <Text style={styles.title}>Employee Registration Wizard</Text>
       <View style={styles.progressBarContainer}>
         <View
           style={[styles.progressBar, { width: `${progressPercentage}%` }]}
@@ -341,7 +341,7 @@ export const AdminRegisterWizard = () => {
             style={styles.backButton}
             onPress={() => setCurrentStep(currentStep - 1)}
           >
-            <Text style={styles.buttonText}>חזרה</Text>
+            <Text style={styles.buttonText}>Back</Text>
           </TouchableOpacity>
         )}
         {currentStep < totalSteps ? (
@@ -349,14 +349,14 @@ export const AdminRegisterWizard = () => {
             style={styles.nextButton}
             onPress={() => setCurrentStep(currentStep + 1)}
           >
-            <Text style={styles.buttonText}>הבא</Text>
+            <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleSubmit(onSubmit)}
           >
-            <Text style={styles.buttonText}>Send</Text>
+            <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 14,
     color: '#333',
-    textAlign: 'right',
+    textAlign: 'left',
   },
   errorBorder: {
     borderColor: '#d32f2f',
@@ -496,4 +496,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AdminRegisterWizard;
+export default AdminRegistration;

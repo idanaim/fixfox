@@ -10,12 +10,12 @@ import ReactQueryWrapper from '../queries/react-query-wrapper/react-query-wrappe
 import { createStackNavigator } from '@react-navigation/stack';
 import { MainContainer } from '../components/fixfox-container/fixfox-container';
 import EmployeeRegisterWizard from '../components/admin-registration/test';
-import AdminRegisterWizard from '../components/admin-registration/Admin-register-wizard';
+import AdminRegistration from '../components/admin-registration/admin-registration';
 import { TicketForm } from '../components/ticket-form/ticket-form';
 import LoginScreen from '../components/login/login';
 import { PaperProvider } from 'react-native-paper';
 import { theme } from './theme';
-import PermissionsManagementScreen from '../components/permissions/add-permissions';
+import UserForm from '../components/admin-dashboard/user-form/user-form';
 import BusinessForm from '../components/admin-dashboard/business-form/business-form';
 
 export const App = () => {
@@ -30,12 +30,12 @@ export const App = () => {
       <NavigationContainer>
         <Stack.Navigator>
           {/*<Stack.Screen name="Login"   options={{ headerShown: false }} component={LoginScreen} />*/}
-          {/*<Stack.Screen name="Employee reg" component={AdminRegisterWizard} />*/}
+          {/*<Stack.Screen name="Employee reg" component={AdminRegistration} />*/}
           <Stack.Screen name=" " component={MainContainer} />
           <Stack.Screen name="edit-business" component={ BusinessForm} />
           <Stack.Screen
-            name="permissions"
-            component={PermissionsManagementScreen}
+            name="user-form"
+            component={UserForm}
             options={{ title: 'Manage Permissions' }}
           />
           <Stack.Screen name="Add Ticket" component={TicketForm} />

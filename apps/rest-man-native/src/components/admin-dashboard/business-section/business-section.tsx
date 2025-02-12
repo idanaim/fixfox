@@ -10,8 +10,8 @@ import { styles } from '../admin-dashboard-styles';
 import { AddBusinessModal } from './add-business';
 
 export function BusinessSection() {
-  const { data: businesses } = useGetBusinesses(8);
-  const { data: allUsers } = useUsersByAdmin(6);
+  const { data: businesses } = useGetBusinesses(22);
+  const { data: allUsers } = useUsersByAdmin(22);
   const { mutate: addEmployees } = useAddEmployeesToBusiness();
 
   const [selectedBusiness, setSelectedBusiness] = useState<number | null>(null);
