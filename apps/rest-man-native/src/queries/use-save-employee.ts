@@ -3,7 +3,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 const registerEmployee = async (body:any) => {
-  const response = await fetch(`http://localhost:3000/api/employees`, {
+  const response = await fetch(`http://localhost:3000/api/employees/associate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

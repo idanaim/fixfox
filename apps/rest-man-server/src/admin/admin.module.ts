@@ -13,12 +13,14 @@ import { UserBusinessService } from './services/user-business.service';
 import { UserController } from './controllers/users.controller';
 import { PermissionsController } from './controllers/permissions.controller';
 import { PermissionsService } from './services/permissions.service';
+import { EmployeesService } from './services/employees.service';
+import { EmployeesController } from './controllers/employee.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Business, Permissions, UserBusiness, ]),
+    TypeOrmModule.forFeature([User, Business, Permissions, UserBusiness ]),
   ],
-  controllers: [ UserController, BusinessesController, UserBusinessController, PermissionsController],
-  providers: [UsersService, BusinessesService, UserBusinessService, PermissionsService],
+  controllers: [ UserController, BusinessesController, UserBusinessController, PermissionsController,EmployeesController],
+  providers: [UsersService, BusinessesService, UserBusinessService, PermissionsService, EmployeesService],
 })
 export class AdminModule {}

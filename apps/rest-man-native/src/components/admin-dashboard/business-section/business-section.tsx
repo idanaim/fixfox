@@ -114,21 +114,28 @@ export function BusinessSection() {
               data={business.employees?.slice(0, 5)}
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.employeeBadge}>
-                  <View style={styles.employeeAvatar}>
-                    <Text style={styles.avatarText}>
-                      {item.name?.split(' ')?.map((n) => n[0])?.join('')}
+              renderItem={({ item }) => {
+                console.log(item);
+                const avatarName = item.user.name
+                  ?.split(' ')
+                  ?.map((n) => n[0])
+                  ?.join('');
+                return (
+                  <TouchableOpacity style={styles.employeeBadge}>
+                    <View style={styles.employeeAvatar}>
+                      <Text style={styles.avatarText}>
+                        {avatarName}
+                      </Text>
+                    </View>
+                    <Text style={styles.employeeBadgeName} numberOfLines={1}>
+                      {item?.user?.name?.split(' ')[0]}
                     </Text>
-                  </View>
-                  <Text style={styles.employeeBadgeName} numberOfLines={1}>
-                    {item?.name?.split(' ')[0]}
-                  </Text>
-                  <Text style={styles.employeeBadgeRole} numberOfLines={1}>
-                    {item.role}
-                  </Text>
-                </TouchableOpacity>
-              )}
+                    <Text style={styles.employeeBadgeRole} numberOfLines={1}>
+                      {item.role}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
               ListEmptyComponent={
                 <Text style={styles.emptyEmployeesText}>
                   No team members added yet
