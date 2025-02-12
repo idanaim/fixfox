@@ -10,7 +10,7 @@ export default function UsersManagement() {
     <ScrollView style={styles.container}>
       <AdminSection />
       <BusinessSection />
-      <EmployeeSection />
+      {/*<EmployeeSection />*/}
     </ScrollView>
   );
 }

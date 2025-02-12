@@ -1,69 +1,210 @@
-import React, { useEffect } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Appbar, List, Switch, useTheme, Button } from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Appbar, List, Switch, useTheme } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { usePermissions } from '../../queries/use-permissions';
+import { User } from '../../interfaces/business';
+import { styles } from '../admin-dashboard/admin-dashboard-styles';
+import { useUpdateUser } from '../../queries/react-query-wrapper/use-users';
 
 const PermissionsManagementScreen = () => {
   const theme = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
-  const {user}=route?.params
-  const { updatePermissions, permissions } = usePermissions(user.id);
-
+  const { user, adminId } = route?.params;
+  const { updatePermissions, permissions } = usePermissions(user?.id);
+  const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id);
+  const { mutate: addNewUser } = useAddUser(adminId);
   const { control, handleSubmit, setValue, reset } = useForm({
     defaultValues: {
-      createTicket: permissions?.createTicket || false,
-      readTicket: permissions?.readTicket || false,
-      updateTicket: permissions?.updateTicket || false,
-      deleteTicket: permissions?.deleteTicket || false,
-      manageUsers: permissions?.manageUsers || false,
+      name: user?.name || '',
+      email: user?.email || '',
+      password: user?.password || '',
+      role: user?.role || '',
+      mobile: user?.mobile || '',
+      permissions: {
+        createTicket: permissions?.createTicket || false,
+        readTicket: permissions?.readTicket || false,
+        updateTicket: permissions?.updateTicket || false,
+        deleteTicket: permissions?.deleteTicket || false,
+        manageUsers: permissions?.manageUsers || false,
+      },
     },
   });
+
+  const handleDeleteEmployee = (employeeId: number) => {
+    Alert.alert(
+      'Delete Employee',
+      'Are you sure you want to delete this employee?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', onPress: () => console.log('delete') }, //deleteEmployee(employeeId) },
+      ]
+    );
+  };
+
   // Sync the form once permissions are fetched
   useEffect(() => {
-    if (permissions) {
+    if (user) {
       reset({
-        createTicket: permissions.createTicket || false,
-        readTicket: permissions.readTicket || false,
-        updateTicket: permissions.updateTicket || false,
-        deleteTicket: permissions.deleteTicket || false,
-        manageUsers: permissions.manageUsers || false,
+        name: user.name || '',
+        email: user.email || '',
+        password: user.password || '',
+        role: user.role || '',
+        mobile: user.mobile || '',
+        permissions: {
+          createTicket: permissions?.createTicket || false,
+          readTicket: permissions?.readTicket || false,
+          updateTicket: permissions?.updateTicket || false,
+          deleteTicket: permissions?.deleteTicket || false,
+          manageUsers: permissions?.manageUsers || false,
+        },
       });
     }
   }, [permissions, reset]);
+
   const onSubmit = (data) => {
     console.log('Updated Permissions:', data);
-    updatePermissions.mutate(data);
+  if(user?.id){
+    updateUser(data, {
+      onSuccess: () => {
+        navigation.goBack();
+        Alert.alert('Success', 'Employee updated successfully');
+        // setEmployeeForm({ name: '', email: '', role: '', mobile: '', businessId });
+      },
+      onError: () => {
+        Alert.alert('Error', 'Failed to update employee');
+      },
+    });
+  } else {
+    addNewUser(data, {
+      onSuccess: () => {
+        Alert.alert('Success', 'Employee added successfully');
+        navigation.goBack();
+        // setEmployeeForm(InitUser);
+      },
+      onError: () => {
+        Alert.alert('Error', 'Failed to add employee');
+      },
+    })
+  }
   };
 
+  const headerTitle =user?.name? `${user.name} Details`: 'New User';
   return (
     <>
       <Appbar.Header theme={{ colors: { primary: theme.colors.primary } }}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title={`${user.name} Permissions`} />
+        <Appbar.Content title={headerTitle} />
       </Appbar.Header>
 
       <ScrollView
         style={[styles.container, { backgroundColor: theme.colors.background }]}
         contentContainerStyle={styles.content}
       >
-        {['createTicket', 'readTicket', 'updateTicket', 'deleteTicket', 'manageUsers'].map((permission) => (
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Edit </Text>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                onChangeText={onChange}
+                style={styles.input}
+                placeholder="Full Name"
+                value={value}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                onChangeText={onChange}
+                style={styles.input}
+                placeholder="Email"
+                value={value}
+                keyboardType="email-address"
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                onChangeText={onChange}
+                secureTextEntry={true}
+                style={styles.input}
+                placeholder="Password"
+                value={value}
+                keyboardType="email-address"
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="role"
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                onChange={onChange}
+                style={styles.input}
+                placeholder="Role"
+                value={value}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="mobile"
+            render={({ field: { value, onChange } }) => (
+              <TextInput
+                onChangeText={onChange}
+                style={styles.input}
+                placeholder="Mobile Number"
+                value={value}
+                // onChangeText={(text) =>
+                //   setEmployeeForm({ ...employeeForm, mobile: text })
+                // }
+                keyboardType="phone-pad"
+              />
+            )}
+          />
+        </View>
+
+        {[
+          'createTicket',
+          'readTicket',
+          'updateTicket',
+          'deleteTicket',
+          'manageUsers',
+        ].map((permission) => (
           <Controller
             key={permission}
             control={control}
-            name={permission}
+            name={`permissions.${permission}`}
             render={({ field: { value, onChange } }) => (
               <List.Item
-                title={permission.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                title={permission
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, (str) => str.toUpperCase())}
                 left={() => <List.Icon icon={getPermissionIcon(permission)} />}
                 right={() => (
                   <Switch
                     value={value}
                     onValueChange={(newValue) => {
                       onChange(newValue);
-                      setValue(permission, newValue);
+                      setValue(`user.permissions.${permission}`, newValue);
                     }}
                   />
                 )}
@@ -71,16 +212,38 @@ const PermissionsManagementScreen = () => {
             )}
           />
         ))}
-
-        <Button
-          mode="contained"
-          style={styles.saveButton}
-          onPress={handleSubmit(onSubmit)}
-          icon="content-save"
-        >
-          Save Changes
-        </Button>
       </ScrollView>
+      <TouchableOpacity
+        style={styles.saveButton}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isUpdating}
+      >
+        {isUpdating ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.saveButtonText}>Save Changes</Text>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.cancelButtonText}>Cancel</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.cancelButton, styles.deleteButton]}
+        onPress={() => handleDeleteEmployee(user?.id || 0)}
+      >
+        <Text style={styles.cancelButtonText}>Delete</Text>
+      </TouchableOpacity>
+      {/*<Button*/}
+      {/*  mode="contained"*/}
+      {/*  style={styles.saveButton}*/}
+      {/*  onPress={handleSubmit(onSubmit)}*/}
+      {/*  icon="content-save"*/}
+      {/*>*/}
+      {/*  Save Changes*/}
+      {/*</Button>*/}
     </>
   );
 };
@@ -102,19 +265,19 @@ const getPermissionIcon = (permission) => {
   }
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    padding: 16,
-  },
-  saveButton: {
-    backgroundColor: "#6200ea",
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-});
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//   },
+//   content: {
+//     padding: 16,
+//   },
+//   saveButton: {
+//     backgroundColor: "#6200ea",
+//     padding: 12,
+//     borderRadius: 5,
+//     alignItems: "center",
+//   },
+// });
 
 export default PermissionsManagementScreen;

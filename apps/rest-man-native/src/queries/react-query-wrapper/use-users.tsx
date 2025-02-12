@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchCall, postCall } from '../server-api';
 import { User } from '../../interfaces/business';
 
@@ -17,16 +17,30 @@ export const useUserById = (userId: number) => {
     enabled: !!userId,
   });
 };
+
+export const useUpdateUser = (userId:number) => {
+  // const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (user) => postCall(`user/${userId}`, user, 'PUT'),
+    onSuccess: (data) => {
+      // queryClient.invalidateQueries(['usersByAdmin', userId]);
+      console.log('User updated successfully:', data);
+    },
+    onError: (error) => {
+      console.error('Error updating User:', error.message);
+    },
+  });
+}
 export const useAddUser = (adminId: number) => {
+  // const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: User) => postCall('user/' + adminId, data),
     onSuccess: (data) => {
       console.log('Employee added successfully:', data);
-      // Handle success, e.g., show a success message or redirect
+      // queryClient.invalidateQueries(['usersByAdmin', adminId]);
     },
     onError: (error) => {
       console.error('Error adding Employee:', error.message);
-      // Handle error, e.g., show an error notification
     },
   });
 };

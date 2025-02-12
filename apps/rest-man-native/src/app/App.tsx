@@ -19,7 +19,6 @@ import PermissionsManagementScreen from '../components/permissions/add-permissio
 import BusinessForm from '../components/admin-dashboard/business-form/business-form';
 
 export const App = () => {
-  const scrollViewRef = useRef<null | ScrollView>(null);
   const Stack = createStackNavigator();
   /**
    * This is the main entry point for the app
@@ -47,3 +46,4 @@ export const App = () => {
   );
 }
 export default App;
+

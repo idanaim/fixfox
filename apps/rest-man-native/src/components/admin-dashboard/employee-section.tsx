@@ -17,10 +17,11 @@ import {
 import { styles } from './admin-dashboard-styles';
 import { InitUser, User } from '../../interfaces/business';
 import { useNavigation } from '@react-navigation/native';
-
+const tempAdminId = 6;
 export function EmployeeSection({ businessId }: { businessId?: number }) {
-  const { data: employees, isLoading, error } = useUsersByAdmin(6);
-  const { mutate: addUser } = useAddUser(6);
+
+  const { data: employees, isLoading, error } = useUsersByAdmin(tempAdminId);
+  const { mutate: addUser } = useAddUser(tempAdminId);
   const [isEditEmployeeModalVisible, setEditEmployeeModalVisible] =
     useState(false);
   const [isAddEmployeeModalVisible, setAddEmployeeModalVisible] =
@@ -50,6 +51,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
         Alert.alert('Success', 'Employee added successfully');
         setAddEmployeeModalVisible(false);
         setEmployeeForm(InitUser);
+
       },
       onError: () => {
         Alert.alert('Error', 'Failed to add employee');
@@ -80,16 +82,6 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
     // });
   };
 
-  const handleDeleteEmployee = (employeeId: number) => {
-    Alert.alert(
-      'Delete Employee',
-      'Are you sure you want to delete this employee?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', onPress: () => console.log('delete') }, //deleteEmployee(employeeId) },
-      ]
-    );
-  };
 
   const renderEmployee = ({ item }: { item: User }) => (
     <View style={styles.employeeCard}>
@@ -110,7 +102,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
       <View style={styles.actionsContainer}>
         <TouchableOpacity
           style={[styles.actionButton, styles.permissionButton]}
-          onPress={() => navigation.navigate('permissions', { user: item })}
+          onPress={() => navigation.navigate('permissions', { user: item, adminId: tempAdminId })}
         >
           <MaterialIcons name="admin-panel-settings" size={20} color="white" />
         </TouchableOpacity>
@@ -125,13 +117,6 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
         >
           <MaterialIcons name="edit" size={20} color="white" />
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteEmployee(item.id)}
-        >
-          <MaterialIcons name="delete-outline" size={20} color="white" />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -144,7 +129,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
         <Text style={styles.sectionTitle}>Employee Management</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setAddEmployeeModalVisible(true)}
+          onPress={() => navigation.navigate('permissions', {user: null,adminId: tempAdminId})}
         >
           <MaterialIcons name="person-add" size={24} color="white" />
         </TouchableOpacity>
@@ -233,88 +218,6 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setAddEmployeeModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Edit Employee Modal */}
-      <Modal
-        visible={isEditEmployeeModalVisible}
-        animationType="slide"
-        transparent={true}
-        onDismiss={() => {
-          setSelectedEmployee(null);
-          setEmployeeForm(InitUser);
-        }}
-        onRequestClose={() => {
-          setEditEmployeeModalVisible(false);
-
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Full Name"
-              value={employeeForm.name}
-              onChangeText={(text) =>
-                setEmployeeForm({ ...employeeForm, name: text })
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={employeeForm.email}
-              onChangeText={(text) =>
-                setEmployeeForm({ ...employeeForm, email: text })
-              }
-              keyboardType="email-address"
-            />
-            <TextInput
-              secureTextEntry={true}
-              style={styles.input}
-              placeholder="Password"
-              value={employeeForm.password}
-              onChangeText={(text) =>
-                setEmployeeForm({ ...employeeForm, password: text })
-              }
-              keyboardType="email-address"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Role"
-              value={employeeForm.role}
-              onChangeText={(text) =>
-                setEmployeeForm({ ...employeeForm, role: text })
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Mobile Number"
-              value={employeeForm.mobile}
-              onChangeText={(text) =>
-                setEmployeeForm({ ...employeeForm, mobile: text })
-              }
-              keyboardType="phone-pad"
-            />
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleEditEmployee}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.saveButtonText}>Save Changes</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setEditEmployeeModalVisible(false)}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>

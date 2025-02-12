@@ -28,6 +28,6 @@ export class User {
   @OneToMany(() => UserBusiness, (userBusiness) => userBusiness.user)
   businesses: UserBusiness[];
 
-  @OneToOne(() => Permission, (permission) => permission.user, { cascade: true })
+  @OneToOne(() => Permission, (permission) => permission.user, { cascade: true , eager: true})
   permission: Permission;
 }

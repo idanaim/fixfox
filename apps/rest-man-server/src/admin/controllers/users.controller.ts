@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Put } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { BusinessesService } from '../services/businesses.service';
 import { User } from '../entities/user.entity';
-import { Business } from '../entities/business.entity';
+import { UpdateUserDto } from '../DTO/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -28,6 +28,13 @@ export class UserController {
       return { message: 'User not found' };
     }
     return user;
+  }
+  @Put(':id')
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Post('signup')

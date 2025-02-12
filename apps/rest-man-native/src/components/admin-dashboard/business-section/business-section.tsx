@@ -54,37 +54,88 @@ export function BusinessSection() {
         </TouchableOpacity>
       </View>
       {businesses?.map((business) => (
-        <View style={styles.sectionCard} key={business.id}>
-          <View style={styles.businessHeader}>
-            <Text style={styles.sectionTitle}>{business.name}</Text>
-            <View style={styles.businessActions}>
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  setSelectedBusiness(business.id);
-                  setUserSelectModalVisible(true);
-                }}
-              >
-                <MaterialIcons name="person-add" size={24} color="green" />
+        <View style={styles.businessCard} key={business.id}>
+          {/* Header with Contextual Actions */}
+          <View style={styles.cardHeader}>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.businessName} numberOfLines={1}>
+                {business.name}
+              </Text>
+              <Text style={styles.businessType}>{business.type}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.addEmployeeButton}
+              onPress={() => {
+                setSelectedBusiness(business.id);
+                setUserSelectModalVisible(true);
+              }}
+            >
+              <MaterialIcons name="group-add" size={22} color="#fff" />
+              <Text style={styles.addButtonText}>Add People</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Business Details Grid */}
+          <View style={styles.detailsGrid}>
+            <View style={styles.detailItem}>
+              <MaterialIcons name="fingerprint" size={18} color="#718096" />
+              <Text style={styles.detailText}>ID: {business.id}</Text>
+            </View>
+
+            <View style={styles.detailItem}>
+              <MaterialIcons name="phone" size={18} color="#718096" />
+              <Text style={styles.detailText}>
+                {business.mobile || 'Not provided'}
+              </Text>
+            </View>
+
+            <View style={styles.detailItem}>
+              <MaterialIcons name="location-on" size={18} color="#718096" />
+              <Text style={styles.detailText} numberOfLines={1}>
+                {business.address}
+              </Text>
+            </View>
+          </View>
+
+          {/* Employees Section */}
+          <View style={styles.employeesSection}>
+            <View style={styles.employeesHeader}>
+              <Text style={styles.employeesTitle}>
+                Team Members ({business.employees?.length || 0})
+              </Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAllText}>See All →</Text>
               </TouchableOpacity>
             </View>
+
+            <FlatList
+              horizontal
+              data={business.employees?.slice(0, 5)}
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.employeeBadge}>
+                  <View style={styles.employeeAvatar}>
+                    <Text style={styles.avatarText}>
+                      {item.name?.split(' ')?.map((n) => n[0])?.join('')}
+                    </Text>
+                  </View>
+                  <Text style={styles.employeeBadgeName} numberOfLines={1}>
+                    {item?.name?.split(' ')[0]}
+                  </Text>
+                  <Text style={styles.employeeBadgeRole} numberOfLines={1}>
+                    {item.role}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <Text style={styles.emptyEmployeesText}>
+                  No team members added yet
+                </Text>
+              }
+            />
           </View>
-          <View>
-            <Text style={styles.label}>ID: {business.id}</Text>
-            <Text style={styles.label}>Phone: {business.mobile}</Text>
-            <Text style={styles.label}>Address: {business.address}</Text>
-            <Text style={styles.label}>Type: {business.type}</Text>
-          </View>
-          {/* Current Employees */}
-          <Text style={styles.subSectionTitle}>
-            Employees ({business.employees?.length || 0})
-          </Text>
-          {business.employees?.map((employee) => (
-            <View key={employee.id} style={styles.employeeItem}>
-              <Text style={styles.employeeName}>{employee.name}</Text>
-              <Text style={styles.employeeRole}>{employee.role}</Text>
-            </View>
-          ))}
         </View>
       ))}
 
