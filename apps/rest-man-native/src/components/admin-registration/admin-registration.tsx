@@ -427,6 +427,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
   },
+
   nextButton: {
     backgroundColor: '#6200ee',
     padding: 15,
