@@ -611,11 +611,13 @@ export const chatApi = {
 
   enhanceProblemDescription: async (
     sessionId: number,
-    description: string
+    description: string,
+    equipment?: Equipment
   ): Promise<{ originalDescription: string; enhancedDescription: string }> => {
     try {
       const response = await api.post(`/chat/sessions/${sessionId}/enhance-description`, {
         description,
+        equipment
       });
       return response.data;
     } catch (error) {

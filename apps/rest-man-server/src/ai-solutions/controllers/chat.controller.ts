@@ -8,6 +8,7 @@ import { Solution } from '../entities/solution.entity';
 import { CreateSolutionDto } from '../dtos/solution.dto';
 import { CreateProblemDto } from '../dtos/create-problem.dto';
 import { ProblemService } from '../services/problem.service';
+import { Equipment } from '../entities/equipment.entity';
 
 @Controller('chat')
 // @UseGuards(JwtAuthGuard)
@@ -59,11 +60,12 @@ export class ChatController {
   @Post('sessions/:sessionId/enhance-description')
   async enhanceProblemDescription(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string }
+    @Body() body: { description: string, equipment: Equipment }
   ) {
     return this.chatService.enhanceProblemDescription(
       sessionId,
-      body.description
+      body.description,
+      body.equipment
     );
   }
 

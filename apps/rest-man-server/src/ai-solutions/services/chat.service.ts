@@ -92,9 +92,10 @@ export class ChatService {
 
   async enhanceProblemDescription(
     sessionId: number,
-    description: string
-  ): Promise<{ 
-    originalDescription: string; 
+    description: string,
+    equipment: Equipment
+  ): Promise<{
+    originalDescription: string;
     enhancedDescription: string;
     potentialEquipmentTypes?: string[];
   }> {
@@ -113,18 +114,18 @@ export class ChatService {
     });
 
     // Use AI to improve the description
-    const enhancedDescription = await this.aiService.enhanceProblemDescription(description);
-    
+    const enhancedDescription = await this.aiService.enhanceProblemDescription(description, equipment);
+
     // Extract potential equipment types from the enhanced description
     const equipmentType = await this.aiService.identifyEquipmentType(enhancedDescription);
     const potentialEquipmentTypes = equipmentType ? [equipmentType] : [];
-    
+
     // Update session with the extracted equipment types
     await this.updateSessionStatus(sessionId, 'description_enhanced', {
       enhancedDescription,
       potentialEquipmentTypes
     });
-    
+
     // Return both the original and enhanced descriptions along with potential equipment types
     return {
       originalDescription: description,
@@ -139,7 +140,7 @@ export class ChatService {
   ): Promise<Equipment[]> {
     // Use AI to extract equipment types from the description
     const typeDescByAi = await this.aiService.identifyEquipmentType(description);
-    
+
     // Create a more flexible search query that can match partial equipment names
     return this.equipmentRepository
       .createQueryBuilder('equipment')
@@ -168,7 +169,7 @@ export class ChatService {
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     // Create a problem first
     const currentProblem = await this.problemService.createProblem({
       ...problem,

@@ -239,7 +239,8 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
         const result: DescriptionEnhancementResult = await chatApi.enhanceProblemDescription(
           sessionId,
-          initialIssueDescription
+          initialIssueDescription,
+          equipment
         );
 
         setOriginalDescription(result.originalDescription);
@@ -377,4 +378,4 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     setApplianceOptions,
     setShowEquipmentForm,
   };
-}; 
+};
