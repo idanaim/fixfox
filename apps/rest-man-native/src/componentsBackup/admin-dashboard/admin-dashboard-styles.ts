@@ -115,6 +115,9 @@ const baseStyles = StyleSheet.create({
     color: colors.white,
     ...typography.h2,
   },
+  languageSwitcherContainer: {
+    marginRight: 8,
+  },
   dashboardSummary: {
     margin: 16,
     padding: 16,

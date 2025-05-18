@@ -8,6 +8,8 @@ import { useAuth } from '../../queries/use-auth';
 import useAuthStore from '../../store/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors, typography } from '../admin-dashboard/admin-dashboard-styles';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // Define navigation types
 type RootStackParamList = {
@@ -36,6 +38,7 @@ const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const { mutate: loginUser, isPending: isAuthLoading } = useAuth();
   const { signIn, isLoading, error, setLoading, setError } = useAuthStore();
+  const { t } = useTranslation();
 
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -71,17 +74,24 @@ const LoginScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollView}>
         <Surface style={styles.container}>
           <View style={styles.logoContainer}>
-            <Image
-              source={require('../../../assets/fixfoxlogo.png')}
-              style={styles.logo}
-            />
+            <View style={styles.headerRow}>
+              <View style={styles.logoWrapper}>
+                <Image
+                  source={require('../../../assets/fixfoxlogo.png')}
+                  style={styles.logo}
+                />
+              </View>
+              <View style={styles.languageSwitcherContainer}>
+                <LanguageSwitcher />
+              </View>
+            </View>
             <Text style={styles.title}>Welcome to FixFox</Text>
             <Text style={styles.subtitle}>Sign in to continue</Text>
           </View>
 
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
+              <Text style={styles.inputLabel}>{t('common.email')}</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -96,7 +106,7 @@ const LoginScreen = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Password</Text>
+              <Text style={styles.inputLabel}>{t('common.password')}</Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -135,7 +145,7 @@ const LoginScreen = () => {
               textColor={colors.white}
               labelStyle={styles.buttonLabel}
             >
-              Sign In
+              {t('common.login')}
             </Button>
 
             <View style={styles.dividerContainer}>
@@ -206,10 +216,24 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 16,
+  },
+  logoWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  languageSwitcherContainer: {
+    position: 'absolute',
+    right: 0,
+  },
   logo: {
     width: 80,
     height: 80,
-    marginBottom: 16,
   },
   title: {
     ...typography.h1,

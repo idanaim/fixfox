@@ -2,7 +2,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Avatar } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import BusinessSwitcher from './BusinessSwitcher';
+import LanguageSwitcher from '../../LanguageSwitcher';
 import { Business } from '../Types/business';
 import { colors, typography } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
 
@@ -19,14 +21,16 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   selectedBusiness,
   onSelectBusiness,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         {/* User Avatar */}
         <View style={styles.avatarContainer}>
-          <Avatar.Text 
-            size={40} 
-            label="AI" 
+          <Avatar.Text
+            size={40}
+            label="AI"
             style={styles.avatar}
             color={colors.white}
             labelStyle={styles.avatarLabel}
@@ -34,7 +38,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         </View>
 
         {/* Title/Chat Name */}
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{t('common.maintenance_assistant')}</Text>
 
         {/* Business Switcher */}
         <BusinessSwitcher
@@ -42,6 +46,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           selectedBusiness={selectedBusiness}
           onSelectBusiness={onSelectBusiness}
         />
+        
+        {/* Language Switcher */}
+        <View style={styles.languageSwitcherContainer}>
+          <LanguageSwitcher />
+        </View>
       </View>
     </View>
   );
@@ -84,6 +93,9 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.dark,
     flex: 1,
+  },
+  languageSwitcherContainer: {
+    marginLeft: 10,
   },
 });
 

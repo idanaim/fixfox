@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UseGuards, NotFoundException } from '@nestjs/common';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -60,12 +60,13 @@ export class ChatController {
   @Post('sessions/:sessionId/enhance-description')
   async enhanceProblemDescription(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string, equipment: Equipment }
+    @Body() body: { description: string, equipment: Equipment, language?: string }
   ) {
     return this.chatService.enhanceProblemDescription(
       sessionId,
       body.description,
-      body.equipment
+      body.equipment,
+      body.language
     );
   }
 
@@ -109,33 +110,37 @@ export class ChatController {
   @Post('sessions/:sessionId/diagnose')
   async diagnoseProblem(
     @Param('sessionId') sessionId: number,
-    @Body() data: {
-      description: string;
-      equipmentId: number;
-      businessId: number;
-    }
+    @Body() body: { description: string; equipmentId: number; businessId: number; language?: string }
   ) {
-    // First record the diagnosis attempt in the chat
+    // Add a message indicating we're diagnosing the problem
+    const diagnosingMessage = body.language === 'he'
+      ? 'מאבחן את הבעיה...'
+      : 'Diagnosing the problem...';
+
     await this.chatService.addMessage(
       sessionId,
-      `Diagnosing problem for equipment ID ${data.equipmentId}`,
-      'system'
-    );
-    // Use the ProblemService for the actual diagnosis
-    const diagnosisResult = await this.problemService.enhancedDiagnosis(
-      data.description,
-      data.equipmentId,
-      data.businessId
+      diagnosingMessage,
+      'system',
+      { language: body.language }
     );
 
-    // Update the chat session with diagnosis details
-    await this.chatService.updateSessionStatus(
+    // Get diagnosis from problem service
+    const diagnosis = await this.problemService.diagnoseProblem(
+      body.description,
+      body.equipmentId,
+      body.businessId,
+      body.language
+    );
+
+    // Add the diagnosis result as a message
+    await this.chatService.addMessage(
       sessionId,
-      'diagnosis_complete',
-      { diagnosisResult }
+      diagnosis.message,
+      'system',
+      { language: body.language }
     );
 
-    return diagnosisResult;
+    return diagnosis;
   }
 
   @Post('sessions/:sessionId/enhanced-diagnosis')
@@ -146,13 +151,20 @@ export class ChatController {
       equipmentId: number;
       businessId: number;
       maxResults?: number;
+      language?: string;
     }
   ) {
+    const language = data.language || 'en';
+    const enhancedDiagnosisMessage = language === 'he'
+      ? `מבצע אבחון מתקדם עבור ציוד מספר ${data.equipmentId}...`
+      : `Performing enhanced diagnosis for equipment ID ${data.equipmentId}...`;
+
     // Record the enhanced diagnosis attempt
     await this.chatService.addMessage(
       sessionId,
-      `Performing enhanced diagnosis for equipment ID ${data.equipmentId}`,
-      'system'
+      enhancedDiagnosisMessage,
+      'system',
+      { language }
     );
 
     // Use ProblemService for the enhanced diagnosis
@@ -160,14 +172,18 @@ export class ChatController {
       data.description,
       data.equipmentId,
       data.businessId,
-      data.maxResults || 5
+      data.maxResults || 5,
+      language
     );
 
     // Update the chat session with the results
     await this.chatService.updateSessionStatus(
       sessionId,
       'enhanced_diagnosis_complete',
-      { enhancedDiagnosisResult: diagnosisResult }
+      { 
+        enhancedDiagnosisResult: diagnosisResult,
+        language 
+      }
     );
 
     return diagnosisResult;

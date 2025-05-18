@@ -8,6 +8,7 @@ import { User } from '../../admin/entities/user.entity';
 import { AIService } from './ai.service';
 import { CreateProblemDto, SimilarProblemDto } from '../dtos/create-problem.dto';
 import { Issue } from '../entities/issue.entity';
+import { EnhancedDiagnosisResult } from '../interfaces/enhanced-diagnosis.interface';
 
 @Injectable()
 export class ProblemService {
@@ -65,27 +66,6 @@ debugger
     return similarProblems;
   }
 
-  async enhanceProblemWithAI(problemId: number): Promise<Problem> {
-    const problem = await this.problemRepository.findOne({
-      where: { id: problemId },
-      relations: ['equipment']
-    });
-
-    if (!problem) {
-      throw new Error('Problem not found');
-    }
-
-    const enhancedDetails = await this.aiService.enhanceProblemDescription(
-      problem.description,
-      problem.equipment
-    );
-
-    return this.problemRepository.save({
-      ...problem,
-      enhancedDescription: enhancedDetails,
-      isEnhanced: true
-    });
-  }
 
   async linkProblemToEquipment(problemId: number, equipmentId: number): Promise<Problem> {
     return this.problemRepository.save({
@@ -134,7 +114,8 @@ debugger
   async diagnoseProblem(
     description: string,
     equipmentId: number,
-    businessId: number
+    businessId: number,
+    language: string = 'en'
   ): Promise<any> {
     // First, try to find similar problems that already have solutions
     const similarProblems = await this.findSimilarProblems(
@@ -151,6 +132,9 @@ debugger
     if (problemsWithSolutions.length > 0) {
       return {
         type: 'existing_solutions',
+        message: language === 'he' 
+          ? 'נמצאו פתרונות קודמים לבעיות דומות'
+          : 'Found existing solutions for similar problems',
         problems: problemsWithSolutions
       };
     }
@@ -161,7 +145,7 @@ debugger
     });
 
     if (!equipment) {
-      throw new Error('Equipment not found');
+      throw new Error(language === 'he' ? 'הציוד לא נמצא' : 'Equipment not found');
     }
 
     // Generate AI diagnosis
@@ -171,11 +155,15 @@ debugger
         type: equipment.type,
         manufacturer: equipment.manufacturer,
         model: equipment.model
-      }
+      },
+      language
     );
 
     return {
       type: 'ai_diagnosis',
+      message: language === 'he'
+        ? 'נוצר אבחון מבוסס בינה מלאכותית'
+        : 'Generated AI-based diagnosis',
       diagnosis
     };
   }
@@ -193,8 +181,9 @@ debugger
     description: string,
     equipmentId: number,
     businessId: number,
-    maxResults: number = 5
-  ): Promise<any> {
+    maxResults: number = 5,
+    language = 'en'
+  ): Promise<EnhancedDiagnosisResult> {
     // Stage 1: Get all issues with the same equipment ID in the current business
     const businessIssues = await this.issueRepository
       .createQueryBuilder('issue')
@@ -210,7 +199,6 @@ debugger
       const issueDescriptions = businessIssues.map(issue => ({
         id: issue.id,
         description: issue.problem?.description || '',
-        symptoms: issue.symptoms || ''
       }));
 
       // Get IDs of similar issues
@@ -230,7 +218,9 @@ debugger
           type: 'issue_matches',
           source: 'current_business',
           issues: similarIssues,
-          message: 'Found similar issues with solutions used before in your business'
+          message: language === 'he' 
+            ? 'נמצאו בעיות דומות עם פתרונות ששימשו בעבר בעסק שלך'
+            : 'Found similar issues with solutions used before in your business'
         };
       }
     }
@@ -241,7 +231,7 @@ debugger
     });
 
     if (!equipment) {
-      throw new Error('Equipment not found');
+      throw new Error(language === 'he' ? 'הציוד לא נמצא' : 'Equipment not found');
     }
 
     // Get problems for similar equipment from other businesses
@@ -258,7 +248,9 @@ debugger
         type: 'problem_matches',
         source: 'other_business',
         problems: problemMatches,
-        message: 'Found solutions used by other businesses for similar equipment'
+        message: language === 'he'
+          ? 'נמצאו פתרונות ששימשו עסקים אחרים עבור ציוד דומה'
+          : 'Found solutions used by other businesses for similar equipment'
       };
     }
 
@@ -269,14 +261,17 @@ debugger
         type: equipment.type,
         manufacturer: equipment.manufacturer,
         model: equipment.model
-      }
+      },
+      language
     );
 
     return {
       type: 'ai_diagnosis',
       source: 'ai_generated',
       diagnosis,
-      message: 'Generated AI solutions based on your description'
+      message: language === 'he'
+        ? 'נוצרו פתרונות מבוססי בינה מלאכותית בהתבסס על התיאור שלך'
+        : 'Generated AI solutions based on your description'
     };
   }
 
@@ -309,7 +304,7 @@ debugger
     const issueDescriptions = issues.map(issue => ({
       id: issue.id,
       description: issue.problem?.description || '',
-      symptoms: issue.symptoms || ''
+      // symptoms: issue.symptoms || ''
     }));
 
     // Use AI to rank the issues by similarity
@@ -397,32 +392,4 @@ debugger
     return similarProblems.slice(0, limit);
   }
 
-  /**
-   * Enhance a problem description using AI for more comprehensive wording
-   */
-  async enhanceProblemDescription(
-    description: string,
-    equipmentId: number
-  ): Promise<string> {
-    // Get equipment details for context
-    let equipment = null;
-    if(equipmentId) {
-      equipment  = await this.equipmentRepository.findOne({
-        where: { id: equipmentId }
-      });
-    }
-
-    // if (!equipment) {
-    //   // If no equipment found, just return the original description
-    //   return description;
-    // }
-
-    // Use AI to enhance the description
-    const enhancedDescription = await this.aiService.enhanceProblemDescription(
-      description,
-      equipment
-    );
-
-    return enhancedDescription;
-  }
 }

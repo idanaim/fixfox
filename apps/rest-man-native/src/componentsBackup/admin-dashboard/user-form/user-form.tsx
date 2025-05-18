@@ -10,6 +10,7 @@ import {
   Platform,
   SafeAreaView,
   Dimensions,
+  I18nManager,
 } from 'react-native';
 import {
   Appbar,
@@ -34,6 +35,7 @@ import { useUpdateUser, useAddUser } from '../../../queries/react-query-wrapper/
 import { useQueryClient } from '@tanstack/react-query';
 import { useDepartments } from '../../../queries/react-query-wrapper/use-departments';
 import authStore from '../../../store/auth.store';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 const ROLES = ['General Manager', 'Team Player'];
@@ -52,6 +54,7 @@ const UserForm = () => {
   const [deptMenuVisible, setDeptMenuVisible] = useState(false);
   const { data: departments = [], isLoading: deptsLoading } = useDepartments();
   const [multiDeptMenuVisible, setMultiDeptMenuVisible] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const { control, handleSubmit, setValue, reset, watch } = useForm({
     defaultValues: {
@@ -76,11 +79,11 @@ const UserForm = () => {
 
   const handleDeleteEmployee = (employeeId) => {
     Alert.alert(
-      'Delete Employee',
-      'Are you sure you want to delete this employee?',
+      t('admin.userForm.deleteTitle'),
+      t('admin.userForm.deleteConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', onPress: () => console.log('delete') }, //deleteEmployee(employeeId) },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), onPress: () => console.log('delete') }, //deleteEmployee(employeeId) },
       ]
     );
   };
@@ -116,30 +119,32 @@ const UserForm = () => {
         onSuccess: () => {
           queryClient.invalidateQueries(['users', adminId]);
           navigation.goBack();
-          Alert.alert('Success', 'Employee updated successfully');
+          Alert.alert('Success', t('admin.userForm.successUpdate'));
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to update employee');
+          Alert.alert('Error', t('admin.userForm.errorUpdate'));
         },
       });
     } else {
       addNewUser(data, {
         onSuccess: () => {
           queryClient.invalidateQueries(['users', adminId]);
-          Alert.alert('Success', 'Employee added successfully');
+          Alert.alert('Success', t('admin.userForm.successAdd'));
           navigation.goBack();
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to add employee');
+          Alert.alert('Error', t('admin.userForm.errorAdd'));
         },
       });
     }
   };
 
-  const headerTitle = user?.name ? `${user.name} Details` : 'New User';
+  const headerTitle = user?.name 
+    ? t('admin.userForm.editTitle', { name: user.name })
+    : t('admin.userForm.title');
 
   return (
-    <SafeAreaView style={styles.safeAreaContainer}>
+    <SafeAreaView style={[styles.safeAreaContainer, { direction: i18n.language === 'he' ? 'rtl' : 'ltr' }]}>
       <Appbar.Header style={styles.appbarHeader}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title={headerTitle} titleStyle={styles.headerTitle} />
@@ -163,10 +168,10 @@ const UserForm = () => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Basic Information</Text>
+              <Text style={styles.sectionTitle}>{t('admin.userForm.basicInfo')}</Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Full Name *</Text>
+                <Text style={styles.inputLabel}>{t('admin.userForm.fullName')} *</Text>
                 <Controller
                   control={control}
                   name="name"
@@ -175,18 +180,19 @@ const UserForm = () => {
                       value={value}
                       onChangeText={onChange}
                       mode="outlined"
-                      placeholder="Enter full name"
+                      placeholder={t('admin.userForm.enterFullName')}
                       style={styles.input}
                       outlineColor={colors.border}
                       activeOutlineColor={colors.primary}
                       left={<TextInput.Icon icon="account" color={colors.medium} />}
+                      textAlign={i18n.language === 'he' ? 'right' : 'left'}
                     />
                   )}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email Address *</Text>
+                <Text style={styles.inputLabel}>{t('admin.userForm.emailAddress')} *</Text>
                 <Controller
                   control={control}
                   name="email"
@@ -195,20 +201,23 @@ const UserForm = () => {
                       value={value}
                       onChangeText={onChange}
                       mode="outlined"
-                      placeholder="Enter email address"
+                      placeholder={t('admin.userForm.enterEmail')}
                       style={styles.input}
                       outlineColor={colors.border}
                       activeOutlineColor={colors.primary}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       left={<TextInput.Icon icon="email" color={colors.medium} />}
+                      textAlign={i18n.language === 'he' ? 'right' : 'left'}
                     />
                   )}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{user?.id ? 'Update Password' : 'Password *'}</Text>
+                <Text style={styles.inputLabel}>
+                  {user?.id ? t('admin.userForm.updatePassword') : t('admin.userForm.newPassword')} *
+                </Text>
                 <Controller
                   control={control}
                   name="password"
@@ -217,12 +226,13 @@ const UserForm = () => {
                       value={value}
                       onChangeText={onChange}
                       mode="outlined"
-                      placeholder={user?.id ? "Leave blank to keep current" : "Enter password"}
+                      placeholder={user?.id ? t('admin.userForm.keepCurrent') : t('admin.userForm.enterPassword')}
                       style={styles.input}
                       outlineColor={colors.border}
                       activeOutlineColor={colors.primary}
                       secureTextEntry
                       left={<TextInput.Icon icon="lock" color={colors.medium} />}
+                      textAlign={i18n.language === 'he' ? 'right' : 'left'}
                     />
                   )}
                 />
@@ -232,10 +242,10 @@ const UserForm = () => {
             <Divider style={styles.divider} />
 
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Role & Department</Text>
+              <Text style={styles.sectionTitle}>{t('admin.userForm.roleDepartment')}</Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Role *</Text>
+                <Text style={styles.inputLabel}>{t('admin.userForm.role')} *</Text>
                 <Controller
                   control={control}
                   name="role"
@@ -248,14 +258,12 @@ const UserForm = () => {
                           onPress={() => setMenuVisible(true)}
                           style={styles.dropdownButton}
                         >
-                          <Icon name="badge-account" size={20} color={colors.medium} style={styles.dropdownIcon} />
-                          <Text style={[styles.dropdownText, !value && styles.placeholderText]}>
-                            {value || 'Select Role'}
+                          <Text style={styles.dropdownButtonText}>
+                            {value || t('admin.userForm.selectRole')}
                           </Text>
-                          <Icon name="chevron-down" size={20} color={colors.medium} />
+                          <Icon name="chevron-down" size={24} color={colors.medium} />
                         </TouchableOpacity>
                       }
-                      contentStyle={styles.menuContent}
                     >
                       {ROLES.map((role) => (
                         <Menu.Item
@@ -265,8 +273,6 @@ const UserForm = () => {
                             setMenuVisible(false);
                           }}
                           title={role}
-                          titleStyle={styles.menuItemTitle}
-                          style={styles.menuItem}
                         />
                       ))}
                     </Menu>
@@ -275,113 +281,35 @@ const UserForm = () => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Primary Department</Text>
+                <Text style={styles.inputLabel}>{t('admin.userForm.departments')}</Text>
                 <Controller
                   control={control}
-                  name="department"
+                  name="departments"
                   render={({ field: { value, onChange } }) => (
-                    deptsLoading ? (
-                      <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color={colors.primary} />
-                      </View>
-                    ) : (
-                      <Menu
-                        visible={deptMenuVisible}
-                        onDismiss={() => setDeptMenuVisible(false)}
-                        anchor={
-                          <TouchableOpacity
-                            onPress={() => setDeptMenuVisible(true)}
-                            style={styles.dropdownButton}
-                          >
-                            <Icon name="domain" size={20} color={colors.medium} style={styles.dropdownIcon} />
-                            <Text style={[styles.dropdownText, !value && styles.placeholderText]}>
-                              {value ? getDepartmentLabel(value) : 'Select Primary Department'}
-                            </Text>
-                            <Icon name="chevron-down" size={20} color={colors.medium} />
-                          </TouchableOpacity>
-                        }
-                        contentStyle={styles.menuContent}
+                    <View style={styles.departmentsContainer}>
+                      {selectedDepartments.map((dept) => (
+                        <Chip
+                          key={dept}
+                          onClose={() => toggleDepartment(dept)}
+                          style={styles.departmentChip}
+                        >
+                          {getDepartmentLabel(dept)}
+                        </Chip>
+                      ))}
+                      <TouchableOpacity
+                        onPress={() => setMultiDeptMenuVisible(true)}
+                        style={styles.addDepartmentButton}
                       >
-                        {departments.map((dept) => (
-                          <Menu.Item
-                            key={dept.value}
-                            onPress={() => {
-                              onChange(dept.value);
-                              setDeptMenuVisible(false);
-                            }}
-                            title={dept.label}
-                            titleStyle={styles.menuItemTitle}
-                            style={styles.menuItem}
-                          />
-                        ))}
-                      </Menu>
-                    )
+                        <Icon name="plus" size={20} color={colors.primary} />
+                        <Text style={styles.addDepartmentText}>{t('admin.userForm.selectDepartment')}</Text>
+                      </TouchableOpacity>
+                    </View>
                   )}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Additional Departments</Text>
-                <View style={styles.chipContainer}>
-                  {selectedDepartments.map(deptValue => (
-                    <Chip
-                      key={deptValue}
-                      onClose={() => toggleDepartment(deptValue)}
-                      style={styles.chip}
-                      textStyle={styles.chipText}
-                      closeIconAccessibilityLabel="Remove department"
-                    >
-                      {getDepartmentLabel(deptValue)}
-                    </Chip>
-                  ))}
-                </View>
-
-                {deptsLoading ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={colors.primary} />
-                  </View>
-                ) : (
-                  <Menu
-                    visible={multiDeptMenuVisible}
-                    onDismiss={() => setMultiDeptMenuVisible(false)}
-                    anchor={
-                      <Button
-                        mode="outlined"
-                        onPress={() => setMultiDeptMenuVisible(true)}
-                        style={styles.addDeptButton}
-                        icon="plus"
-                      >
-                        Add Department
-                      </Button>
-                    }
-                    contentStyle={styles.menuContent}
-                  >
-                    {departments
-                      .filter(dept => !selectedDepartments.includes(dept.value))
-                      .map((dept) => (
-                        <Menu.Item
-                          key={dept.value}
-                          onPress={() => {
-                            toggleDepartment(dept.value);
-                            setMultiDeptMenuVisible(false);
-                          }}
-                          title={dept.label}
-                          titleStyle={styles.menuItemTitle}
-                          style={styles.menuItem}
-                        />
-                      ))}
-                  </Menu>
-                )}
-              </View>
-            </View>
-
-            <Divider style={styles.divider} />
-
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Additional Details</Text>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Position Title</Text>
+                <Text style={styles.inputLabel}>{t('admin.userForm.positionTitle')}</Text>
                 <Controller
                   control={control}
                   name="positionTitle"
@@ -390,32 +318,11 @@ const UserForm = () => {
                       value={value}
                       onChangeText={onChange}
                       mode="outlined"
-                      placeholder="Enter position title"
+                      placeholder={t('admin.userForm.enterPosition')}
                       style={styles.input}
                       outlineColor={colors.border}
                       activeOutlineColor={colors.primary}
-                      left={<TextInput.Icon icon="briefcase" color={colors.medium} />}
-                    />
-                  )}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Phone Number</Text>
-                <Controller
-                  control={control}
-                  name="mobile"
-                  render={({ field: { value, onChange } }) => (
-                    <TextInput
-                      value={value}
-                      onChangeText={onChange}
-                      mode="outlined"
-                      placeholder="Enter phone number"
-                      style={styles.input}
-                      outlineColor={colors.border}
-                      activeOutlineColor={colors.primary}
-                      keyboardType="phone-pad"
-                      left={<TextInput.Icon icon="phone" color={colors.medium} />}
+                      textAlign={i18n.language === 'he' ? 'right' : 'left'}
                     />
                   )}
                 />
@@ -431,7 +338,7 @@ const UserForm = () => {
             style={styles.cancelButton}
             labelStyle={styles.cancelButtonText}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             mode="contained"
@@ -441,7 +348,7 @@ const UserForm = () => {
             loading={isUpdating}
             disabled={isUpdating}
           >
-            {user?.id ? 'Update User' : 'Create User'}
+            {user?.id ? t('common.update') : t('common.create')}
           </Button>
         </Surface>
       </KeyboardAvoidingView>
@@ -452,51 +359,32 @@ const UserForm = () => {
 const styles = StyleSheet.create({
   safeAreaContainer: {
     flex: 1,
-    backgroundColor: colors.lightGray,
+    backgroundColor: colors.background,
+  },
+  appbarHeader: {
+    backgroundColor: colors.primary,
+  },
+  headerTitle: {
+    ...typography.h6,
+    color: colors.white,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.lightGray,
-  },
-  appbarHeader: {
-    backgroundColor: colors.white,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1.5,
-  },
-  headerTitle: {
-    ...typography.h2,
-    color: colors.dark,
   },
   contentContainer: {
     flex: 1,
     margin: 16,
-    marginBottom: 0,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: colors.white,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    borderRadius: 8,
+    elevation: 2,
   },
   scrollContent: {
     padding: 16,
   },
   formSection: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   sectionTitle: {
-    ...typography.h3,
+    ...typography.h6,
     color: colors.dark,
     marginBottom: 16,
   },
@@ -505,86 +393,47 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     ...typography.body2,
-    color: colors.medium,
-    marginBottom: 6,
+    color: colors.dark,
+    marginBottom: 8,
   },
   input: {
     backgroundColor: colors.white,
-    fontSize: 16,
+  },
+  divider: {
+    marginVertical: 16,
   },
   dropdownButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 4,
-    padding: 14,
+    padding: 12,
     backgroundColor: colors.white,
   },
-  dropdownText: {
-    flex: 1,
+  dropdownButtonText: {
     ...typography.body1,
     color: colors.dark,
   },
-  placeholderText: {
-    color: colors.medium,
-  },
-  dropdownIcon: {
-    marginRight: 10,
-  },
-  menuContent: {
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    marginTop: 8,
-    minWidth: 200,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  menuItem: {
-    height: 48,
-  },
-  menuItemTitle: {
-    ...typography.body1,
-    color: colors.dark,
-  },
-  loadingContainer: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    padding: 14,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-  },
-  chipContainer: {
+  departmentsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
+  },
+  departmentChip: {
+    marginRight: 8,
     marginBottom: 8,
   },
-  chip: {
-    margin: 4,
-    backgroundColor: colors.lightGray,
+  addDepartmentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
   },
-  chipText: {
-    ...typography.caption,
-    color: colors.dark,
-  },
-  addDeptButton: {
-    marginTop: 8,
-    borderColor: colors.border,
-  },
-  divider: {
-    marginVertical: 16,
-    backgroundColor: colors.border,
-    height: 1,
+  addDepartmentText: {
+    ...typography.body2,
+    color: colors.primary,
+    marginLeft: 4,
   },
   formActions: {
     flexDirection: 'row',

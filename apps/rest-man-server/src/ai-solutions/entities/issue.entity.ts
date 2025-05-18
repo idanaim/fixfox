@@ -41,15 +41,15 @@ export class Issue {
 
   @Column()
   status: string;
-
-  @Column({ type: 'text', nullable: true })
-  symptoms: string;
-
-  @Column({ type: 'text', nullable: true })
-  cause: string;
-
-  @Column({ type: 'text', nullable: true })
-  treatment: string;
+  //
+  // @Column({ type: 'text', nullable: true })
+  // symptoms: string;
+  //
+  // @Column({ type: 'text', nullable: true })
+  // cause: string;
+  //
+  // @Column({ type: 'text', nullable: true })
+  // treatment: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   cost: number;
@@ -57,6 +57,6 @@ export class Issue {
   @OneToMany(() => ChatSession, session => session.issue)
   chatSessions: ChatSession[];
 
-  @Column({ type: 'jsonb', nullable: true })
-  aiAnalysis: any;
+//   @Column({ type: 'jsonb', nullable: true })
+//   aiAnalysis: any;
 }

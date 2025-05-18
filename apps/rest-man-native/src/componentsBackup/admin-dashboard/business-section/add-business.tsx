@@ -11,12 +11,14 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  I18nManager,
 } from 'react-native';
 import { TextInput, Button, IconButton, Surface, Divider } from 'react-native-paper';
 import { colors, typography, styles as globalStyles } from '../admin-dashboard-styles';
 import { useCreateBusiness } from '../../../queries/react-query-wrapper/use-get-business';
 import useAuthStore from '../../../store/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,11 +32,12 @@ export function AddBusinessModal({
   setAddBusinessModalVisible,
 }: AddBusinessModalProps) {
   const { user } = useAuthStore();
-  const { mutate: createBusiness, isLoading } = useCreateBusiness();
+  const { mutate: createBusiness, isPending } = useCreateBusiness();
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [mobile, setMobile] = useState('');
+  const { t, i18n } = useTranslation();
 
   const handleAddBusiness = () => {
     if (!name || !type) return;
@@ -80,78 +83,82 @@ export function AddBusinessModal({
           <Surface style={modalStyles.contentContainer}>
             {/* Header */}
             <View style={modalStyles.header}>
-              <Text style={modalStyles.headerTitle}>Add New Business</Text>
+              <Text style={modalStyles.headerTitle}>{t('admin.businessForm.addNewBusiness')}</Text>
               <IconButton
                 icon="close"
                 size={24}
                 onPress={resetFormAndClose}
               />
             </View>
-            
+
             <Divider />
 
             {/* Form */}
-            <ScrollView 
+            <ScrollView
               style={modalStyles.scrollContainer}
               contentContainerStyle={modalStyles.formContainer}
               keyboardShouldPersistTaps="handled"
             >
               <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Business Name *</Text>
+                <Text style={modalStyles.inputLabel}>{t('admin.businessForm.businessName')} *</Text>
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
-                  placeholder="Enter business name"
+                  placeholder={t('admin.businessForm.enterBusinessName')}
                   style={modalStyles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="domain" color={colors.medium} />}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
                 />
               </View>
 
               <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Business Type *</Text>
+                <Text style={modalStyles.inputLabel}>{t('admin.businessForm.businessType')} *</Text>
                 <TextInput
                   value={type}
                   onChangeText={setType}
                   mode="outlined"
-                  placeholder="Restaurant, Cafe, etc."
+                  placeholder={t('admin.businessForm.enterType')}
                   style={modalStyles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="store" color={colors.medium} />}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
                 />
               </View>
 
               <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Address</Text>
+                <Text style={modalStyles.inputLabel}>{t('admin.businessForm.address')}</Text>
                 <TextInput
                   value={address}
                   onChangeText={setAddress}
                   mode="outlined"
-                  placeholder="Business address"
+                  placeholder={t('admin.businessForm.enterAddress')}
                   style={modalStyles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="map-marker" color={colors.medium} />}
                   multiline
                   numberOfLines={2}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
                 />
               </View>
 
               <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Phone Number</Text>
+                <Text style={modalStyles.inputLabel}>{t('admin.businessForm.phoneNumber')}</Text>
                 <TextInput
                   value={mobile}
                   onChangeText={setMobile}
                   mode="outlined"
-                  placeholder="Contact phone"
+                  placeholder={t('admin.businessForm.enterPhone')}
                   style={modalStyles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="phone" color={colors.medium} />}
                   keyboardType="phone-pad"
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
                 />
               </View>
             </ScrollView>
@@ -165,7 +172,7 @@ export function AddBusinessModal({
                 style={modalStyles.cancelButton}
                 labelStyle={{ color: colors.dark }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 mode="contained"
@@ -177,7 +184,7 @@ export function AddBusinessModal({
                 loading={isLoading}
                 disabled={!isFormValid || isLoading}
               >
-                {isLoading ? 'Creating...' : 'Create Business'}
+                {isLoading ? t('admin.businessForm.creating') : t('admin.businessForm.createBusiness')}
               </Button>
             </View>
           </Surface>

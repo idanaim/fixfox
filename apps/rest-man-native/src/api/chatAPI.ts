@@ -1,5 +1,6 @@
 import { api } from './api';
 import { User } from '../interfaces/business';
+import i18n from 'i18next';
 
 export interface ChatSession {
   id: number;
@@ -91,14 +92,23 @@ export interface DescriptionEnhancementResult {
   potentialEquipmentTypes?: string[];
 }
 
+// Helper function to get current language
+const getCurrentLanguage = () => {
+  return i18n.language || 'en';
+};
+
 export const chatApi = {
   createSession: async (
     businessId: number,
     userId: number
   ): Promise<ChatSession> => {
     try {
-
-      const response = await api.post('/chat/sessions', { businessId, userId });
+      const language = getCurrentLanguage();
+      const response = await api.post('/chat/sessions', { 
+        businessId, 
+        userId,
+        language 
+      });
       return response.data;
     } catch (error) {
       console.error('Error creating chat session:', error);
@@ -113,10 +123,15 @@ export const chatApi = {
     metadata?: any
   ): Promise<ChatMessage> => {
     try {
+      const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/messages`, {
         content,
         type,
-        metadata,
+        language,
+        metadata: {
+          ...metadata,
+          language
+        },
       });
       return response.data;
     } catch (error) {
@@ -158,11 +173,13 @@ export const chatApi = {
     description: string
   ): Promise<Equipment[]> => {
     try {
+      const language = getCurrentLanguage();
       const response = await api.post(
         `/chat/sessions/${sessionId}/equipment-search`,
         {
           businessId,
           description,
+          language
         }
       );
       return response.data;
@@ -179,10 +196,12 @@ export const chatApi = {
     solution?: Partial<Solution>,
   ): Promise<any> => {
     try {
+      const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/issues`, {
         equipmentId,
         problem,
-        solution
+        solution,
+        language
       });
       return response.data;
     } catch (error) {
@@ -278,31 +297,17 @@ export const chatApi = {
     description: string,
     equipmentId: number,
     businessId: number,
-    sessionId?: number
-  ): Promise<{
-    type: 'existing_solutions' | 'ai_diagnosis';
-    problems?: Problem[];
-    diagnosis?: Diagnosis;
-  }> => {
+    sessionId: number
+  ): Promise<any> => {
     try {
-      // If a sessionId is provided, use the chat flow endpoint
-      if (sessionId) {
-        const response = await api.post(`/chat/sessions/${sessionId}/diagnose`, {
-          description,
-          equipmentId,
-          businessId,
-        });
-        return response.data;
-      }
-      // Otherwise fall back to the direct problem endpoint (which is now deprecated)
-      else {
-        const response = await api.post('/problems/diagnose', {
-          description,
-          equipmentId,
-          businessId,
-        });
-        return response.data;
-      }
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/diagnose`, {
+        description,
+        equipmentId,
+        businessId,
+        language
+      });
+      return response.data;
     } catch (error) {
       console.error('Error diagnosing problem:', error);
       throw error;
@@ -615,9 +620,11 @@ export const chatApi = {
     equipment?: Equipment
   ): Promise<{ originalDescription: string; enhancedDescription: string }> => {
     try {
+      const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/enhance-description`, {
         description,
-        equipment
+        equipment,
+        language
       });
       return response.data;
     } catch (error) {

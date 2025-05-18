@@ -1,8 +1,10 @@
 // components/ChatInput.tsx
-import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet, Platform, I18nManager } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors, typography } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { useLanguageDetection } from '../../../hooks/useLanguageDetection';
 
 interface ChatInputProps {
   inputValue: string;
@@ -12,16 +14,27 @@ interface ChatInputProps {
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ inputValue, onChange, onSend, loading }) => {
+  const { t } = useTranslation();
+  // Use language detection hook to auto-switch language based on input
+  const { isHebrew } = useLanguageDetection({
+    text: inputValue,
+    autoSwitch: true,
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { textAlign: isHebrew ? 'right' : 'left' }
+          ]}
           value={inputValue}
           onChangeText={onChange}
-          placeholder="Type your message..."
+          placeholder={t('chat.type_message')}
           placeholderTextColor={colors.medium}
           multiline
+          textAlign={isHebrew ? 'right' : 'left'}
         />
         <TouchableOpacity
           style={[styles.sendButton, !inputValue.trim() && styles.sendButtonDisabled]}

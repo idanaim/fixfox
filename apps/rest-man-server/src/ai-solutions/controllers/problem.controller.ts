@@ -113,22 +113,22 @@ export class ProblemController {
    * Enhance a problem description using AI - direct API access
    * @deprecated Use the chat flow instead via /chat/sessions/:sessionId/enhance-description
    */
-  @Post('enhance-description')
-  async enhanceDescription(
-    @Body() data: {
-      description: string;
-      equipmentId: number;
-    }
-  ): Promise<{ originalDescription: string; enhancedDescription: string }> {
-
-    const enhancedDescription = await this.problemService.enhanceProblemDescription(
-      data.description,
-      data.equipmentId
-    );
-
-    return {
-      originalDescription: data.description,
-      enhancedDescription
-    };
-  }
+  // @Post('enhance-description')
+  // async enhanceDescription(
+  //   @Body() data: {
+  //     description: string;
+  //     equipmentId: number;
+  //   }
+  // ): Promise<{ originalDescription: string; enhancedDescription: string }> {
+  //
+  //   const enhancedDescription = await this.problemService.enhanceProblemDescription(
+  //     data.description,
+  //     data.equipmentId
+  //   );
+  //
+  //   return {
+  //     originalDescription: data.description,
+  //     enhancedDescription
+  //   };
+  // }
 }

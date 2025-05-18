@@ -2,10 +2,12 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
 import { useBusiness } from '../hooks/useBusiness';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -14,6 +16,7 @@ export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { user } = useAuth();
   const { currentBusiness } = useBusiness();
+  const { t } = useTranslation();
 
   const handleSolvePress = () => {
     if (!user || !currentBusiness) return;
@@ -26,6 +29,9 @@ export const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.languageSwitcherContainer}>
+        <LanguageSwitcher />
+      </View>
       <Button
         mode="contained"
         onPress={handleSolvePress}
@@ -33,7 +39,7 @@ export const HomeScreen = () => {
         icon="wrench"
         disabled={!user || !currentBusiness}
       >
-        Solve Equipment Issue
+        {t('common.solve_equipment_issue')}
       </Button>
     </View>
   );
@@ -47,5 +53,9 @@ const styles = StyleSheet.create({
   },
   solveButton: {
     marginTop: 16,
+  },
+  languageSwitcherContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 16,
   },
 });  

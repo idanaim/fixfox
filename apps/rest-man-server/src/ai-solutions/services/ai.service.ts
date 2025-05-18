@@ -1,9 +1,10 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import axios from 'axios';
 import { Equipment } from '../entities/equipment.entity';
 import { Problem } from '../entities/problem.entity';
+import { Issue } from '../entities/issue.entity';
 
 // Interface for problem analysis results
 interface AnalysisResult {
@@ -34,10 +35,10 @@ export class AIService {
 
   constructor(private configService: ConfigService) {
     // Use environment variable in production
-    this.apiKey = this.configService.get<string>('OPENAI_API_KEY')
+    this.apiKey = this.configService.get<string>('OPENAI_API_KEY');
     // Initialize OpenAI client
     this.openai = new OpenAI({
-      apiKey: this.apiKey
+      apiKey: this.apiKey,
     });
   }
 
@@ -89,21 +90,21 @@ export class AIService {
           - Installation Problem
           - Environmental Factors
 
-          Return ONLY category names as a comma-separated list, no explanations.`
+          Return ONLY category names as a comma-separated list, no explanations.`,
             },
             {
               role: 'user',
-              content: prompt
-            }
+              content: prompt,
+            },
           ],
           temperature: 0.7,
           max_tokens: 1000,
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -153,13 +154,17 @@ export class AIService {
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3, // Lower temperature for more deterministic results
-        max_tokens: 50,   // We only need a short response
+        max_tokens: 50, // We only need a short response
       });
 
       const equipmentType = response.choices[0]?.message?.content?.trim() || '';
 
       // Clean up the response by removing any punctuation or extra text
-      return equipmentType.replace(/[.,;:"'!?()]/g, '').split(/\s+/).slice(0, 2).join(' ');
+      return equipmentType
+        .replace(/[.,;:"'!?()]/g, '')
+        .split(/\s+/)
+        .slice(0, 2)
+        .join(' ');
     } catch (error) {
       this.logger.error('Error identifying equipment type:', error);
       // Return empty string instead of throwing, so the search can still work with original text
@@ -172,7 +177,8 @@ export class AIService {
    */
   async enhanceProblemDescription(
     userDescription: string,
-    equipment?: Equipment,
+    language = 'en',
+    equipment?: Equipment
   ): Promise<string> {
     try {
       let equipmentContext = '';
@@ -180,30 +186,56 @@ export class AIService {
         equipmentContext = this.getEquipmentContext(equipment);
       }
 
-      const prompt = `
-        I need you to enhance and enrich the following problem description.
-        Make it more technically precise and comprehensive while keeping the original meaning and not more than 150 chars.
+      const systemPrompt =
+        language === 'he'
+          ? 'אתה מומחה טכני שמשפר תיאורי בעיות בציוד. תן תיאור מפורט יותר של הבעיה, כולל תסמינים, דפוסים, ומונחים טכניים רלוונטיים.'
+          : 'You are a technical expert improving equipment problem descriptions. Provide a more detailed description of the problem, including symptoms, patterns, and relevant technical terminology.';
 
-        ORIGINAL DESCRIPTION:
-        "${userDescription}"
+      const prompt =
+        language === 'he'
+          ? `אני צריך לשפר ולהעשיר את תיאור הבעיה הבא.
+הפוך אותו לטכני ומקיף יותר תוך שמירה על המשמעות המקורית ולא יותר מ-150 תווים.
 
-        ${equipmentContext}
+תיאור מקורי:
+"${userDescription}"
 
-        Enhancement Guidelines:
-        1. Identify the specific symptoms and their frequency/severity
-        2. Include any observable patterns (when does it happen, what makes it better/worse)
-        3. Add relevant technical terminology appropriate for this equipment
-        4. Structure it clearly with proper formatting
-        5. Keep it concise but comprehensive
-        6. Maintain all facts from the original description
-        7. Do NOT invent new symptoms that weren't mentioned
+${equipmentContext}
 
-        ENHANCED DESCRIPTION:
-      `;
+הנחיות לשיפור:
+1. זהה את התסמינים הספציפיים ותדירות/חומרתם
+2. כלול דפוסים נצפים (מתי זה קורה, מה משפר/מחמיר)
+3. הוסף מונחים טכניים רלוונטיים לציוד זה
+4. מבנה בצורה ברורה עם פורמט מתאים
+5. שמור על תמציתיות אך מקיפות
+6. שמור על כל העובדות מהתיאור המקורי
+7. אל תמציא תסמינים חדשים שלא הוזכרו
+
+תיאור משופר:`
+          : `I need you to enhance and enrich the following problem description.
+Make it more technically precise and comprehensive while keeping the original meaning and not more than 150 chars.
+
+ORIGINAL DESCRIPTION:
+"${userDescription}"
+
+${equipmentContext}
+
+Enhancement Guidelines:
+1. Identify the specific symptoms and their frequency/severity
+2. Include any observable patterns (when does it happen, what makes it better/worse)
+3. Add relevant technical terminology appropriate for this equipment
+4. Structure it clearly with proper formatting
+5. Keep it concise but comprehensive
+6. Maintain all facts from the original description
+7. Do NOT invent new symptoms that weren't mentioned
+
+ENHANCED DESCRIPTION:`;
 
       const response = await this.openai.chat.completions.create({
         model: this.model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt },
+        ],
         temperature: 0.7,
         max_tokens: 350,
       });
@@ -218,15 +250,18 @@ export class AIService {
   /**
    * Finds similar problems using AI
    */
-  async findSimilarProblems(description: string, problems: Problem[]): Promise<Problem[]> {
+  async findSimilarProblems(
+    description: string,
+    problems: Problem[]
+  ): Promise<Problem[]> {
     if (!problems || problems.length === 0) {
       return [];
     }
 
     // Format problems for the prompt
-    const problemsText = problems.map(
-      (p, index) => `${index + 1}. ${p.description}`
-    ).join('\n');
+    const problemsText = problems
+      .map((p, index) => `${index + 1}. ${p.description}`)
+      .join('\n');
 
     const prompt = `
       I have a list of equipment problems, and I need to find which ones are most similar to a new problem.
@@ -245,7 +280,7 @@ export class AIService {
       const response = await this.openai.chat.completions.create({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
@@ -257,9 +292,7 @@ export class AIService {
       const similarIndices = JSON.parse(content).similar_problems || [];
 
       // Convert 1-based indices to 0-based and filter out any out-of-range indices
-      return similarIndices
-        .map(index => problems[index - 1])
-        .filter(Boolean);
+      return similarIndices.map((index) => problems[index - 1]).filter(Boolean);
     } catch (error) {
       this.logger.error('Error finding similar problems with GPT:', error);
       return [];
@@ -271,33 +304,48 @@ export class AIService {
    */
   async analyzeProblem(
     description: string,
-    equipmentDetails: any,
-    previousIssues?: any[]
+    equipment: Equipment,
+    previousIssues: Issue[],
+    language = 'en'
   ): Promise<AnalysisResult> {
-    const prompt = this.buildAnalysisPrompt(description, equipmentDetails, previousIssues);
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמנתח בעיות בציוד. תן ניתוח מפורט של הבעיה, כולל סיבות אפשריות, חומרה, והאם נדרש טכנאי.'
+        : 'You are a technical expert analyzing equipment problems. Provide a detailed analysis of the problem, including possible causes, severity, and whether a technician is needed.';
 
-    try {
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert equipment maintenance AI assistant. Analyze the problem and provide detailed solutions.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      });
+    const previousIssuesContext = previousIssues
+      .map(
+        (issue) =>
+          `Previous Issue: ${issue.problem.description}\nSolution: ${
+            issue.solution?.treatment || 'No solution recorded'
+          }`
+      )
+      .join('\n\n');
 
-      return this.parseAnalysisResponse(response.choices[0].message.content);
-    } catch (error) {
-      this.logger.error('Error analyzing problem:', error);
-      throw new Error('Failed to analyze problem');
-    }
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+תיאור הבעיה: ${description}
+
+${previousIssuesContext ? `בעיות קודמות:\n${previousIssuesContext}\n\n` : ''}
+אנא נתח את הבעיה ותן המלצות.`
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
+Problem Description: ${description}
+
+${previousIssuesContext ? `Previous Issues:\n${previousIssuesContext}\n\n` : ''}
+Please analyze the problem and provide recommendations.`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+    });
+
+    const response = completion.choices[0].message.content;
+    return this.parseAnalysisResponse(response, language);
   }
 
   /**
@@ -305,39 +353,75 @@ export class AIService {
    */
   async generateDiagnosis(
     description: string,
-    equipment: { type: string; manufacturer: string; model: string }
+    equipment: { type: string; manufacturer: string; model: string },
+    language = 'en'
   ): Promise<Diagnosis> {
-    const prompt = `
-      I need to diagnose a problem with the following equipment.
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמאבחן בעיות בציוד. תן ניתוח מפורט של הבעיה, כולל סיבות אפשריות, פתרונות מוצעים, עלות משוערת, חלקים נדרשים, ורמת ביטחון באבחון.'
+        : 'You are a technical expert diagnosing equipment problems. Provide a detailed analysis of the problem, including possible causes, suggested solutions, estimated cost, parts needed, and diagnosis confidence level.';
 
-      EQUIPMENT DETAILS:
-      Type: ${equipment.type}
-      Manufacturer: ${equipment.manufacturer}
-      Model: ${equipment.model}
+    const prompt =
+      language === 'he'
+        ? `אני צריך לאבחן בעיה עם הציוד הבא.
 
-      PROBLEM DESCRIPTION:
-      ${description}
+פרטי הציוד:
+סוג: ${equipment.type}
+יצרן: ${equipment.manufacturer}
+דגם: ${equipment.model}
 
-      Please analyze this problem and provide:
-      1. Possible causes (in order of likelihood)
-      2. Suggested solutions for each cause
-      3. Estimated cost range for repairs
-      4. Parts that might need replacement
-      5. Confidence level in this diagnosis (0-100%)
+תיאור הבעיה:
+${description}
 
-      Format your response as a JSON object with these keys:
-      possibleCauses: string[]
-      suggestedSolutions: string[]
-      estimatedCost: string
-      partsNeeded: string[]
-      diagnosisConfidence: number (0-100)
-    `;
+אנא נתח את הבעיה ותן:
+1. סיבות אפשריות (לפי סדר הסבירות)
+2. פתרונות מוצעים לכל סיבה
+3. טווח עלות משוער לתיקונים
+4. חלקים שעלולים להזדקק להחלפה
+5. רמת ביטחון באבחון זה (0-100%)
+
+פורמט התשובה כ-JSON:
+{
+  "possibleCauses": string[],
+  "suggestedSolutions": string[],
+  "estimatedCost": string,
+  "partsNeeded": string[],
+  "diagnosisConfidence": number (0-100)
+}`
+        : `I need to diagnose a problem with the following equipment.
+
+EQUIPMENT DETAILS:
+Type: ${equipment.type}
+Manufacturer: ${equipment.manufacturer}
+Model: ${equipment.model}
+
+PROBLEM DESCRIPTION:
+${description}
+
+Please analyze this problem and provide:
+1. Possible causes (in order of likelihood)
+2. Suggested solutions for each cause
+3. Estimated cost range for repairs
+4. Parts that might need replacement
+5. Confidence level in this diagnosis (0-100%)
+
+Format your response as a JSON object with these keys:
+{
+  "possibleCauses": string[],
+  "suggestedSolutions": string[],
+  "estimatedCost": string,
+  "partsNeeded": string[],
+  "diagnosisConfidence": number (0-100)
+}`;
 
     try {
       const response = await this.openai.chat.completions.create({
         model: this.model,
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt },
+        ],
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
@@ -350,11 +434,19 @@ export class AIService {
     } catch (error) {
       this.logger.error('Error generating diagnosis with GPT:', error);
       return {
-        possibleCauses: ['Could not determine causes due to processing error'],
-        suggestedSolutions: ['Contact a technician for in-person diagnosis'],
-        estimatedCost: 'Unknown',
+        possibleCauses: [
+          language === 'he'
+            ? 'לא ניתן לקבוע סיבות עקב שגיאת עיבוד'
+            : 'Could not determine causes due to processing error',
+        ],
+        suggestedSolutions: [
+          language === 'he'
+            ? 'צור קשר עם טכנאי לאבחון אישי'
+            : 'Contact a technician for in-person diagnosis',
+        ],
+        estimatedCost: language === 'he' ? 'לא ידוע' : 'Unknown',
         partsNeeded: [],
-        diagnosisConfidence: 0
+        diagnosisConfidence: 0,
       };
     }
   }
@@ -366,7 +458,10 @@ export class AIService {
     equipment: Equipment,
     problemDescription: string
   ) {
-    const prompt = this.buildTroubleshootingPrompt(equipment, problemDescription);
+    const prompt = this.buildTroubleshootingPrompt(
+      equipment,
+      problemDescription
+    );
 
     try {
       const response = await axios.post(
@@ -379,9 +474,9 @@ export class AIService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -396,68 +491,40 @@ export class AIService {
    * Generates a solution for a problem
    */
   async generateSolution(
-    problem: string,
-    analysis?: AnalysisResult,
-    equipmentDetails?: any
+    description: string,
+    analysis: any,
+    equipment: Equipment,
+    language = 'en'
   ): Promise<string[] | string> {
-    if (analysis && equipmentDetails) {
-      // If we have analysis and equipment details, generate detailed solution
-      const prompt = this.buildSolutionPrompt(problem, analysis, equipmentDetails);
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמספק פתרונות מפורטים לבעיות בציוד. תן פתרונות צעד אחר צעד.'
+        : 'You are a technical expert providing detailed solutions for equipment problems. Provide step-by-step solutions.';
 
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert equipment maintenance AI assistant. Provide step-by-step solutions.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      });
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+תיאור הבעיה: ${description}
+ניתוח: ${analysis.summary}
 
-      return this.parseSolutionResponse(response.choices[0].message.content);
-    } else {
-      // Simple solution generation with just the problem description
-      try {
-        const response = await axios.post(
-          this.apiUrl,
-          {
-            model: 'gpt-3.5-turbo', // Use a faster model for simple solutions
-            messages: [
-              {
-                role: 'system',
-                content: 'You are a helpful assistant that provides solutions to problems.',
-              },
-              {
-                role: 'user',
-                content: problem,
-              },
-            ],
-            max_tokens: 500,
-            temperature: 0.7,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${this.apiKey}`,
-            },
-          },
-        );
+אנא ספק פתרונות מפורטים צעד אחר צעד.`
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
+Problem Description: ${description}
+Analysis: ${analysis.summary}
 
-        return response.data.choices[0].message.content.trim();
-      } catch (error) {
-        this.logger.error('OpenAI API Error:', error.response?.data || error.message);
-        throw new HttpException(
-          'Failed to generate solution using OpenAI',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
+Please provide detailed step-by-step solutions.`;
+
+    const completion = await this.openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+    });
+
+    const response = completion.choices[0].message.content;
+    return this.parseSolutionResponse(response);
   }
 
   /**
@@ -465,16 +532,18 @@ export class AIService {
    */
   async findSimilarIssues(
     description: string,
-    issueDescriptions: { id: number, description: string, symptoms: string }[],
+    issueDescriptions: { id: number; description: string }[],
     limit = 5
   ): Promise<number[]> {
     if (!issueDescriptions || issueDescriptions.length === 0) {
       return [];
     }
     // Format issues for the prompt
-    const issuesText = issueDescriptions.map(
-      (issue, index) => `${index + 1}. ID ${issue.id}: ${issue.description} ${issue.symptoms}`
-    ).join('\n');
+    const issuesText = issueDescriptions
+      .map(
+        (issue, index) => `${index + 1}. ID ${issue.id}: ${issue.description} `
+      )
+      .join('\n');
 
     const prompt = `
       I have a list of equipment issues, and I need to find which ones are most similar to a new issue.
@@ -494,7 +563,7 @@ export class AIService {
       const response = await this.openai.chat.completions.create({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
@@ -504,8 +573,11 @@ export class AIService {
 
       // Parse the response to get the IDs
       const result = JSON.parse(content);
-      const similarIssueIds = Array.isArray(result.similar_issues) ? result.similar_issues :
-                            (Array.isArray(result.similar_issues) ? result.similar_issues : []);
+      const similarIssueIds = Array.isArray(result.similar_issues)
+        ? result.similar_issues
+        : Array.isArray(result.similar_issues)
+        ? result.similar_issues
+        : [];
 
       // Return the IDs, limited to the requested number
       return similarIssueIds.slice(0, limit);
@@ -523,8 +595,8 @@ export class AIService {
     // Clean and split the response
     return categoriesText
       .split(',')
-      .map(cat => cat.trim().replace(/\.$/, '')) // Remove trailing periods
-      .filter(cat => cat.length > 0 && cat !== 'Uncategorized');
+      .map((cat) => cat.trim().replace(/\.$/, '')) // Remove trailing periods
+      .filter((cat) => cat.length > 0 && cat !== 'Uncategorized');
   }
 
   private getEquipmentContext(equipment: Equipment): string {
@@ -533,15 +605,26 @@ export class AIService {
       `- Manufacturer: ${equipment.manufacturer}`,
       `- Model: ${equipment.model}`,
       equipment.location && `- Location: ${equipment.location}`,
-      equipment.purchaseDate && `- Purchase Date: ${new Date(equipment.purchaseDate).toISOString().split('T')[0]}`,
-      equipment.warrantyExpiration && `- Warranty Status: ${new Date(equipment.warrantyExpiration) >= new Date() ? 'Active' : 'Expired'}`,
+      equipment.purchaseDate &&
+        `- Purchase Date: ${
+          new Date(equipment.purchaseDate).toISOString().split('T')[0]
+        }`,
+      equipment.warrantyExpiration &&
+        `- Warranty Status: ${
+          new Date(equipment.warrantyExpiration) >= new Date()
+            ? 'Active'
+            : 'Expired'
+        }`,
       equipment.supplier && `- Supplier: ${equipment.supplier}`,
     ].filter(Boolean); // Remove empty lines
 
     return `Equipment Details:\n${contextLines.join('\n')}`;
   }
 
-  private buildTroubleshootingPrompt(equipment: Equipment, problem: string): string {
+  private buildTroubleshootingPrompt(
+    equipment: Equipment,
+    problem: string
+  ): string {
     return `Act as a professional ${equipment.type} technician with expertise in ${equipment.manufacturer} equipment.
 
 Problem Description: "${problem}"
@@ -572,89 +655,50 @@ Format response as JSON:
 }`;
   }
 
-  private buildAnalysisPrompt(
-    description: string,
-    equipmentDetails: any,
-    previousIssues?: any[]
-  ): string {
-    let prompt = `Analyze the following equipment problem:\n\n`;
-    prompt += `Equipment Details:\n`;
-    prompt += `- Type: ${equipmentDetails.type}\n`;
-    prompt += `- Manufacturer: ${equipmentDetails.manufacturer}\n`;
-    prompt += `- Model: ${equipmentDetails.model}\n\n`;
-    prompt += `Problem Description:\n${description}\n\n`;
-
-    if (previousIssues?.length) {
-      prompt += `Previous Issues:\n`;
-      previousIssues.forEach((issue, index) => {
-        prompt += `${index + 1}. ${issue.symptoms} - ${issue.solution}\n`;
-      });
-    }
-
-    prompt += `\nPlease provide:\n`;
-    prompt += `1. Possible causes\n`;
-    prompt += `2. Suggested solutions\n`;
-    prompt += `3. Whether a technician is required\n`;
-    prompt += `4. Problem severity (low/medium/high)\n`;
-    prompt += `5. Estimated repair cost (if possible)\n`;
-    prompt += `6. Estimated repair time\n`;
-
-    return prompt;
-  }
-
-  private buildSolutionPrompt(
-    problem: string,
-    analysis: AnalysisResult,
-    equipmentDetails: any
-  ): string {
-    let prompt = `Generate detailed step-by-step solutions for the following problem:\n\n`;
-    prompt += `Equipment: ${equipmentDetails.manufacturer} ${equipmentDetails.model}\n`;
-    prompt += `Problem: ${problem}\n\n`;
-    prompt += `Analysis:\n`;
-    prompt += `- Causes: ${analysis.possibleCauses.join(', ')}\n`;
-    prompt += `- Severity: ${analysis.severity}\n`;
-    prompt += `- Requires Technician: ${analysis.requiresTechnician}\n\n`;
-    prompt += `Please provide detailed steps to resolve the issue, including:\n`;
-    prompt += `1. Safety precautions\n`;
-    prompt += `2. Required tools\n`;
-    prompt += `3. Step-by-step instructions\n`;
-    prompt += `4. Testing procedures\n`;
-    prompt += `5. Prevention tips\n`;
-
-    return prompt;
-  }
-
-  private parseAnalysisResponse(response: string): AnalysisResult {
-    // This is a simple parser. In production, you'd want more robust parsing
-    const sections = response.split('\n\n');
+  private parseAnalysisResponse(
+    response: string,
+    language = 'en'
+  ): AnalysisResult {
+    // Parse the AI response into a structured format
+    const lines = response.split('\n');
+    const summary = lines[0];
+    const recommendation = lines.slice(1).join('\n');
 
     return {
-      possibleCauses: this.extractList(sections.find(s => s.includes('Possible causes')) || ''),
-      suggestedSolutions: this.extractList(sections.find(s => s.includes('Suggested solutions')) || ''),
-      requiresTechnician: response.toLowerCase().includes('technician required') ||
-                         response.toLowerCase().includes('needs technician'),
-      severity: this.extractSeverity(response),
-      estimatedCost: this.extractCost(response),
-      estimatedTime: this.extractTime(response)
+      possibleCauses: this.extractList(summary),
+      suggestedSolutions: this.extractList(recommendation),
+      requiresTechnician: summary
+        .toLowerCase()
+        .includes(language === 'he' ? 'טכנאי' : 'technician'),
+      severity: this.extractSeverity(summary),
+      estimatedCost: this.extractCost(summary),
+      estimatedTime: this.extractTime(summary),
     };
   }
 
   private parseSolutionResponse(response: string): string[] {
-    return response.split('\n')
-      .filter(line => line.trim().length > 0)
-      .map(line => line.replace(/^\d+\.\s*/, '').trim());
+    // Split the response into individual solution steps
+    return response
+      .split('\n')
+      .filter((line) => line.trim().length > 0)
+      .map((line) => line.replace(/^\d+\.\s*/, '').trim());
   }
 
   private extractList(text: string): string[] {
-    return text.split('\n')
-      .filter(line => line.trim().startsWith('-') || line.trim().match(/^\d+\./))
-      .map(line => line.replace(/^[-\d.]\s*/, '').trim());
+    return text
+      .split('\n')
+      .filter(
+        (line) => line.trim().startsWith('-') || line.trim().match(/^\d+\./)
+      )
+      .map((line) => line.replace(/^[-\d.]\s*/, '').trim());
   }
 
   private extractSeverity(text: string): 'low' | 'medium' | 'high' {
     const lower = text.toLowerCase();
-    if (lower.includes('high severity') || lower.includes('severe')) return 'high';
-    if (lower.includes('medium severity') || lower.includes('moderate')) return 'medium';
+    if (lower.includes('high severity') || lower.includes('severe'))
+      return 'high';
+    if (lower.includes('medium severity') || lower.includes('moderate'))
+      return 'medium';
     return 'low';
   }
 

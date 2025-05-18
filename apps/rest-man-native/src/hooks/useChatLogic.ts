@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useChatStore } from '../store/chat.store';
 import { chatApi, ChatSession, DescriptionEnhancementResult, Equipment, Problem } from '../api/chatAPI';
+import { useTranslation } from 'react-i18next';
 
 interface UseChatLogicProps {
   sessionId: number | null;
@@ -45,6 +46,9 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     setAwaitingDescriptionApproval,
   } = useChatStore();
 
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'he';
+
   // Initialize chat session
   useEffect(() => {
     const initializeSession = async () => {
@@ -57,7 +61,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
         setSessionId(session.id);
         const systemMsg = await chatApi.addMessage(
           session.id,
-          'What can I help with?',
+          t('chat.session_started'),
           'system'
         );
         setMessages([systemMsg]);
@@ -84,7 +88,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       if (equipmentList && equipmentList.length > 0) {
         const sysMsg = await chatApi.addMessage(
           sessionId,
-          `Found ${equipmentList.length} matching appliance(s). Please select one:`,
+          t('equipment.found_matching', { count: equipmentList.length }),
           'system'
         );
         addMessage(sysMsg);
@@ -92,7 +96,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       } else {
         const sysMsg = await chatApi.addMessage(
           sessionId,
-          "We couldn't find a matching appliance. Please provide more details below.",
+          t('equipment.no_matching'),
           'system'
         );
         addMessage(sysMsg);
@@ -110,7 +114,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     try {
       const sysMsg = await chatApi.addMessage(
         sessionId,
-        'Diagnosing the problem...',
+        t('chat.diagnosing'),
         'system'
       );
       addMessage(sysMsg);
@@ -126,8 +130,8 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
       if (diagnosisData.type === 'existing_solutions') {
         const summary = diagnosisData.problems && diagnosisData.problems.length > 0
-          ? `Found ${diagnosisData.problems.length} similar problem(s).`
-          : 'No similar problems found.';
+          ? t('chat.found_similar_problems', { count: diagnosisData.problems.length })
+          : t('chat.no_similar_problems');
         const diagSysMsg = await chatApi.addMessage(sessionId, summary, 'system');
         addMessage(diagSysMsg);
       }
@@ -146,7 +150,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     try {
       const approvedMsg = await chatApi.addMessage(
         sessionId,
-        `Using enhanced description: "${approvedDescription}"`,
+        t('chat.using_enhanced_description', { description: approvedDescription }),
         'system'
       );
       addMessage(approvedMsg);
@@ -168,7 +172,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     try {
       const rejectMsg = await chatApi.addMessage(
         sessionId,
-        'Using original description for diagnosis.',
+        t('chat.using_original_description'),
         'system'
       );
       addMessage(rejectMsg);
@@ -201,7 +205,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       } else {
         const followUpMsg = await chatApi.addMessage(
           sessionId,
-          "Thank you for the additional information. Is there anything else you'd like to add?",
+          t('chat.additional_info_prompt'),
           'system'
         );
         addMessage(followUpMsg);
