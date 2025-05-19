@@ -4,6 +4,7 @@ import { Surface } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { styles } from '../admin-dashboard-styles';
 import { useAccountSummary } from '../../../queries/react-query-wrapper/use-account-summary';
+import { useTranslation } from 'react-i18next';
 
 interface AccountSectionProps {
   accountId?: string;
@@ -13,7 +14,7 @@ interface AccountSectionProps {
     businesses: number;
     openTickets: number;
     resolvedToday: number;
-  };
+  }
 }
 
 export const AccountSection: React.FC<AccountSectionProps> = ({
@@ -25,6 +26,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     resolvedToday: 0
   }
 }) => {
+  const { t } = useTranslation();
   // Fetch account summary from the API
   const { data, isLoading, isError } = useAccountSummary(accountId);
 
@@ -51,7 +53,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
               </View>
               <View>
                 <Text style={styles.summaryValue}>{stats.activeUsers}</Text>
-                <Text style={styles.summaryLabel}>Active Users</Text>
+                <Text style={styles.summaryLabel}>{t('admin.dashboard.activeUsers')}</Text>
               </View>
             </View>
 
@@ -61,7 +63,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
               </View>
               <View>
                 <Text style={styles.summaryValue}>{stats.businesses}</Text>
-                <Text style={styles.summaryLabel}>Businesses</Text>
+                <Text style={styles.summaryLabel}>{t('admin.dashboard.businesses')}</Text>
               </View>
             </View>
           </View>
@@ -73,7 +75,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
               </View>
               <View>
                 <Text style={styles.summaryValue}>{stats.openTickets}</Text>
-                <Text style={styles.summaryLabel}>Open Tickets</Text>
+                <Text style={styles.summaryLabel}>{t('admin.dashboard.openTickets')}</Text>
               </View>
             </View>
 
@@ -83,7 +85,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
               </View>
               <View>
                 <Text style={styles.summaryValue}>{stats.resolvedToday}</Text>
-                <Text style={styles.summaryLabel}>Resolved Today</Text>
+                <Text style={styles.summaryLabel}>{t('admin.dashboard.resolvedToday')}</Text>
               </View>
             </View>
           </View>

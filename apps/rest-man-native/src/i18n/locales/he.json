@@ -1,10 +1,10 @@
 {
   "common": {
-    "solve_equipment_issue": "פתרון בעיות ציוד",
+    "solve_equipment_issue": "פתור בעיית ציוד",
     "maintenance_assistant": "עוזר תחזוקה",
-    "solutions_your_business": "פתרונות שנמצאים בשימוש בעסק שלך:",
-    "solutions_other_businesses": "פתרונות שנמצאים בשימוש בעסקים אחרים:",
-    "ai_generated_solutions": "פתרונות מבוססי בינה מלאכותית:",
+    "solutions_your_business": "פתרונות בשימוש בעסק שלך:",
+    "solutions_other_businesses": "פתרונות בשימוש בעסקים אחרים:",
+    "ai_generated_solutions": "פתרונות שנוצרו על ידי בינה מלאכותית:",
     "submit": "שלח",
     "cancel": "ביטול",
     "send": "שלח",
@@ -14,10 +14,10 @@
     "request_more_info": "בקש מידע נוסף",
     "next": "הבא",
     "login": "התחברות",
-    "email": "אימייל",
+    "email": "דואר אלקטרוני",
     "password": "סיסמה",
     "use_original": "השתמש במקורי",
-    "use_enhanced": "השתמש במשופר"
+    "use_enhanced": "השתמש בשופר"
   },
   "equipment": {
     "select_equipment": "בחירת ציוד",
@@ -34,13 +34,13 @@
     "no_matching": "לא מצאנו מכשיר תואם. אנא ספק פרטים נוספים להלן."
   },
   "chat": {
-    "session_started": "עם מה אני יכול לעזור?",
+    "session_started": "במה אוכל לעזור?",
     "type_message": "הקלד הודעה...",
     "enhanced_description": "תיאור משופר",
     "original_description": "תיאור מקורי",
-    "approve_description": "לאשר את התיאור המשופר?",
-    "diagnosis_results": "תוצאות אבחון",
-    "problem_identified": "בעיה שזוהתה",
+    "approve_description": "האם לאשר תיאור משופר זה?",
+    "diagnosis_results": "תוצאות האבחון",
+    "problem_identified": "הבעיה זוהתה",
     "suggested_solutions": "פתרונות מוצעים",
     "ai_enhanced": "משופר על ידי בינה מלאכותית",
     "diagnosing": "מאבחן את הבעיה...",
@@ -52,7 +52,11 @@
   },
   "admin": {
     "dashboard": {
-      "title": "לוח בקרה"
+      "title": "לוח בקרה למנהל",
+      "activeUsers": "משתמשים פעילים",
+      "businesses": "עסקים",
+      "openTickets": "כרטיסים פתוחים",
+      "resolvedToday": "נפתרו היום"
     },
     "navigation": {
       "users": "משתמשים",
@@ -74,8 +78,8 @@
       "editTitle": "פרטי {{name}}",
       "basicInfo": "מידע בסיסי",
       "fullName": "שם מלא",
-      "emailAddress": "כתובת אימייל",
-      "updatePassword": "עדכון סיסמה",
+      "emailAddress": "כתובת דואר אלקטרוני",
+      "updatePassword": "עדכן סיסמה",
       "newPassword": "סיסמה",
       "roleDepartment": "תפקיד ומחלקה",
       "role": "תפקיד",
@@ -83,21 +87,21 @@
       "departments": "מחלקות",
       "positionTitle": "כותרת תפקיד",
       "enterFullName": "הזן שם מלא",
-      "enterEmail": "הזן כתובת אימייל",
+      "enterEmail": "הזן כתובת דואר אלקטרוני",
       "enterPassword": "הזן סיסמה",
       "keepCurrent": "השאר ריק כדי לשמור על הנוכחי",
       "selectRole": "בחר תפקיד",
       "selectDepartment": "בחר מחלקה",
       "enterPosition": "הזן כותרת תפקיד",
       "deleteConfirm": "האם אתה בטוח שברצונך למחוק עובד זה?",
-      "deleteTitle": "מחיקת עובד",
+      "deleteTitle": "מחק עובד",
       "successUpdate": "העובד עודכן בהצלחה",
       "successAdd": "העובד נוסף בהצלחה",
       "errorUpdate": "עדכון העובד נכשל",
       "errorAdd": "הוספת העובד נכשלה"
     },
     "businessForm": {
-      "title": "עריכת עסק",
+      "title": "ערוך עסק",
       "businessName": "שם העסק",
       "phoneNumber": "מספר טלפון",
       "address": "כתובת",

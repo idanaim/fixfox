@@ -52,7 +52,11 @@
   },
   "admin": {
     "dashboard": {
-      "title": "Admin Dashboard"
+      "title": "Admin Dashboard",
+      "activeUsers": "Active Users",
+      "businesses": "Businesses",
+      "openTickets": "Open Tickets",
+      "resolvedToday": "Resolved Today"
     },
     "navigation": {
       "users": "Users",

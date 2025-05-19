@@ -43,14 +43,14 @@ export function AddBusinessModal({
     if (!name || !type || !user?.accountId) return;
 
     createBusiness({
-      name,
-      type,
-      address,
-      mobile,
+        name,
+        type,
+        address,
+        mobile,
       accountId: user.accountId,
     }, {
-      onSuccess: () => {
-        resetFormAndClose();
+        onSuccess: () => {
+          resetFormAndClose();
       }
     });
   };
@@ -71,7 +71,7 @@ export function AddBusinessModal({
       onDismiss={() => setAddBusinessModalVisible(false)}
       animationType="slide"
       transparent={true}
-    >
+      >
       <SafeAreaView style={styles.modalContainer}>
         <Surface style={styles.modalContent}>
           <View style={styles.modalHeader}>
@@ -79,14 +79,14 @@ export function AddBusinessModal({
               <Icon name="domain" size={24} color={colors.primary} />
               <Text style={styles.modalTitle}>{t('admin.businessForm.addNewBusiness')}</Text>
             </View>
-            <IconButton
-              icon="close"
+              <IconButton
+                icon="close"
               size={20}
-              onPress={resetFormAndClose}
+                onPress={resetFormAndClose}
               style={styles.closeButton}
-            />
-          </View>
-          <Divider />
+              />
+            </View>
+            <Divider />
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.formContainer}
@@ -160,33 +160,33 @@ export function AddBusinessModal({
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
-          <Divider />
+            <Divider />
           <View style={styles.modalFooter}>
-            <Button
-              mode="outlined"
-              onPress={resetFormAndClose}
+              <Button
+                mode="outlined"
+                onPress={resetFormAndClose}
               style={styles.cancelButton}
               labelStyle={styles.cancelButtonLabel}
               theme={{ roundness: 8 }}
-            >
+              >
               {t('common.cancel')}
-            </Button>
-            <Button
-              mode="contained"
-              onPress={handleAddBusiness}
-              style={[
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleAddBusiness}
+                style={[
                 styles.submitButton,
                 !isFormValid && styles.disabledButton
-              ]}
+                ]}
               loading={isPending}
               disabled={!isFormValid || isPending}
               theme={{ roundness: 8 }}
-            >
+              >
               {isPending ? t('admin.businessForm.creating') : t('admin.businessForm.createBusiness')}
-            </Button>
-          </View>
-        </Surface>
-      </SafeAreaView>
+              </Button>
+            </View>
+          </Surface>
+        </SafeAreaView>
     </Modal>
   );
 }
