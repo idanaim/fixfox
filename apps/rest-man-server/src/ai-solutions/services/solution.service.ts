@@ -170,7 +170,7 @@ export class SolutionService {
           type: 'ai_generated' as const,
           label: 'AI Solution'
         };
-      } else if (solution.source.startsWith('technician:')) {
+      } else if (solution.source.startsWith('dtos:')) {
         sourceContext = {
           type: 'current_business' as const,
           label: 'Current Business'

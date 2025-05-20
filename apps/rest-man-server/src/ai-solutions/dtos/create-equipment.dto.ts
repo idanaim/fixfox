@@ -1,4 +1,4 @@
-// create-equipment.dto.ts
+// create-equipment.dtos.ts
 import { IsDateString, IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateEquipmentDto {
@@ -34,10 +34,10 @@ export class CreateEquipmentDto {
   warrantyExpiration?: Date;
 }
 
-// update-equipment.dto.ts
+// update-equipment.dtos.ts
 export class UpdateEquipmentDto extends CreateEquipmentDto {}
 
-// similar-equipment.dto.ts
+// similar-equipment.dtos.ts
 export class SimilarEquipmentDto {
   @IsString()
   model: string;

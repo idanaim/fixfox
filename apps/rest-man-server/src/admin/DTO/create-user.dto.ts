@@ -1,4 +1,4 @@
-// src/users/dto/create-user.dto.ts
+// src/users/dtos/create-user.dtos.ts
 import { IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateUserDto {

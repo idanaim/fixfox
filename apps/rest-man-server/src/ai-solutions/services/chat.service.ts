@@ -264,7 +264,7 @@ export class ChatService {
       analysis
     );
 
-    // If no technician is needed, generate solutions
+    // If no dtos is needed, generate solutions
     if (!analysis.requiresTechnician) {
       const solutions = await this.aiService.generateSolution(
         session.issue.problem.description,
@@ -287,16 +287,16 @@ export class ChatService {
         { solutions }
       );
     } else {
-      // Update issue status for technician
+      // Update issue status for dtos
       await this.issueRepository.save({
         id: issueId,
         status: 'pending_technician',
       });
 
-      // Add technician message to chat
+      // Add dtos message to chat
       const technicianMessage = language === 'he'
         ? 'תבסס על הניתוח, בעיה זו דורשת טכנאי מקצועי. האם תרצה שאעזור לך למצוא טכנאי מוסמך?'
-        : 'Based on the analysis, this issue requires a professional technician. Would you like me to help you find a qualified technician?';
+        : 'Based on the analysis, this issue requires a professional dtos. Would you like me to help you find a qualified dtos?';
 
       await this.addMessage(
         sessionId,

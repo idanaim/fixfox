@@ -129,5 +129,36 @@
       "creating": "Creating...",
       "createBusiness": "Create Business"
     }
+  },
+  "technician": {
+    "title": "Technicians",
+    "searchPlaceholder": "Search technicians...",
+    "viewDetails": "View Details",
+    "serviceType": {
+      "onSite": "On-site Service",
+      "lab": "Lab Service"
+    },
+    "reviews": "Reviews",
+    "contact": "Contact",
+    "locations": "Locations",
+    "professions": {
+      "title": "Technician Professions",
+      "electrician": "Electrician",
+      "plumber": "Plumber",
+      "refrigeration_specialist": "Refrigeration Specialist",
+      "hvac_technician": "HVAC Technician",
+      "appliance_technician": "Appliance Technician",
+      "gas_technician": "Gas Technician",
+      "handyman": "Handyman",
+      "it_pos_technician": "IT/POS Technician",
+      "fire_safety_technician": "Fire Safety Technician",
+      "pest_control_specialist": "Pest Control Specialist",
+      "dishwasher_technician": "Dishwasher Technician",
+      "laundry_equipment_technician": "Laundry Equipment Technician",
+      "floor_equipment_specialist": "Floor Equipment Specialist",
+      "building_maintenance_technician": "Building Maintenance Technician",
+      "kitchen_exhaust_specialist": "Kitchen Exhaust Specialist",
+      "other": "Other"
+    }
   }
 }

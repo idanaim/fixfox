@@ -1,7 +1,7 @@
 // // src/permissions/permissions.controller.ts
 // import { Controller, Get, Param, Put, Body, NotFoundException, UseGuards } from '@nestjs/common';
 // import { PermissionsService } from '../services/permissions.service';
-// import { PermissionDto } from '../DTO/permission.dto';
+// import { PermissionDto } from '../DTO/permission.dtos';
 // import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 //
 // @Controller('permissions')

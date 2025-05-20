@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Solution } from '../api/chatAPI';
 import { Button, Divider, Surface } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   colors,
   typography,
 } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { useNavigation } from '@react-navigation/native';
 
 interface SolutionSuggestionProps {
   solutions: string[];
@@ -21,7 +21,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
 }) => {
   const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
   const currentSolution = solutions[currentSolutionIndex];
-
+  const navigation = useNavigation();
   // Function to go to the next solution
   const handleNextSolution = () => {
     if (currentSolutionIndex < solutions.length - 1) {
@@ -144,6 +144,14 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
           labelStyle={styles.acceptButtonText}
         >
           It helped
+        </Button>
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate('Technicians')}
+          style={styles.acceptButton}
+          labelStyle={styles.acceptButtonText}
+        >
+          Get Technician
         </Button>
       </View>
     </Surface>

@@ -1,4 +1,4 @@
-// create-problem.dto.ts
+// create-problem.dtos.ts
 import { IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateProblemDto {
@@ -17,7 +17,7 @@ export class CreateProblemDto {
   equipmentId?: number;
 }
 
-// similar-problem.dto.ts
+// similar-problem.dtos.ts
 export class SimilarProblemDto {
   @IsString()
   description: string;

@@ -129,5 +129,36 @@
       "creating": "יוצר...",
       "createBusiness": "צור עסק"
     }
+  },
+  "technician": {
+    "title": "טכנאים",
+    "searchPlaceholder": "חיפוש טכנאים...",
+    "viewDetails": "צפה בפרטים",
+    "serviceType": {
+      "onSite": "שירות בשטח",
+      "lab": "שירות במעבדה"
+    },
+    "reviews": "חוות דעת",
+    "contact": "תקשורת",
+    "locations": "מיקום",
+    "professions": {
+      "title": "מומחיות",
+      "electrician": "חשמלאי",
+      "plumber": "אינסטלטור",
+      "refrigeration_specialist": "מומחה קירור",
+      "hvac_technician": "טכנאי מיזוג",
+      "appliance_technician": "טכנאי מכשירי חשמל",
+      "gas_technician": "טכנאי גז",
+      "handyman": "שיפוצניק",
+      "it_pos_technician": "טכנאי IT/POS",
+      "fire_safety_technician": "טכנאי בטיחות אש",
+      "pest_control_specialist": "מדביר",
+      "dishwasher_technician": "טכנאי מדיחות",
+      "laundry_equipment_technician": "טכנאי ציוד כביסה",
+      "floor_equipment_specialist": "מומחה ציוד רצפה",
+      "building_maintenance_technician": "טכנאי תחזוקת מבנים",
+      "kitchen_exhaust_specialist": "מומחה אוורור מטבח",
+      "other": "אחר"
+    }
   }
 }

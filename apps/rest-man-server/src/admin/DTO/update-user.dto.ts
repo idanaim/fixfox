@@ -1,4 +1,4 @@
-// src/users/dto/update-user.dto.ts
+// src/users/dtos/update-user.dtos.ts
 
 import { IsEnum, IsOptional, IsString, IsArray } from 'class-validator';
 import { DepartmentType } from '../enums/department.enum';
@@ -18,15 +18,15 @@ export class UpdateUserDto {
 
   @IsOptional()
   role?: string;
-  
+
   @IsOptional()
   @IsEnum(DepartmentType)
   department?: DepartmentType;
-  
+
   @IsOptional()
   @IsArray()
   departments?: string[];
-  
+
   @IsOptional()
   @IsString()
   positionTitle?: string;

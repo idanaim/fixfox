@@ -7,8 +7,6 @@ import { IssueController } from './controllers/issue.controller';
 import { Issue } from './entities/issue.entity';
 import { Problem } from './entities/problem.entity';
 import { Equipment } from './entities/equipment.entity';
-import { Ticket } from './entities/ticket.entity';
-import { Technician } from './entities/technician.entity';
 import { ProblemService } from './services/problem.service';
 import { IssueService } from './services/issue.service';
 import { EquipmentService } from './services/equipment.service';
@@ -21,7 +19,7 @@ import { SolutionController } from './controllers/solution.controller';
   imports: [
     AdminModule,
     ChatModule,
-    TypeOrmModule.forFeature([Solution, Problem, Equipment, Issue, Ticket, Technician, Business]),
+    TypeOrmModule.forFeature([Solution, Problem, Equipment, Issue, Business]),
   ],
   controllers: [IssueController, ProblemController, SolutionController],
   providers: [SolutionService, ProblemService, IssueService, EquipmentService],

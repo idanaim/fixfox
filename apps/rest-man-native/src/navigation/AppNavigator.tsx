@@ -4,6 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import ChatScreen from '../screens/ChatScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { TechniciansScreen } from '../screens/TechniciansScreen';
+import { TechnicianDetailsScreen } from '../screens/TechnicianDetailsScreen';
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList } from './types';
 
@@ -37,6 +39,16 @@ export const AppNavigator = () => {
               name="Chat"
               component={ChatScreen}
               options={{ title: 'AI Assistant' }}
+            />
+            <Stack.Screen
+              name="Technicians"
+              component={TechniciansScreen}
+              options={{ title: 'Technicians' }}
+            />
+            <Stack.Screen
+              name="TechnicianDetails"
+              component={TechnicianDetailsScreen}
+              options={{ title: 'Technician Details' }}
             />
           </>
         )}

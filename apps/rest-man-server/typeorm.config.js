@@ -12,7 +12,7 @@ module.exports = new DataSource({
     'src/admin/entities/*.entity.ts',
     'src/ai-solutions/entities/*.entity.ts'
   ],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['dist/migrations/*.js'],
   migrationsTableName: 'migrations',
   cli: {
     migrationsDir: 'src/migrations'

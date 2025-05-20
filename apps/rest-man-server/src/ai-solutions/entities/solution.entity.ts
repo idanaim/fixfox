@@ -17,7 +17,7 @@ export class Solution {
   treatment: string;
 
   @Column({ name: 'resolvedBy', type: 'varchar', length: 255 })
-  resolvedBy: string; // 'AI' or technician ID
+  resolvedBy: string; // 'AI' or dtos ID
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   cost: number;
@@ -29,7 +29,7 @@ export class Solution {
   isExternal: boolean;
 
   @Column({ type: 'varchar', length: 255 })
-  source: string; // Format: 'business:<id>' or 'technician:<id>'
+  source: string; // Format: 'business:<id>' or 'dtos:<id>'
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
