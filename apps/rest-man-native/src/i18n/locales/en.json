@@ -44,6 +44,8 @@
     "suggested_solutions": "Suggested Solutions",
     "ai_enhanced": "AI Enhanced",
     "diagnosing": "Diagnosing the problem...",
+    "equipment_selected": "Equipment selected",
+    "enhancing_description": "Enhancing problem description based on selected equipment...",
     "found_similar_problems": "Found {{count}} similar problem(s).",
     "no_similar_problems": "No similar problems found.",
     "using_enhanced_description": "Using enhanced description: \"{{description}}\"",
@@ -159,6 +161,26 @@
       "building_maintenance_technician": "Building Maintenance Technician",
       "kitchen_exhaust_specialist": "Kitchen Exhaust Specialist",
       "other": "Other"
+    }
+  },
+  "solution": {
+    "title": "Recommended Solution",
+    "source": {
+      "business": "Business",
+      "community": "Community",
+      "ai": "AI Generated"
+    },
+    "resolvedBy": "Resolved by: {{name}}",
+    "partsRequired": "Parts Required:",
+    "actions": {
+      "skip": "Skip",
+      "next": "Next Solution",
+      "helped": "It helped",
+      "getTechnician": "Get Technician"
+    },
+    "problem": {
+      "title": "Problem",
+      "description": "Description"
     }
   }
 }

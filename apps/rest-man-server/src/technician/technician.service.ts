@@ -34,6 +34,7 @@ export class TechnicianService {
   }
 
   async findAll(): Promise<Technician[]> {
+
     return this.technicianRepository.find({
       relations: ['locations', 'ratings'],
     });

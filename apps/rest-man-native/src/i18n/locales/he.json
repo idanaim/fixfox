@@ -17,7 +17,7 @@
     "email": "דואר אלקטרוני",
     "password": "סיסמה",
     "use_original": "השתמש במקורי",
-    "use_enhanced": "השתמש בשופר"
+    "use_enhanced": "השתמש במשופר"
   },
   "equipment": {
     "select_equipment": "בחירת ציוד",
@@ -44,6 +44,8 @@
     "suggested_solutions": "פתרונות מוצעים",
     "ai_enhanced": "משופר על ידי בינה מלאכותית",
     "diagnosing": "מאבחן את הבעיה...",
+    "equipment_selected": "הציוד שנבחר",
+    "enhancing_description": "משפר את תיאור הבעיה בהתבסס על הציוד שנבחר...",
     "found_similar_problems": "נמצאו {{count}} בעיות דומות.",
     "no_similar_problems": "לא נמצאו בעיות דומות.",
     "using_enhanced_description": "משתמש בתיאור משופר: \"{{description}}\"",
@@ -159,6 +161,26 @@
       "building_maintenance_technician": "טכנאי תחזוקת מבנים",
       "kitchen_exhaust_specialist": "מומחה אוורור מטבח",
       "other": "אחר"
+    }
+  },
+  "solution": {
+    "title": "פתרון מומלץ",
+    "source": {
+      "business": "עסק",
+      "community": "קהילה",
+      "ai": "נוצר על ידי בינה מלאכותית"
+    },
+    "resolvedBy": "נפתר על ידי: {{name}}",
+    "partsRequired": "חלקים נדרשים:",
+    "actions": {
+      "skip": "דלג",
+      "next": "פתרון הבא",
+      "helped": "עזר",
+      "getTechnician": "קבל טכנאי"
+    },
+    "problem": {
+      "title": "בעיה",
+      "description": "תיאור"
     }
   }
 }

@@ -193,11 +193,14 @@ export class ChatService {
       userId: session.user.id,
       businessId: session.business.id,
     });
-
+    if (!currentProblem) {
+      throw new Error('Failed to create problem');
+    }
+    const extendedSolution = Object.assign({}, solution, {problemId: currentProblem.id});
     let newSolution = null;
     if (solution) {
       newSolution = await this.solutionService.create(
-        solution,
+        extendedSolution,
         session.user.id,
         session.business.id
       );

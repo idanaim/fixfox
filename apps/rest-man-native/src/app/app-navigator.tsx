@@ -29,7 +29,7 @@ export const AppNavigator = () => {
             <Stack.Screen
               options={{ headerShown: false }}
               name="Dashboard"
-              component={adminDashboard}
+              component={ChatScreen}
               initialParams={{ businessId: 6, userId: user?.id }}
             />
           ) : (

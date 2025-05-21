@@ -181,71 +181,57 @@ export class AIService {
     equipment?: Equipment
   ): Promise<string> {
     try {
-      let equipmentContext = '';
-      if (equipment) {
-        equipmentContext = this.getEquipmentContext(equipment);
-      }
+      const equipmentContext = equipment ? this.getEquipmentContext(equipment) : '';
 
+      /* ---------- strict system prompt ---------- */
       const systemPrompt =
         language === 'he'
-          ? 'אתה מומחה טכני שמשפר תיאורי בעיות בציוד. תן תיאור מפורט יותר של הבעיה, כולל תסמינים, דפוסים, ומונחים טכניים רלוונטיים.'
-          : 'You are a technical expert improving equipment problem descriptions. Provide a more detailed description of the problem, including symptoms, patterns, and relevant technical terminology.';
+          ? `אתה מומחה טכני שמשפר תיאורי תקלות.\n` +
+          `כלל ברזל: מותר להשתמש רק במידע שמופיע ב"תיאור המקורי" ` +
+          `או ב-equipmentContext. אסור להמציא עובדות חדשות.\n` +
+          `שלב במידת האפשר פרטים מ-equipmentContext, ושמור על אורך ≤150 תווים.`
+          : `You are a technical expert refining problem descriptions.\n` +
+          `Rule: you may use ONLY facts found in the ORIGINAL DESCRIPTION ` +
+          `or in equipmentContext—nothing else.\n` +
+          `Include equipmentContext details when present, keep length ≤150 chars.`;
 
-      const prompt =
+      /* ---------- user prompt ---------- */
+      const userPrompt =
         language === 'he'
-          ? `אני צריך לשפר ולהעשיר את תיאור הבעיה הבא.
-הפוך אותו לטכני ומקיף יותר תוך שמירה על המשמעות המקורית ולא יותר מ-150 תווים.
+          ? `שפר את התיאור הבא (עד 150 תווים).\n` +
+          `1. אל תוסיף מותג/דגם/מיקום/תסמין שלא קיים במקור או ב-equipmentContext.\n` +
+          `2. אם יש equipmentContext – שלב אותו בתיאור.\n` +
+          `3. השתמש במונחים טכניים מדויקים ותבנה ניסוח ברור ותמציתי.\n\n` +
+          `תיאור מקורי:\n"${userDescription}"\n\n` +
+          (equipmentContext ? `equipmentContext:\n${equipmentContext}\n\n` : '') +
+          `תיאור משופר:`
+          : `Enhance the text below (≤150 chars).\n` +
+          `1. Do NOT add brand/model/location/symptom not found in original or equipmentContext.\n` +
+          `2. If equipmentContext is provided—incorporate its info.\n` +
+          `3. Use precise technical wording; keep it concise & clear.\n\n` +
+          `ORIGINAL DESCRIPTION:\n"${userDescription}"\n\n` +
+          (equipmentContext ? `equipmentContext:\n${equipmentContext}\n\n` : '') +
+          `ENHANCED DESCRIPTION:`;
 
-תיאור מקורי:
-"${userDescription}"
-
-${equipmentContext}
-
-הנחיות לשיפור:
-1. זהה את התסמינים הספציפיים ותדירות/חומרתם
-2. כלול דפוסים נצפים (מתי זה קורה, מה משפר/מחמיר)
-3. הוסף מונחים טכניים רלוונטיים לציוד זה
-4. מבנה בצורה ברורה עם פורמט מתאים
-5. שמור על תמציתיות אך מקיפות
-6. שמור על כל העובדות מהתיאור המקורי
-7. אל תמציא תסמינים חדשים שלא הוזכרו
-
-תיאור משופר:`
-          : `I need you to enhance and enrich the following problem description.
-Make it more technically precise and comprehensive while keeping the original meaning and not more than 150 chars.
-
-ORIGINAL DESCRIPTION:
-"${userDescription}"
-
-${equipmentContext}
-
-Enhancement Guidelines:
-1. Identify the specific symptoms and their frequency/severity
-2. Include any observable patterns (when does it happen, what makes it better/worse)
-3. Add relevant technical terminology appropriate for this equipment
-4. Structure it clearly with proper formatting
-5. Keep it concise but comprehensive
-6. Maintain all facts from the original description
-7. Do NOT invent new symptoms that weren't mentioned
-
-ENHANCED DESCRIPTION:`;
-
+      /* ---------- model call ---------- */
       const response = await this.openai.chat.completions.create({
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt },
+          { role: 'user',   content: userPrompt  },
         ],
-        temperature: 0.7,
-        max_tokens: 350,
+        temperature: 0.2,
+        top_p: 0.9,
+        max_tokens: 200,
       });
 
       return response.choices[0]?.message?.content?.trim() || userDescription;
-    } catch (error) {
-      this.logger.error('Error enhancing problem description:', error);
-      return userDescription; // Return original if enhancement fails
+    } catch (err) {
+      this.logger.error('Error enhancing problem description:', err);
+      return userDescription;
     }
   }
+
 
   /**
    * Finds similar problems using AI

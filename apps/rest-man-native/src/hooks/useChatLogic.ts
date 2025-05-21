@@ -227,7 +227,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     setApplianceOptions(null);
     const sysMsg = await chatApi.addMessage(
       sessionId,
-      `Equipment selected: ${equipment.manufacturer} ${equipment.model}`,
+      `${t('chat.equipment_selected')}: ${equipment.manufacturer} ${equipment.model}`,
       'system'
     );
     addMessage(sysMsg);
@@ -236,7 +236,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       try {
         const enhancingMsg = await chatApi.addMessage(
           sessionId,
-          'Enhancing problem description based on selected equipment...',
+          t('chat.enhancing_description'),
           'system'
         );
         addMessage(enhancingMsg);

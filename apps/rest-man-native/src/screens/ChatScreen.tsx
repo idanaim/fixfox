@@ -69,7 +69,7 @@ const ChatScreen: React.FC = () => {
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
-
+debugger
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -155,7 +155,6 @@ const ChatScreen: React.FC = () => {
             )}
           </>
         )}
-
         {/* Show solutions based on the diagnosis type */}
         {diagnosisResult?.type === 'ai_diagnosis' &&
           diagnosisResult.diagnosis?.suggestedSolutions &&

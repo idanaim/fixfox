@@ -1,40 +1,49 @@
 import React, { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button, Divider, Surface } from 'react-native-paper';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Divider, Surface, Text } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {
-  colors,
-  typography,
-} from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+
+interface Solution {
+  treatment: string;
+  problemId?: string;
+  resolvedBy?: string;
+  parts?: string[];
+}
 
 interface SolutionSuggestionProps {
-  solutions: string[];
-  onAcceptSolution: (solution: string) => void;
-  onRejectSolution: (solution: string) => void;
+  solutions: Solution[];
+  onAcceptSolution: (solution: Solution) => void;
+  onRejectSolution: (solution: Solution) => void;
 }
+
+type RootStackParamList = {
+  Technicians: undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
   solutions,
   onAcceptSolution,
   onRejectSolution,
 }) => {
+  const { t } = useTranslation();
   const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
   const currentSolution = solutions[currentSolutionIndex];
-  const navigation = useNavigation();
-  // Function to go to the next solution
+  const navigation = useNavigation<NavigationProp>();
+
   const handleNextSolution = () => {
     if (currentSolutionIndex < solutions.length - 1) {
       setCurrentSolutionIndex(currentSolutionIndex + 1);
     }
   };
 
-  // Function to format solution steps
   const formatSolutionSteps = (treatment: string): string[] => {
-    // Split treatment by newlines or period followed by space or number followed by period
     const rawSteps = treatment?.split(/(?:\n|\.(?=\s|$)|(?:\d+\.))/g);
-
-    // Filter out empty steps and trim whitespace
     return rawSteps
       ?.filter((step) => step.trim().length > 0)
       ?.map((step) => step.trim());
@@ -45,7 +54,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
   }
 
   const steps = formatSolutionSteps(currentSolution.treatment);
-  const isBusiness = currentSolution?.problemId !== null;
+  const isBusiness = currentSolution?.problemId !== undefined;
 
   return (
     <Surface style={styles.container}>
@@ -56,7 +65,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
           color={colors.primary}
           style={styles.headerIcon}
         />
-        <Text style={styles.headerTitle}>Recommended Solution</Text>
+        <Text style={styles.headerTitle}>{t('solution.title')}</Text>
         <View style={styles.sourceBadge}>
           <Icon
             name={isBusiness ? 'domain' : 'earth'}
@@ -65,7 +74,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
             style={styles.sourceBadgeIcon}
           />
           <Text style={styles.sourceBadgeText}>
-            {isBusiness ? 'Business' : 'Community'}
+            {t(`solution.source.${isBusiness ? 'business' : 'community'}`)}
           </Text>
         </View>
       </View>
@@ -75,12 +84,12 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
       <ScrollView style={styles.solutionContent}>
         <View style={styles.solutionInfo}>
           <Text style={styles.solutionTitle}>
-            {currentSolution || 'Solution'}
+            {currentSolution.treatment || currentSolution || t('solution.title')}
           </Text>
 
           {currentSolution?.resolvedBy && (
             <Text style={styles.resolvedBy}>
-              Resolved by: {currentSolution?.resolvedBy}
+              {t('solution.resolvedBy', { name: currentSolution.resolvedBy })}
             </Text>
           )}
         </View>
@@ -96,10 +105,10 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
           ))}
         </View>
 
-        {currentSolution?.parts && currentSolution?.parts?.length > 0 && (
+        {currentSolution?.parts && currentSolution.parts.length > 0 && (
           <View style={styles.partsContainer}>
-            <Text style={styles.partsSectionTitle}>Parts Required:</Text>
-            {currentSolution.parts.map((part, index) => (
+            <Text style={styles.partsSectionTitle}>{t('solution.partsRequired')}</Text>
+            {currentSolution.parts.map((part: string, index: number) => (
               <View key={index} style={styles.partItem}>
                 <Icon
                   name="circle-small"
@@ -117,42 +126,46 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
       <Divider style={styles.divider} />
 
       <View style={styles.footer}>
-        <Button
-          mode="outlined"
-          onPress={() => onRejectSolution(currentSolution)}
-          style={styles.rejectButton}
-          labelStyle={styles.rejectButtonText}
-        >
-          Skip
-        </Button>
-
-        {currentSolutionIndex < solutions.length - 1 && (
+        <View style={styles.buttonGroup}>
           <Button
-            mode="text"
-            onPress={handleNextSolution}
-            style={styles.nextButton}
-            labelStyle={styles.nextButtonText}
+            mode="outlined"
+            onPress={() => onRejectSolution(currentSolution)}
+            style={styles.rejectButton}
+            labelStyle={styles.rejectButtonText}
           >
-            Next Solution
+            {t('solution.actions.skip')}
           </Button>
-        )}
 
-        <Button
-          mode="contained"
-          onPress={() => onAcceptSolution(currentSolution)}
-          style={styles.acceptButton}
-          labelStyle={styles.acceptButtonText}
-        >
-          It helped
-        </Button>
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate('Technicians')}
-          style={styles.acceptButton}
-          labelStyle={styles.acceptButtonText}
-        >
-          Get Technician
-        </Button>
+          {currentSolutionIndex < solutions.length - 1 && (
+            <Button
+              mode="text"
+              onPress={handleNextSolution}
+              style={styles.nextButton}
+              labelStyle={styles.nextButtonText}
+            >
+              {t('solution.actions.next')}
+            </Button>
+          )}
+        </View>
+
+        <View style={styles.buttonGroup}>
+          <Button
+            mode="contained"
+            onPress={() => onAcceptSolution(currentSolution)}
+            style={styles.acceptButton}
+            labelStyle={styles.acceptButtonText}
+          >
+            {t('solution.actions.helped')}
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate('Technicians')}
+            style={[styles.acceptButton, styles.technicianButton]}
+            labelStyle={styles.acceptButtonText}
+          >
+            {t('solution.actions.getTechnician')}
+          </Button>
+        </View>
       </View>
     </Surface>
   );
@@ -215,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   solutionTitle: {
-    ...typography.h4,
+    ...typography.h3,
     color: colors.dark,
     marginBottom: 4,
   },
@@ -276,20 +289,25 @@ const styles = StyleSheet.create({
     color: colors.medium,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 16,
     backgroundColor: colors.white,
+    gap: 12,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   rejectButton: {
     borderColor: colors.border,
+    flex: 1,
   },
   rejectButtonText: {
     ...typography.button,
     color: colors.medium,
   },
   nextButton: {
-    marginHorizontal: 4,
+    flex: 1,
   },
   nextButtonText: {
     ...typography.button,
@@ -297,6 +315,10 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     backgroundColor: colors.primary,
+    flex: 1,
+  },
+  technicianButton: {
+    backgroundColor: colors.success,
   },
   acceptButtonText: {
     ...typography.button,
