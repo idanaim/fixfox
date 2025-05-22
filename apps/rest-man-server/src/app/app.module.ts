@@ -6,6 +6,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AiSolutionsModule } from '../ai-solutions/AiSolutions.module';
 import { ChatModule } from '../ai-solutions/chat.module';
 import { EquipmentModule } from './equipment.module';
+import { TechnicianModule } from '../technician/technician.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { EquipmentModule } from './equipment.module';
     AuthModule,
     AiSolutionsModule,
     ChatModule,
+    TechnicianModule,
     AdminModule,
     EquipmentModule
   ],

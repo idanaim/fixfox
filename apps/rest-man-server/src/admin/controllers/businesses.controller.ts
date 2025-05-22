@@ -15,7 +15,7 @@ export class BusinessesController {
       address: string;
       mobile: string;
       type: string;
-      adminId: number; // Add adminId to the request body
+      accountId: string;
     },
   ): Promise<Business> {
     return this.businessesService.create(body);

@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform, I18nManager } from 'react-native';
 import { Equipment } from '../api/chatAPI';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Surface, Divider } from 'react-native-paper';
 import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { useTranslation } from 'react-i18next';
 
 interface ApplianceSelectorProps {
   equipmentList: Equipment[];
@@ -16,18 +17,26 @@ const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
   onSelect,
   onAddNew,
 }) => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'he';
+
   return (
     <Surface style={styles.container}>
       <View style={styles.header}>
-        <Icon name="devices" size={22} color={colors.primary} style={styles.headerIcon} />
-        <Text style={styles.headerTitle}>Equipment Selection</Text>
+        <Icon 
+          name="devices" 
+          size={22} 
+          color={colors.primary} 
+          style={isRTL ? styles.headerIconRTL : styles.headerIcon} 
+        />
+        <Text style={styles.headerTitle}>{t('equipment.select_equipment')}</Text>
       </View>
       
       <Divider style={styles.divider} />
       
       <View style={styles.contentContainer}>
         <Text style={styles.matchingMessage}>
-          Found {equipmentList.length} matching appliance{equipmentList.length !== 1 ? 's' : ''}
+          {t('equipment.found_matching', { count: equipmentList.length })}
         </Text>
         
         <ScrollView 
@@ -41,7 +50,7 @@ const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
               style={styles.equipmentItem}
               onPress={() => onSelect(equipment)}
             >
-              <View style={styles.equipmentIcon}>
+              <View style={isRTL ? styles.equipmentIconRTL : styles.equipmentIcon}>
                 <Icon 
                   name={equipment.category === 'HVAC' ? 'air-conditioner' : 
                         equipment.category === 'Kitchen' ? 'stove' : 
@@ -51,21 +60,30 @@ const ApplianceSelector: React.FC<ApplianceSelectorProps> = ({
                 />
               </View>
               <View style={styles.equipmentInfo}>
-                <Text style={styles.equipmentName}>
+                <Text style={[styles.equipmentName, { textAlign: isRTL ? 'right' : 'left' }]}>
                   {equipment.manufacturer} {equipment.model}
                 </Text>
-                <Text style={styles.equipmentDetails}>
-                  {equipment.category || 'Equipment'} • {equipment.status || 'Active'}
+                <Text style={[styles.equipmentDetails, { textAlign: isRTL ? 'right' : 'left' }]}>
+                  {equipment.category || t('equipment.unknown_category')} • {equipment.status || t('equipment.active')}
                 </Text>
               </View>
-              <Icon name="chevron-right" size={20} color={colors.medium} />
+              <Icon 
+                name={isRTL ? "chevron-left" : "chevron-right"} 
+                size={20} 
+                color={colors.medium} 
+              />
             </TouchableOpacity>
           ))}
         </ScrollView>
         
         <TouchableOpacity style={styles.addNewButton} onPress={onAddNew}>
-          <Icon name="plus-circle-outline" size={20} color={colors.primary} style={styles.addNewIcon} />
-          <Text style={styles.addNewText}>Add New Equipment</Text>
+          <Icon 
+            name="plus-circle-outline" 
+            size={20} 
+            color={colors.primary} 
+            style={isRTL ? styles.addNewIconRTL : styles.addNewIcon} 
+          />
+          <Text style={styles.addNewText}>{t('equipment.add_new_equipment')}</Text>
         </TouchableOpacity>
       </View>
     </Surface>
@@ -97,6 +115,10 @@ const styles = StyleSheet.create({
   },
   headerIcon: {
     marginRight: 10,
+  },
+  headerIconRTL: {
+    marginRight: 0,
+    marginLeft: 10,
   },
   headerTitle: {
     ...typography.h3,
@@ -139,6 +161,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  equipmentIconRTL: {
+    marginRight: 0,
+    marginLeft: 12,
+  },
   equipmentInfo: {
     flex: 1,
   },
@@ -164,6 +190,10 @@ const styles = StyleSheet.create({
   },
   addNewIcon: {
     marginRight: 8,
+  },
+  addNewIconRTL: {
+    marginRight: 0,
+    marginLeft: 8,
   },
   addNewText: {
     ...typography.button,

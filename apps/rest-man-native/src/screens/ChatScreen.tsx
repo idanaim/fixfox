@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { Divider } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import ChatHeader from '../components/chat/Header/ChatHeader';
 import ChatMessages from '../components/chat/Message/ChatMessages';
 import ChatInput from '../components/chat/Input/ChatInput';
@@ -32,6 +33,7 @@ const ChatScreen: React.FC = () => {
   const { businessId, userId } = route.params as RouteParams;
   const { businesses, selectedBusiness, setSelectedBusiness } = useBusinesses();
   const { session: { id: sessionId } } = useChatStore();
+  const { t } = useTranslation();
 
   const {
     // State
@@ -67,7 +69,7 @@ const ChatScreen: React.FC = () => {
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
-
+debugger
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -75,7 +77,7 @@ const ChatScreen: React.FC = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
     >
       <ChatHeader
-        title="Maintenance Assistant"
+        title={t('common.maintenance_assistant')}
         businesses={businesses}
         selectedBusiness={selectedBusiness}
         onSelectBusiness={setSelectedBusiness}
@@ -144,16 +146,15 @@ const ChatScreen: React.FC = () => {
               <View style={styles.solutionHeader}>
                 <Text style={styles.solutionHeaderText}>
                   {diagnosisResult.type === 'issue_matches'
-                    ? 'Solutions Used in Your Business:'
+                    ? t('common.solutions_your_business')
                     : diagnosisResult.type === 'problem_matches'
-                    ? 'Solutions Used by Other Businesses:'
-                    : 'AI-Generated Solutions:'}
+                    ? t('common.solutions_other_businesses')
+                    : t('common.ai_generated_solutions')}
                 </Text>
               </View>
             )}
           </>
         )}
-
         {/* Show solutions based on the diagnosis type */}
         {diagnosisResult?.type === 'ai_diagnosis' &&
           diagnosisResult.diagnosis?.suggestedSolutions &&

@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export const LoginScreen = () => {
   const { signIn } = useAuth();
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     try {
@@ -16,6 +19,9 @@ export const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.languageSwitcherContainer}>
+        <LanguageSwitcher />
+      </View>
       <Text style={styles.title} variant="headlineMedium">
         Welcome to RestMan
       </Text>
@@ -28,7 +34,7 @@ export const LoginScreen = () => {
         style={styles.loginButton}
         icon="login"
       >
-        Sign In
+        {t('common.login')}
       </Button>
     </View>
   );
@@ -54,5 +60,10 @@ const styles = StyleSheet.create({
   loginButton: {
     width: '100%',
     maxWidth: 300,
+  },
+  languageSwitcherContainer: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
   },
 }); 

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  I18nManager,
 } from 'react-native';
 import {
   Avatar,
@@ -30,6 +31,7 @@ import {
   useGetBusinesses,
 } from '../../../queries/react-query-wrapper/use-get-business';
 import { useUsersByAdmin } from '../../../queries/react-query-wrapper/use-users';
+import { useTranslation } from 'react-i18next';
 
 // Update the Business interface to include all required properties
 interface Business {
@@ -156,6 +158,7 @@ export const BusinessSection = ({
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [isUserSelectModalVisible, setUserSelectModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { t, i18n } = useTranslation();
 
   const handleAddEmployees = () => {
     if (selectedBusiness && selectedUsers.length > 0) {
@@ -214,7 +217,7 @@ export const BusinessSection = ({
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item.name}</Text>
           <Text style={styles.userRole}>
-            {item.type} • {item?.address || 'No address provided'}
+            {item.type} • {item?.address || t('admin.businessForm.noAddress')}
           </Text>
           <View
             style={{ flexDirection: 'row', marginTop: 4, alignItems: 'center' }}
@@ -226,7 +229,7 @@ export const BusinessSection = ({
               style={{ marginRight: 4 }}
             />
             <Text style={styles.userRole}>
-              {item?.employees?.length || 0} employees
+              {item?.employees?.length || 0} {t('admin.businessForm.employees')}
             </Text>
           </View>
           <View
@@ -238,7 +241,7 @@ export const BusinessSection = ({
               color={colors.medium}
               style={{ marginRight: 4 }}
             />
-            <Text style={styles.userRole}>{item?.mobile || 'No phone provided'}</Text>
+            <Text style={styles.userRole}>{item?.mobile || t('admin.businessForm.noPhone')}</Text>
           </View>
         </View>
 
@@ -249,7 +252,7 @@ export const BusinessSection = ({
             size={20}
             onPress={() => openUserSelectionModal(item)}
             style={styles.actionButton}
-            accessibilityLabel="Add users to business"
+            accessibilityLabel={t('admin.businessForm.addUsers')}
           />
           <IconButton
             icon="pencil"
@@ -257,6 +260,7 @@ export const BusinessSection = ({
             size={20}
             onPress={() => {}}
             style={styles.actionButton}
+            accessibilityLabel={t('admin.businessForm.editBusiness')}
           />
           <IconButton
             icon="delete"
@@ -264,6 +268,7 @@ export const BusinessSection = ({
             size={20}
             onPress={() => {}}
             style={styles.actionButton}
+            accessibilityLabel={t('admin.businessForm.deleteBusiness')}
           />
         </View>
       </Surface>
@@ -287,7 +292,7 @@ export const BusinessSection = ({
           color={colors.medium}
           style={styles.emptyStateIcon}
         />
-        <Text style={styles.emptyStateText}>No businesses found</Text>
+        <Text style={styles.emptyStateText}>{t('admin.businessForm.noBusinesses')}</Text>
       </View>
     );
   }
@@ -322,7 +327,7 @@ export const BusinessSection = ({
             <View style={modalStyles.header}>
               <View style={modalStyles.headerRow}>
                 <Text style={modalStyles.headerTitle}>
-                  Add Users to {selectedBusinessName}
+                  {t('admin.businessForm.addUsersTo', { business: selectedBusinessName })}
                 </Text>
                 <IconButton
                   icon="close"
@@ -332,7 +337,7 @@ export const BusinessSection = ({
               </View>
               
               <Searchbar
-                placeholder="Search users..."
+                placeholder={t('admin.businessForm.searchUsers')}
                 onChangeText={setSearchQuery}
                 value={searchQuery}
                 style={modalStyles.searchBar}
@@ -342,10 +347,10 @@ export const BusinessSection = ({
               
               <View style={modalStyles.countsRow}>
                 <Text style={modalStyles.countText}>
-                  {filteredUsers.length} users available
+                  {filteredUsers.length} {t('admin.businessForm.usersAvailable')}
                 </Text>
                 <Text style={modalStyles.countText}>
-                  {selectedUsers.length} selected
+                  {selectedUsers.length} {t('admin.businessForm.selected')}
                 </Text>
               </View>
             </View>
@@ -398,7 +403,7 @@ export const BusinessSection = ({
                 labelStyle={{ color: colors.dark }}
                 onPress={() => setUserSelectModalVisible(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               
               <Button 
@@ -407,7 +412,7 @@ export const BusinessSection = ({
                 disabled={selectedUsers.length === 0}
                 onPress={handleAddEmployees}
               >
-                Add {selectedUsers.length > 0 ? `(${selectedUsers.length})` : ''} Users
+                {t('admin.businessForm.addUsers', { count: selectedUsers.length })}
               </Button>
             </View>
           </SafeAreaView>

@@ -28,7 +28,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {messages.map(MessageItem)}
+      {messages.map((message) => (
+        <MessageItem key={message.id} {...message} />
+      ))}
     </ScrollView>
   );
 };

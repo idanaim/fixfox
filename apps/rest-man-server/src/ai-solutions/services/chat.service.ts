@@ -32,7 +32,8 @@ export class ChatService {
 
   async createSession(
     userId: number,
-    businessId: number
+    businessId: number,
+    language = 'en'
   ): Promise<ChatSession> {
     const session = this.chatSessionRepository.create({
       user: { id: userId },
@@ -41,6 +42,7 @@ export class ChatService {
       metadata: {
         currentStep: 'initial',
         context: {},
+        language
       },
     });
     return this.chatSessionRepository.save(session);
@@ -52,11 +54,20 @@ export class ChatService {
     type: 'user' | 'system' | 'ai',
     metadata?: any
   ): Promise<ChatMessage> {
+    const session = await this.chatSessionRepository.findOne({
+      where: { id: sessionId },
+      select: ['metadata']
+    });
+
+    const language = session?.metadata?.language || 'en';
     const message = this.chatMessageRepository.create({
       session: { id: sessionId },
       content,
       type,
-      metadata,
+      metadata: {
+        ...metadata,
+        language
+      },
     });
     return this.chatMessageRepository.save(message);
   }
@@ -93,7 +104,8 @@ export class ChatService {
   async enhanceProblemDescription(
     sessionId: number,
     description: string,
-    equipment: Equipment
+    equipment: Equipment,
+    language = 'en'
   ): Promise<{
     originalDescription: string;
     enhancedDescription: string;
@@ -114,7 +126,11 @@ export class ChatService {
     });
 
     // Use AI to improve the description
-    const enhancedDescription = await this.aiService.enhanceProblemDescription(description, equipment);
+    const enhancedDescription = await this.aiService.enhanceProblemDescription(
+      description,
+      language,
+      equipment,
+    );
 
     // Extract potential equipment types from the enhanced description
     const equipmentType = await this.aiService.identifyEquipmentType(enhancedDescription);
@@ -177,11 +193,14 @@ export class ChatService {
       userId: session.user.id,
       businessId: session.business.id,
     });
-
+    if (!currentProblem) {
+      throw new Error('Failed to create problem');
+    }
+    const extendedSolution = Object.assign({}, solution, {problemId: currentProblem.id});
     let newSolution = null;
     if (solution) {
       newSolution = await this.solutionService.create(
-        solution,
+        extendedSolution,
         session.user.id,
         session.business.id
       );
@@ -216,6 +235,8 @@ export class ChatService {
       throw new Error('No issue found for this session');
     }
 
+    const language = session.metadata?.language || 'en';
+
     // Get previous issues for this equipment
     const previousIssues = await this.issueRepository.find({
       where: { equipment: { id: session.issue.equipment.id } },
@@ -228,7 +249,8 @@ export class ChatService {
     const analysis = await this.aiService.analyzeProblem(
       session.issue.problem.description,
       session.issue.equipment,
-      previousIssues
+      previousIssues,
+      language
     );
 
     // Update the issue with AI analysis
@@ -240,17 +262,18 @@ export class ChatService {
     // Add AI analysis message to chat
     await this.addMessage(
       sessionId,
-      this.formatAnalysisMessage(analysis),
+      this.formatAnalysisMessage(analysis, language),
       'ai',
       analysis
     );
 
-    // If no technician is needed, generate solutions
+    // If no dtos is needed, generate solutions
     if (!analysis.requiresTechnician) {
       const solutions = await this.aiService.generateSolution(
         session.issue.problem.description,
         analysis,
-        session.issue.equipment
+        session.issue.equipment,
+        language
       );
 
       // Update the problem with the solutions
@@ -262,57 +285,52 @@ export class ChatService {
       // Add solutions message to chat
       await this.addMessage(
         sessionId,
-        this.formatSolutionsMessage(solutions as string[]),
+        this.formatSolutionsMessage(solutions as string[], language),
         'ai',
         { solutions }
       );
     } else {
-      // Update issue status for technician
+      // Update issue status for dtos
       await this.issueRepository.save({
         id: issueId,
         status: 'pending_technician',
       });
 
-      // Add technician message to chat
+      // Add dtos message to chat
+      const technicianMessage = language === 'he'
+        ? 'תבסס על הניתוח, בעיה זו דורשת טכנאי מקצועי. האם תרצה שאעזור לך למצוא טכנאי מוסמך?'
+        : 'Based on the analysis, this issue requires a professional dtos. Would you like me to help you find a qualified dtos?';
+
       await this.addMessage(
         sessionId,
-        'Based on the analysis, this issue requires a professional technician. Would you like me to help you find a qualified technician?',
+        technicianMessage,
         'system'
       );
     }
   }
 
-  private formatAnalysisMessage(analysis: any): string {
-    let message = "Here's my analysis of the problem:\n\n";
-
-    message += '🔍 Possible Causes:\n';
-    analysis.possibleCauses.forEach((cause: string) => {
-      message += `• ${cause}\n`;
-    });
-
-    message += `\n⚠️ Severity: ${analysis.severity.toUpperCase()}\n`;
-
-    if (analysis.estimatedCost) {
-      message += `\n💰 Estimated Cost: $${analysis.estimatedCost}\n`;
+  private formatAnalysisMessage(analysis: any, language = 'en'): string {
+    if (language === 'he') {
+      return `🔍 ניתוח הבעיה:\n\n${analysis.summary}\n\n${analysis.recommendation}`;
     }
-
-    if (analysis.estimatedTime) {
-      message += `\n⏱️ Estimated Time: ${analysis.estimatedTime}\n`;
-    }
-
-    return message;
+    return `🔍 Problem Analysis:\n\n${analysis.summary}\n\n${analysis.recommendation}`;
   }
 
-  private formatSolutionsMessage(solutions: string[]): string {
-    let message = '📝 Here are the step-by-step solutions:\n\n';
-
-    solutions.forEach((solution, index) => {
-      message += `${index + 1}. ${solution}\n`;
-    });
-
-    message +=
-      '\nWould you like to try these solutions? Let me know if you need any clarification on any step.';
-
-    return message;
+  private formatSolutionsMessage(solutions: string[], language = 'en'): string {
+    if (language === 'he') {
+      let message = '📝 הנה הפתרונות צעד אחר צעד:\n\n';
+      solutions.forEach((solution, index) => {
+        message += `${index + 1}. ${solution}\n`;
+      });
+      message += '\nהאם תרצה לנסות את הפתרונות האלה? אשמח להסביר כל שלב בפירוט.';
+      return message;
+    } else {
+      let message = '📝 Here are the step-by-step solutions:\n\n';
+      solutions.forEach((solution, index) => {
+        message += `${index + 1}. ${solution}\n`;
+      });
+      message += '\nWould you like to try these solutions? Let me know if you need any clarification on any step.';
+      return message;
+    }
   }
 }

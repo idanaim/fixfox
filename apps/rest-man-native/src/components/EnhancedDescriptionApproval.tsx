@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform, I18nManager } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { useTranslation } from 'react-i18next';
 
 interface EnhancedDescriptionApprovalProps {
   originalDescription: string;
@@ -16,34 +17,52 @@ const EnhancedDescriptionApproval: React.FC<EnhancedDescriptionApprovalProps> = 
   onApprove,
   onReject,
 }) => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'he';
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Icon name="magic" size={24} color={colors.primary} style={styles.headerIcon} />
-        <Text style={styles.title}>Improved Description</Text>
-        <Text style={styles.subtitle}>AI has enhanced your description with equipment-specific context</Text>
+        <Icon 
+          name="magic" 
+          size={24} 
+          color={colors.primary} 
+          style={isRTL ? styles.headerIconRTL : styles.headerIcon} 
+        />
+        <Text style={styles.title}>{t('chat.enhanced_description')}</Text>
+        <Text style={styles.subtitle}>{t('chat.approve_description')}</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.descriptionSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Original Description</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {t('chat.original_description')}
+            </Text>
           </View>
           <View style={styles.descriptionBox}>
-            <Text style={styles.descriptionText}>{originalDescription}</Text>
+            <Text style={[styles.descriptionText, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {originalDescription}
+            </Text>
           </View>
         </View>
 
         <View style={styles.descriptionSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Enhanced Description</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {t('chat.enhanced_description')}
+            </Text>
             <View style={styles.badge}>
               <Icon name="star" size={12} color={colors.primary} />
-              <Text style={styles.badgeText}>AI Enhanced</Text>
+              <Text style={[styles.badgeText, { marginLeft: isRTL ? 0 : 4, marginRight: isRTL ? 4 : 0 }]}>
+                {t('chat.ai_enhanced')}
+              </Text>
             </View>
           </View>
           <View style={[styles.descriptionBox, styles.enhancedBox]}>
-            <Text style={styles.descriptionText}>{enhancedDescription}</Text>
+            <Text style={[styles.descriptionText, { textAlign: isRTL ? 'right' : 'left' }]}>
+              {enhancedDescription}
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -53,13 +72,13 @@ const EnhancedDescriptionApproval: React.FC<EnhancedDescriptionApprovalProps> = 
           style={[styles.button, styles.rejectButton]} 
           onPress={onReject}
         >
-          <Text style={styles.rejectButtonText}>Use Original</Text>
+          <Text style={styles.rejectButtonText}>{t('common.use_original')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.button, styles.approveButton]} 
           onPress={() => onApprove(enhancedDescription)}
         >
-          <Text style={styles.approveButtonText}>Use Enhanced</Text>
+          <Text style={styles.approveButtonText}>{t('common.use_enhanced')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -90,6 +109,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerIcon: {
+    marginBottom: 8,
+  },
+  headerIconRTL: {
     marginBottom: 8,
   },
   title: {
@@ -131,7 +153,6 @@ const styles = StyleSheet.create({
   badgeText: {
     ...typography.caption,
     color: colors.primary,
-    marginLeft: 4,
     fontWeight: '500',
   },
   descriptionBox: {

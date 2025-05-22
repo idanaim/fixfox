@@ -11,12 +11,14 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  I18nManager,
 } from 'react-native';
 import { TextInput, Button, IconButton, Surface, Divider } from 'react-native-paper';
 import { colors, typography, styles as globalStyles } from '../admin-dashboard-styles';
 import { useCreateBusiness } from '../../../queries/react-query-wrapper/use-get-business';
 import useAuthStore from '../../../store/auth.store';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,29 +32,27 @@ export function AddBusinessModal({
   setAddBusinessModalVisible,
 }: AddBusinessModalProps) {
   const { user } = useAuthStore();
-  const { mutate: createBusiness, isLoading } = useCreateBusiness();
+  const { mutate: createBusiness, isPending } = useCreateBusiness();
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [mobile, setMobile] = useState('');
+  const { t, i18n } = useTranslation();
 
   const handleAddBusiness = () => {
-    if (!name || !type) return;
+    if (!name || !type || !user?.accountId) return;
 
-    createBusiness(
-      {
+    createBusiness({
         name,
         type,
         address,
         mobile,
-        adminId: user?.accountId,
-      },
-      {
+      accountId: user.accountId,
+    }, {
         onSuccess: () => {
           resetFormAndClose();
-        },
       }
-    );
+    });
   };
 
   const resetFormAndClose = () => {
@@ -68,137 +68,139 @@ export function AddBusinessModal({
   return (
     <Modal
       visible={isAddBusinessModalVisible}
-      transparent
+      onDismiss={() => setAddBusinessModalVisible(false)}
       animationType="slide"
-      onRequestClose={resetFormAndClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={modalStyles.container}
+      transparent={true}
       >
-        <SafeAreaView style={modalStyles.safeAreaContainer}>
-          <Surface style={modalStyles.contentContainer}>
-            {/* Header */}
-            <View style={modalStyles.header}>
-              <Text style={modalStyles.headerTitle}>Add New Business</Text>
+      <SafeAreaView style={styles.modalContainer}>
+        <Surface style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <View style={styles.headerContent}>
+              <Icon name="domain" size={24} color={colors.primary} />
+              <Text style={styles.modalTitle}>{t('admin.businessForm.addNewBusiness')}</Text>
+            </View>
               <IconButton
                 icon="close"
-                size={24}
+              size={20}
                 onPress={resetFormAndClose}
+              style={styles.closeButton}
               />
             </View>
-            
             <Divider />
-
-            {/* Form */}
-            <ScrollView 
-              style={modalStyles.scrollContainer}
-              contentContainerStyle={modalStyles.formContainer}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Business Name *</Text>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.formContainer}
+          >
+            <ScrollView>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('admin.businessForm.businessName')} *</Text>
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
-                  placeholder="Enter business name"
-                  style={modalStyles.input}
+                  placeholder={t('admin.businessForm.enterBusinessName')}
+                  style={styles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="domain" color={colors.medium} />}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
+                  theme={{ roundness: 8 }}
                 />
               </View>
 
-              <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Business Type *</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('admin.businessForm.businessType')} *</Text>
                 <TextInput
                   value={type}
                   onChangeText={setType}
                   mode="outlined"
-                  placeholder="Restaurant, Cafe, etc."
-                  style={modalStyles.input}
+                  placeholder={t('admin.businessForm.enterType')}
+                  style={styles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="store" color={colors.medium} />}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
+                  theme={{ roundness: 8 }}
                 />
               </View>
 
-              <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Address</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('admin.businessForm.address')}</Text>
                 <TextInput
                   value={address}
                   onChangeText={setAddress}
                   mode="outlined"
-                  placeholder="Business address"
-                  style={modalStyles.input}
+                  placeholder={t('admin.businessForm.enterAddress')}
+                  style={styles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="map-marker" color={colors.medium} />}
                   multiline
                   numberOfLines={2}
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
+                  theme={{ roundness: 8 }}
                 />
               </View>
 
-              <View style={modalStyles.inputGroup}>
-                <Text style={modalStyles.inputLabel}>Phone Number</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>{t('admin.businessForm.phoneNumber')}</Text>
                 <TextInput
                   value={mobile}
                   onChangeText={setMobile}
                   mode="outlined"
-                  placeholder="Contact phone"
-                  style={modalStyles.input}
+                  placeholder={t('admin.businessForm.enterPhone')}
+                  style={styles.input}
                   outlineColor={colors.border}
                   activeOutlineColor={colors.primary}
                   left={<TextInput.Icon icon="phone" color={colors.medium} />}
                   keyboardType="phone-pad"
+                  textAlign={i18n.language === 'he' ? 'right' : 'left'}
+                  theme={{ roundness: 8 }}
                 />
               </View>
             </ScrollView>
-
-            {/* Footer */}
+          </KeyboardAvoidingView>
             <Divider />
-            <View style={modalStyles.footer}>
+          <View style={styles.modalFooter}>
               <Button
                 mode="outlined"
                 onPress={resetFormAndClose}
-                style={modalStyles.cancelButton}
-                labelStyle={{ color: colors.dark }}
+              style={styles.cancelButton}
+              labelStyle={styles.cancelButtonLabel}
+              theme={{ roundness: 8 }}
               >
-                Cancel
+              {t('common.cancel')}
               </Button>
               <Button
                 mode="contained"
                 onPress={handleAddBusiness}
                 style={[
-                  modalStyles.submitButton,
-                  !isFormValid && modalStyles.disabledButton
+                styles.submitButton,
+                !isFormValid && styles.disabledButton
                 ]}
-                loading={isLoading}
-                disabled={!isFormValid || isLoading}
+              loading={isPending}
+              disabled={!isFormValid || isPending}
+              theme={{ roundness: 8 }}
               >
-                {isLoading ? 'Creating...' : 'Create Business'}
+              {isPending ? t('admin.businessForm.creating') : t('admin.businessForm.createBusiness')}
               </Button>
             </View>
           </Surface>
         </SafeAreaView>
-      </KeyboardAvoidingView>
     </Modal>
   );
 }
 
-const modalStyles = StyleSheet.create({
-  container: {
+const styles = StyleSheet.create({
+  modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  safeAreaContainer: {
+  modalContent: {
     width: '100%',
     maxWidth: Platform.OS === 'web' ? 500 : '92%',
-  },
-  contentContainer: {
     borderRadius: 12,
     overflow: 'hidden',
     maxHeight: height * 0.85,
@@ -215,46 +217,66 @@ const modalStyles = StyleSheet.create({
       },
     }),
   },
-  header: {
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.white,
   },
-  headerTitle: {
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalTitle: {
     ...typography.h3,
     color: colors.dark,
+    fontSize: 20,
+    fontWeight: '600',
   },
-  scrollContainer: {
-    maxHeight: height * 0.6,
+  closeButton: {
+    margin: 0,
   },
   formContainer: {
-    padding: 16,
+    padding: 20,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   inputLabel: {
     ...typography.body2,
     color: colors.medium,
-    marginBottom: 6,
+    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '500',
   },
   input: {
     backgroundColor: colors.white,
     fontSize: 16,
+    height: 48,
   },
-  footer: {
+  modalFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    padding: 16,
+    padding: 20,
     gap: 12,
+    backgroundColor: colors.white,
   },
   cancelButton: {
     borderColor: colors.border,
+    borderWidth: 1.5,
+    minWidth: 100,
+  },
+  cancelButtonLabel: {
+    color: colors.dark,
+    fontSize: 14,
+    fontWeight: '600',
   },
   submitButton: {
     backgroundColor: colors.primary,
+    minWidth: 120,
   },
   disabledButton: {
     backgroundColor: colors.medium,

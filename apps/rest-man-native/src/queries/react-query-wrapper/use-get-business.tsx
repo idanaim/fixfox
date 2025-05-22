@@ -35,10 +35,18 @@ export const useDeleteBusiness = () => {
   });
 };
 
+interface CreateBusinessInput {
+  name: string;
+  type: string;
+  address: string;
+  mobile: string;
+  accountId: string;
+}
+
 export const useCreateBusiness = () => {
   const { serverApi } = useContext(FixFoxProvidersContext);
   return useMutation({
-    mutationFn: (business) => serverApi.postCall('businesses', business),
+    mutationFn: (business: CreateBusinessInput) => serverApi.postCall('businesses', business),
     onSuccess: (data) => {
       console.log('Business created successfully:', data);
       // Handle success, e.g., show a success message or redirect

@@ -13,20 +13,11 @@ export class BusinessesService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(business: Partial<Business> & { adminId: number }): Promise<Business> {
-    // Find the admin user
-    const admin = await this.usersRepository.findOne({
-      where: { id: business.adminId },
-      relations: ['account']
-    });
-    if (!admin) {
-      throw new NotFoundException(`Admin with ID ${business.adminId} not found`);
-    }
-
-    // Create the business and associate it with the admin's account
+  async create(business: Partial<Business> & { accountId: string }): Promise<Business> {
+    // Create the business and associate it with the account
     const newBusiness = this.businessesRepository.create({
       ...business,
-      accountId: admin.accountId,
+      accountId: business.accountId,
     });
 
     return this.businessesRepository.save(newBusiness);
