@@ -182,5 +182,20 @@
       "title": "בעיה",
       "description": "תיאור"
     }
+  },
+  "diagnosis": {
+    "similarProblems": {
+      "title": "בעיות דומות נמצאו",
+      "empty": "לא נמצאו בעיות דומות"
+    },
+    "aiDiagnosis": {
+      "title": "אבחון בינה מלאכותית"
+    },
+    "emptyState": {
+      "title": "לא נמצאו פתרונות",
+      "message": "האם תוכל לפרט יותר על הבעיה?",
+      "action": "ספק פרטים נוספים",
+      "improveDescription": "שפר תיאור"
+    }
   }
 }

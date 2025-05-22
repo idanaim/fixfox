@@ -63,6 +63,7 @@ const ChatScreen: React.FC = () => {
     handleRequestMoreInfo,
     setApplianceOptions,
     setShowEquipmentForm,
+    handleImproveDescription,
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId,

@@ -353,6 +353,33 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     }
   };
 
+  // Handle description improvement
+  const handleImproveDescription = async () => {
+    if (!sessionId || !selectedEquipment) return;
+
+    try {
+      const sysMsg = await chatApi.addMessage(
+        sessionId,
+        t('chat.enhancing_description'),
+        'system'
+      );
+      addMessage(sysMsg);
+
+      const result: DescriptionEnhancementResult = await chatApi.enhanceProblemDescription(
+        sessionId,
+        initialIssueDescription || '',
+        selectedEquipment
+      );
+
+      setOriginalDescription(result.originalDescription);
+      setEnhancedDescription(result.enhancedDescription);
+      setShowEnhancedDescriptionApproval(true);
+      setAwaitingDescriptionApproval(true);
+    } catch (error) {
+      console.error('Error improving description:', error);
+    }
+  };
+
   return {
     // State
     messages,
@@ -379,6 +406,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     handleSolutionRejected,
     handleExistingSolutionSelect,
     handleRequestMoreInfo,
+    handleImproveDescription,
     setApplianceOptions,
     setShowEquipmentForm,
   };

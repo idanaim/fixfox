@@ -182,5 +182,19 @@
       "title": "Problem",
       "description": "Description"
     }
+  },
+  "diagnosis": {
+    "similarProblems": {
+      "title": "Similar Problems Found",
+      "empty": "No Similar Problems"
+    },
+    "aiDiagnosis": {
+      "title": "AI Diagnosis"
+    },
+    "emptyState": {
+      "title": "No Similar Problems Found",
+      "message": "Please provide a more detailed description of your problem in the chat input below. Include specific symptoms, when they occur, and any relevant details about your equipment.",
+      "action": "Need Help?"
+    }
   }
 }
