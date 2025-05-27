@@ -52,9 +52,12 @@ export class AIService {
   private readonly model = 'gpt-4-turbo-preview'; // Default model
 
   constructor(private configService: ConfigService) {
-    // Use environment variable in production
-    this.apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    // Initialize OpenAI client
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY is not set in environment variables');
+    }
+
+    this.apiKey = apiKey;
     this.openai = new OpenAI({
       apiKey: this.apiKey,
     });
