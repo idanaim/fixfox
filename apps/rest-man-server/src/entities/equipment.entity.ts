@@ -8,38 +8,45 @@ import {
   JoinColumn,
   OneToMany
 } from 'typeorm';
+import { Problem } from '../ai-solutions/entities/problem.entity';
+import { Business } from '../admin/entities/business.entity';
+import { EquipmentStatus } from '../ai-solutions/enums/equipment-status.enum';
 
 @Entity('equipment')
 export class Equipment {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ManyToOne(() => Business, (business) => business.id)
+  @JoinColumn({ name: 'businessId' })
+  business: Business;
+
   @Column()
   @Index('IDX_equipment_business')
   businessId: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   type: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   manufacturer: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   model: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   location: string;
 
   @Column({ type: 'date', nullable: true })
   purchaseDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   supplier: string;
 
   @Column({ type: 'date', nullable: true })
   warrantyExpiration: Date;
 
-  @Column({ nullable: true, length: 512 })
+  @Column({ type: 'varchar', length: 512, nullable: true })
   photoUrl: string;
 
   @CreateDateColumn()
@@ -48,10 +55,10 @@ export class Equipment {
   @Column({ type: 'tsvector', nullable: true })
   searchvector: any;
 
-  @Column({ nullable: true, length: 100 })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   serialNumber: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   category: string;
 
   @Column({ type: 'int', nullable: true })
@@ -63,21 +70,61 @@ export class Equipment {
   @Column({ type: 'int', nullable: true })
   maintenanceIntervalDays: number;
 
-  @Column({ default: 'operational' })
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: EquipmentStatus,
+    default: EquipmentStatus.OPERATIONAL
+  })
+  status: EquipmentStatus;
 
   @Column({ type: 'jsonb', nullable: true })
-  maintenanceHistory: any;
+  maintenanceHistory: {
+    date: Date;
+    type: 'repair' | 'maintenance' | 'inspection';
+    description: string;
+    cost?: number;
+    technician?: string;
+    notes?: string;
+  }[];
 
   @Column({ type: 'jsonb', nullable: true })
-  aiMetadata: any;
+  aiMetadata: {
+    commonIssues?: string[];
+    recommendedMaintenance?: string[];
+    performanceMetrics?: Record<string, any>;
+    lastAnalysis?: Date;
+  };
 
   @Column({ type: 'jsonb', nullable: true })
-  specifications: any;
+  specifications: {
+    dimensions?: {
+      width?: number;
+      height?: number;
+      depth?: number;
+      unit: 'cm' | 'inch';
+    };
+    weight?: {
+      value: number;
+      unit: 'kg' | 'lbs';
+    };
+    powerRequirements?: {
+      voltage: number;
+      amperage?: number;
+      phase?: string;
+    };
+    operatingConditions?: {
+      temperature?: { min: number; max: number; unit: 'C' | 'F' };
+      humidity?: { min: number; max: number; unit: '%' };
+    };
+    customSpecs?: Record<string, any>;
+  };
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   purchasePrice: number;
 
   @Column({ type: 'text', array: true, nullable: true })
   tags: string[];
+
+  @OneToMany(() => Problem, (problem) => problem.equipment)
+  problems: Problem[];
 } 

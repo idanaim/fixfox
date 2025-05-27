@@ -5,7 +5,7 @@ import { ChatController } from './controllers/chat.controller';
 import { ChatSession } from './entities/chat-session.entity';
 import { ChatMessage } from './entities/chat-message.entity';
 import { Issue } from './entities/issue.entity';
-import { Equipment } from './entities/equipment.entity';
+import { Equipment } from '../entities/equipment.entity';
 import { Problem } from './entities/problem.entity';
 import { Solution } from './entities/solution.entity';
 import { AIService } from './services/ai.service';

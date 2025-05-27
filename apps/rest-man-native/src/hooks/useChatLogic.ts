@@ -1,7 +1,16 @@
 import { useEffect } from 'react';
 import { useChatStore } from '../store/chat.store';
-import { chatApi, ChatSession, DescriptionEnhancementResult, Equipment, Problem } from '../api/chatAPI';
+import {
+  chatApi,
+  ChatSession,
+  DescriptionEnhancementResult,
+  Equipment,
+  FollowUpQuestion,
+  Problem
+} from '../api/chatAPI';
 import { useTranslation } from 'react-i18next';
+import followUpQuestions from '../components/FollowUpQuestions';
+import { QuestionAnswer } from './useFollowUpQuestions';
 
 interface UseChatLogicProps {
   sessionId: number | null;
@@ -29,6 +38,8 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
         awaitingApproval: awaitingDescriptionApproval,
       },
     },
+    isFollowUpQuestions,
+    setFollowUpQuestions,
     setSessionId,
     addMessage,
     setMessages,
@@ -225,37 +236,15 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
     setSelectedEquipment(equipment);
     setApplianceOptions(null);
+    debugger
+    setFollowUpQuestions(true);
     const sysMsg = await chatApi.addMessage(
       sessionId,
       `${t('chat.equipment_selected')}: ${equipment.manufacturer} ${equipment.model}`,
-      'system'
+      'system',
+      equipment
     );
     addMessage(sysMsg);
-
-    if (initialIssueDescription) {
-      try {
-        const enhancingMsg = await chatApi.addMessage(
-          sessionId,
-          t('chat.enhancing_description'),
-          'system'
-        );
-        addMessage(enhancingMsg);
-
-        const result: DescriptionEnhancementResult = await chatApi.enhanceProblemDescription(
-          sessionId,
-          initialIssueDescription,
-          equipment
-        );
-
-        setOriginalDescription(result.originalDescription);
-        setEnhancedDescription(result.enhancedDescription);
-        setShowEnhancedDescriptionApproval(true);
-        setAwaitingDescriptionApproval(true);
-      } catch (error) {
-        console.error('Error enhancing description with equipment context:', error);
-        await diagnoseIssue(initialIssueDescription, equipment.id);
-      }
-    }
   };
 
   // Handle equipment form submission
@@ -354,9 +343,9 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
   };
 
   // Handle description improvement
-  const handleImproveDescription = async () => {
+  const handleImproveDescription = async (followUpQuestions: QuestionAnswer[] = []) => {
     if (!sessionId || !selectedEquipment) return;
-
+console.log('Improving description with follow-up questions:', followUpQuestions);
     try {
       const sysMsg = await chatApi.addMessage(
         sessionId,
@@ -365,10 +354,34 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       );
       addMessage(sysMsg);
 
+      // Convert QuestionAnswer[] to the format expected by the API
+      // The API expects type to be one of: 'timing', 'symptom', 'context', 'severity'
+      const followUpQuestionsForApi = followUpQuestions.map(qa => {
+        // Use a default type if we can't determine the actual type
+        let questionType: 'timing' | 'symptom' | 'context' | 'severity' = 'context';
+
+        // Try to determine the type from the question
+        const lowerQuestion = qa.question.toLowerCase();
+        if (lowerQuestion.includes('when') || lowerQuestion.includes('time')) {
+          questionType = 'timing';
+        } else if (lowerQuestion.includes('symptom') || lowerQuestion.includes('notice')) {
+          questionType = 'symptom';
+        } else if (lowerQuestion.includes('severe') || lowerQuestion.includes('bad')) {
+          questionType = 'severity';
+        }
+
+        return {
+          question: qa.question,
+          answer: qa.answer,
+          type: questionType
+        };
+      });
+
       const result: DescriptionEnhancementResult = await chatApi.enhanceProblemDescription(
         sessionId,
         initialIssueDescription || '',
-        selectedEquipment
+        selectedEquipment,
+        followUpQuestionsForApi
       );
 
       setOriginalDescription(result.originalDescription);
@@ -393,9 +406,11 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     enhancedDescription,
     originalDescription,
     showEnhancedDescriptionApproval,
-    awaitingDescriptionApproval,
+    isFollowUpQuestions,
 
     // Actions
+
+    setFollowUpQuestions,
     setInput,
     handleSend,
     handleEquipmentSelect,
@@ -409,5 +424,9 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     handleImproveDescription,
     setApplianceOptions,
     setShowEquipmentForm,
+
+    // Additional methods for external use
+    diagnoseIssue,
+    addMessage
   };
 };

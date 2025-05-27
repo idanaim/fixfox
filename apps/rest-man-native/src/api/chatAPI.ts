@@ -2,6 +2,8 @@ import { api } from './api';
 import { User } from '../interfaces/business';
 import i18n from 'i18next';
 
+const API_BASE = 'http://localhost:3000/api';
+
 export interface ChatSession {
   id: number;
   status: string;
@@ -92,6 +94,21 @@ export interface DescriptionEnhancementResult {
   potentialEquipmentTypes?: string[];
 }
 
+export interface FollowUpQuestion {
+  question: string;
+  type: 'timing' | 'symptom' | 'context' | 'severity';
+  options?: string[];
+  context?: string;
+}
+
+export interface AnalysisResult {
+  problems: Problem[];
+  followUpQuestions: FollowUpQuestion[];
+  confidence: string;
+  summary?: string;
+  isDiagnosisReady?: boolean;
+}
+
 // Helper function to get current language
 const getCurrentLanguage = () => {
   return i18n.language || 'en';
@@ -104,10 +121,10 @@ export const chatApi = {
   ): Promise<ChatSession> => {
     try {
       const language = getCurrentLanguage();
-      const response = await api.post('/chat/sessions', { 
-        businessId, 
+      const response = await api.post('/chat/sessions', {
+        businessId,
         userId,
-        language 
+        language
       });
       return response.data;
     } catch (error) {
@@ -450,23 +467,6 @@ export const chatApi = {
       throw error;
     }
   },
-
-  createBulkEquipment: async (
-    equipments: Partial<Equipment>[],
-    businessId: number
-  ): Promise<Equipment[]> => {
-    try {
-      const response = await api.post('/equipment/bulk', {
-        equipments,
-        businessId,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error creating bulk equipment:', error);
-      throw error;
-    }
-  },
-
   // Solution API Calls
   createSolution: async (
     user: Partial<User>,
@@ -526,104 +526,18 @@ export const chatApi = {
     }
   },
 
-  rateSolutionEffectiveness: async (
-    id: number,
-    effective: boolean
-  ): Promise<void> => {
-    try {
-      await api.post(`/solutions/${id}/effectiveness`, { effective });
-    } catch (error) {
-      console.error(`Error rating solution with id ${id}:`, error);
-      throw error;
-    }
-  },
-
-  generateSolutionsForProblem: async (
-    problemId: number
-  ): Promise<Solution[]> => {
-    try {
-      const response = await api.post(
-        `/solutions/generate-for-problem/${problemId}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Error generating solutions for problem ${problemId}:`,
-        error
-      );
-      throw error;
-    }
-  },
-
-  enhancedDiagnosis: async (
-    description: string,
-    equipmentId: number,
-    businessId: number,
-    maxResults: number = 5,
-    sessionId?: number
-  ): Promise<EnhancedDiagnosisResult> => {
-    try {
-      // If a sessionId is provided, use the chat flow endpoint
-      if (sessionId) {
-        const response = await api.post(`/chat/sessions/${sessionId}/enhanced-diagnosis`, {
-          description,
-          equipmentId,
-          businessId,
-          maxResults
-        });
-        return response.data;
-      }
-      // Otherwise fall back to the direct problem endpoint (which is now deprecated)
-      else {
-        const response = await api.post('/problems/enhanced-diagnosis', {
-          description,
-          equipmentId,
-          businessId,
-          maxResults
-        });
-        return response.data;
-      }
-    } catch (error) {
-      console.error('Error performing enhanced diagnosis:', error);
-      throw error;
-    }
-  },
-
-  getContextBadge: (source: string): ContextBadge => {
-    switch (source) {
-      case 'current_business':
-        return {
-          type: 'current_business',
-          label: 'Used before in this business'
-        };
-      case 'other_business':
-        return {
-          type: 'other_business',
-          label: 'Other businesses use it'
-        };
-      case 'ai_generated':
-        return {
-          type: 'ai_generated',
-          label: 'AI Solution'
-        };
-      default:
-        return {
-          type: 'ai_generated',
-          label: 'AI Solution'
-        };
-    }
-  },
-
   enhanceProblemDescription: async (
     sessionId: number,
     description: string,
-    equipment?: Equipment
+    equipment?: Equipment,
+    followUpQuestions: FollowUpQuestion[] = []
   ): Promise<{ originalDescription: string; enhancedDescription: string }> => {
     try {
       const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/enhance-description`, {
         description,
         equipment,
+        followUpQuestions,
         language
       });
       return response.data;
@@ -633,67 +547,17 @@ export const chatApi = {
     }
   },
 
-  completeDiagnosisWorkflow: async (
-    initialDescription: string,
-    equipmentId: number,
-    businessId: number,
-    maxResults: number = 5
-  ): Promise<{
-    step: 'enhance_description' | 'issue_matches' | 'problem_matches' | 'ai_diagnosis';
-    enhancedDescription?: string;
-    originalDescription?: string;
-    diagnosisResult?: EnhancedDiagnosisResult;
-  }> => {
+  followUpQuestions: async (sessionId: number, equipment: Equipment): Promise<AnalysisResult> => {
     try {
-      // Create a temporary session ID for the enhancement
-      // This is a workaround since we don't have a real session ID at this point
-      const tempSessionId = equipmentId; // Using equipment ID as a fallback
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/followup-questions`, {
+        language,
+        equipment
+      });
 
-      // Step 1: Enhance the description
-      const enhancementResult = await chatApi.enhanceProblemDescription(
-        tempSessionId,
-        initialDescription
-      );
-
-      // Return the enhanced description for user approval
-      // The client should display this to the user and ask for approval
-      return {
-        step: 'enhance_description',
-        enhancedDescription: enhancementResult.enhancedDescription,
-        originalDescription: enhancementResult.originalDescription
-      };
-
-      // Note: The client should call performDiagnosis() after user approves or provides a new description
+      return response.data;
     } catch (error) {
-      console.error('Error in diagnosis workflow:', error);
-      throw error;
-    }
-  },
-
-  performDiagnosis: async (
-    approvedDescription: string,
-    equipmentId: number,
-    businessId: number,
-    maxResults: number = 5
-  ): Promise<{
-    step: 'issue_matches' | 'problem_matches' | 'ai_diagnosis';
-    diagnosisResult: EnhancedDiagnosisResult;
-  }> => {
-    try {
-      // Perform the enhanced diagnosis with the approved description
-      const diagnosisResult = await chatApi.enhancedDiagnosis(
-        approvedDescription,
-        equipmentId,
-        businessId,
-        maxResults
-      );
-
-      return {
-        step: diagnosisResult.type as 'issue_matches' | 'problem_matches' | 'ai_diagnosis',
-        diagnosisResult
-      };
-    } catch (error) {
-      console.error('Error performing diagnosis:', error);
+      console.error('Error analyzing issue:', error);
       throw error;
     }
   },

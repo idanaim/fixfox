@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ChatMessage, ChatSession, Diagnosis, Equipment, Problem } from '../api/chatAPI';
+import { ChatMessage, Diagnosis, Equipment, Problem } from '../api/chatAPI';
 
 interface ChatState {
   // Session management
@@ -7,13 +7,12 @@ interface ChatState {
     id: number | null;
     messages: ChatMessage[];
   };
-
   // User input and loading states
   ui: {
     input: string;
     loading: boolean;
   };
-
+  isFollowUpQuestions: boolean;
   // Equipment management
   equipment: {
     options: Equipment[] | null;
@@ -55,7 +54,8 @@ interface ChatState {
   setOriginalDescription: (description: string) => void;
   setAwaitingDescriptionApproval: (awaiting: boolean) => void;
   setPotentialEquipmentTypes: (types: string[]) => void;
-  
+  setFollowUpQuestions: (isFollowupQuestions:boolean) => void;
+
   // Reset state
   reset: () => void;
 }
@@ -65,6 +65,7 @@ const initialState = {
     id: null,
     messages: [],
   },
+  isFollowUpQuestions:false,
   ui: {
     input: '',
     loading: false,
@@ -90,75 +91,76 @@ const initialState = {
 export const useChatStore = create<ChatState>((set) => ({
   ...initialState,
 
+  // Follow up questions
+  setFollowUpQuestions: (isFollowUpQuestions:boolean) => set((state) => ({ ...state, isFollowUpQuestions })),
   // Session actions
-  setSessionId: (id) => set((state) => ({ session: { ...state.session, id } })),
-  addMessage: (message) => set((state) => ({ 
-    session: { 
-      ...state.session, 
-      messages: [...state.session.messages, message] 
-    } 
+  setSessionId: (id: number | null) => set((state) => ({ session: { ...state.session, id } })),
+  addMessage: (message: ChatMessage) => set((state) => ({
+    session: {
+      ...state.session,
+      messages: [...state.session.messages, message]
+    }
   })),
-  setMessages: (messages) => set((state) => ({ 
-    session: { ...state.session, messages } 
+  setMessages: (messages: ChatMessage[]) => set((state) => ({
+    session: { ...state.session, messages }
   })),
-
   // UI actions
-  setInput: (input) => set((state) => ({ 
-    ui: { ...state.ui, input } 
+  setInput: (input: string) => set((state) => ({
+    ui: { ...state.ui, input }
   })),
-  setLoading: (loading) => set((state) => ({ 
-    ui: { ...state.ui, loading } 
+  setLoading: (loading: boolean) => set((state) => ({
+    ui: { ...state.ui, loading }
   })),
 
   // Equipment actions
-  setApplianceOptions: (options) => set((state) => ({ 
-    equipment: { ...state.equipment, options } 
+  setApplianceOptions: (options: Equipment[] | null) => set((state) => ({
+    equipment: { ...state.equipment, options }
   })),
-  setShowEquipmentForm: (show) => set((state) => ({ 
-    equipment: { ...state.equipment, showForm: show } 
+  setShowEquipmentForm: (show: boolean) => set((state) => ({
+    equipment: { ...state.equipment, showForm: show }
   })),
-  setSelectedEquipment: (equipment) => set((state) => ({ 
-    equipment: { ...state.equipment, selected: equipment } 
+  setSelectedEquipment: (equipment: Equipment | null) => set((state) => ({
+    equipment: { ...state.equipment, selected: equipment }
   })),
 
   // Diagnosis actions
-  setDiagnosisResult: (result) => set((state) => ({ 
-    diagnosis: { ...state.diagnosis, result } 
+  setDiagnosisResult: (result: any) => set((state) => ({
+    diagnosis: { ...state.diagnosis, result }
   })),
-  setInitialIssueDescription: (description) => set((state) => ({ 
-    diagnosis: { 
-      ...state.diagnosis, 
-      description: { ...state.diagnosis.description, initial: description } 
-    } 
+  setInitialIssueDescription: (description: string | null) => set((state) => ({
+    diagnosis: {
+      ...state.diagnosis,
+      description: { ...state.diagnosis.description, initial: description }
+    }
   })),
-  setShowEnhancedDescriptionApproval: (show) => set((state) => ({ 
-    diagnosis: { 
-      ...state.diagnosis, 
-      description: { ...state.diagnosis.description, showApproval: show } 
-    } 
+  setShowEnhancedDescriptionApproval: (show: boolean) => set((state) => ({
+    diagnosis: {
+      ...state.diagnosis,
+      description: { ...state.diagnosis.description, showApproval: show }
+    }
   })),
-  setEnhancedDescription: (description) => set((state) => ({ 
-    diagnosis: { 
-      ...state.diagnosis, 
-      description: { ...state.diagnosis.description, enhanced: description } 
-    } 
+  setEnhancedDescription: (description: string) => set((state) => ({
+    diagnosis: {
+      ...state.diagnosis,
+      description: { ...state.diagnosis.description, enhanced: description }
+    }
   })),
-  setOriginalDescription: (description) => set((state) => ({ 
-    diagnosis: { 
-      ...state.diagnosis, 
-      description: { ...state.diagnosis.description, original: description } 
-    } 
+  setOriginalDescription: (description: string) => set((state) => ({
+    diagnosis: {
+      ...state.diagnosis,
+      description: { ...state.diagnosis.description, original: description }
+    }
   })),
-  setAwaitingDescriptionApproval: (awaiting) => set((state) => ({ 
-    diagnosis: { 
-      ...state.diagnosis, 
-      description: { ...state.diagnosis.description, awaitingApproval: awaiting } 
-    } 
+  setAwaitingDescriptionApproval: (awaiting: boolean) => set((state) => ({
+    diagnosis: {
+      ...state.diagnosis,
+      description: { ...state.diagnosis.description, awaitingApproval: awaiting }
+    }
   })),
-  setPotentialEquipmentTypes: (types) => set((state) => ({ 
-    diagnosis: { ...state.diagnosis, potentialEquipmentTypes: types } 
+  setPotentialEquipmentTypes: (types: string[]) => set((state) => ({
+    diagnosis: { ...state.diagnosis, potentialEquipmentTypes: types }
   })),
 
   // Reset all state
   reset: () => set(initialState),
-})); 
+}));

@@ -18,10 +18,12 @@ import EquipmentForm from '../components/EquipmentForm';
 import SolutionSuggestion from '../components/SolutionSuggestion';
 import ProblemDiagnosisDisplay from '../components/ProblemDiagnosisDisplay';
 import EnhancedDescriptionApproval from '../components/EnhancedDescriptionApproval';
+import FollowUpQuestionsContainer from '../components/FollowUpQuestionsContainer';
 import { useBusinesses } from '../hooks/useBusinesses';
 import { useChatLogic } from '../hooks/useChatLogic';
 import { useChatStore } from '../store/chat.store';
 import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { chatApi } from '../api/chatAPI';
 
 interface RouteParams {
   businessId: number;
@@ -32,7 +34,7 @@ const ChatScreen: React.FC = () => {
   const route = useRoute();
   const { businessId, userId } = route.params as RouteParams;
   const { businesses, selectedBusiness, setSelectedBusiness } = useBusinesses();
-  const { session: { id: sessionId } } = useChatStore();
+  const { session: { id: sessionId },    isFollowUpQuestions, setFollowUpQuestions, } = useChatStore();
   const { t } = useTranslation();
 
   const {
@@ -44,13 +46,10 @@ const ChatScreen: React.FC = () => {
     showEquipmentForm,
     selectedEquipment,
     diagnosisResult,
-    initialIssueDescription,
     enhancedDescription,
     originalDescription,
     showEnhancedDescriptionApproval,
-    awaitingDescriptionApproval,
 
-    // Actions
     setInput,
     handleSend,
     handleEquipmentSelect,
@@ -63,14 +62,16 @@ const ChatScreen: React.FC = () => {
     handleRequestMoreInfo,
     setApplianceOptions,
     setShowEquipmentForm,
-    handleImproveDescription,
+    addMessage,
+    diagnoseIssue,
+    handleImproveDescription
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId,
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
-debugger
+  console.log(isFollowUpQuestions,'isFollowUpQuestions');
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -110,6 +111,23 @@ debugger
               loading={loading}
             />
           </View>
+        )}
+
+        {/* Add FollowUpQuestionsContainer right after the equipment selection */}
+        {isFollowUpQuestions && selectedEquipment && !diagnosisResult && !showEnhancedDescriptionApproval && sessionId && (
+          <FollowUpQuestionsContainer
+            sessionId={sessionId}
+            equipment={selectedEquipment}
+            onReadyForDiagnosis={(summary,isFinish) => {
+              debugger
+              setFollowUpQuestions(!isFinish)
+              // Send a message to the chat API with the summary
+              const message = t('chat.follow_up_summary', { summary });
+              chatApi.addMessage(sessionId, message, 'system');
+              // The description improvement will be triggered automatically by FollowUpQuestionsContainer
+            }}
+            onImproveDescription={handleImproveDescription}
+          />
         )}
 
         {/* Enhanced Description Approval Dialog */}

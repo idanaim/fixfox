@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Like, Raw } from 'typeorm';
 import { Equipment } from '../entities/equipment.entity';
+import { EquipmentStatus } from '../ai-solutions/enums/equipment-status.enum';
 
 @Injectable()
 export class EquipmentService {
@@ -78,7 +79,7 @@ export class EquipmentService {
     });
   }
 
-  async findByStatus(businessId: number, status: string): Promise<Equipment[]> {
+  async findByStatus(businessId: number, status: EquipmentStatus): Promise<Equipment[]> {
     return this.equipmentRepository.find({
       where: { businessId, status },
       order: { createdAt: 'DESC' }

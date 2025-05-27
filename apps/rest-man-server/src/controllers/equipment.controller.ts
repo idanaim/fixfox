@@ -16,6 +16,7 @@ import { Equipment } from '../entities/equipment.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../admin/entities/user.entity';
+import { EquipmentStatus } from '../ai-solutions/enums/equipment-status.enum';
 
 @Controller('equipment')
 export class EquipmentController {
@@ -121,7 +122,7 @@ export class EquipmentController {
 
   @Get('status/:status')
   async findByStatus(
-    @Param('status') status: string,
+    @Param('status') status: EquipmentStatus,
     @Query('businessId') businessId: number
   ) {
     return this.equipmentService.findByStatus(businessId, status);

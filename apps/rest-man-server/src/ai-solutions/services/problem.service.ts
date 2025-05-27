@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Problem } from '../entities/problem.entity';
-import { Equipment } from '../entities/equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
 import { AIService } from './ai.service';
 import { CreateProblemDto } from '../dtos/create-problem.dto';
 import { Issue } from '../entities/issue.entity';

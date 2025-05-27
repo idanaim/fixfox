@@ -2,20 +2,19 @@ import { Body, Controller, Get, Param, Post, Put, UseGuards, NotFoundException }
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { User } from '../../admin/entities/user.entity';
-import { Problem } from '../entities/problem.entity';
-import { Solution } from '../entities/solution.entity';
 import { CreateSolutionDto } from '../dtos/solution.dto';
 import { CreateProblemDto } from '../dtos/create-problem.dto';
 import { ProblemService } from '../services/problem.service';
-import { Equipment } from '../entities/equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
+import { AIService } from '../services/ai.service';
 
 @Controller('chat')
 // @UseGuards(JwtAuthGuard)
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
-    private readonly problemService: ProblemService
+    private readonly problemService: ProblemService,
+    private readonly aiService: AIService
   ) {}
 
   @Post('sessions')
@@ -60,12 +59,13 @@ export class ChatController {
   @Post('sessions/:sessionId/enhance-description')
   async enhanceProblemDescription(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string, equipment: Equipment, language?: string }
+    @Body() body: { description: string, equipment: Equipment, language?: string,followUpQuestions?: Record<string, string>[] }
   ) {
     return this.chatService.enhanceProblemDescription(
       sessionId,
       body.description,
       body.equipment,
+      body.followUpQuestions,
       body.language
     );
   }
@@ -94,17 +94,56 @@ export class ChatController {
     );
 
     // Trigger AI analysis after creating the issue
-    await this.chatService.analyzeIssue(sessionId, issue.id);
+    await this.chatService.analyzeIssue(sessionId);
 
     return issue;
   }
 
-  @Post('sessions/:sessionId/analyze')
+  @Post('sessions/:sessionId/followup-questions')
   async analyzeIssue(
     @Param('sessionId') sessionId: number,
-    @Body('issueId') issueId: number
+    @Body() body?: { language?: string, equipment:Equipment }
   ) {
-    return this.chatService.analyzeIssue(sessionId, issueId);
+    const language = body?.language || 'en';
+    try {
+      // Get user messages to analyze
+      const userMessages = await this.chatService.getUserMessages(sessionId);
+      // Generate follow-up questions based on the description and previous answers
+      const combinedText = userMessages.map(msg => msg.content).join('\n');
+      const followUpQuestions = await this.aiService.generateFollowUpQuestions(
+        combinedText,
+        body.equipment,
+        language
+      );
+      // If no questions, generate a summary of the information provided
+      if (followUpQuestions.length === 0) {
+        // Generate a summary of the collected information
+        const summary = await this.aiService.generateIssueSummary(
+          combinedText,
+          body.equipment,
+          language
+        );
+
+        // Return the summary without follow-up questions
+        return {
+          problems: [],
+          followUpQuestions: [],
+          confidence: 'high',
+          summary: summary,
+          isDiagnosisReady: true
+        };
+      }
+      // Return only the first question to implement step-by-step questioning
+      return {
+        problems: [],
+        followUpQuestions,
+        confidence: 'medium',
+        isDiagnosisReady: false
+      };
+    } catch (error) {
+      console.error('Error analyzing issue:', error);
+      throw error;
+    }
   }
 
   @Post('sessions/:sessionId/diagnose')
@@ -180,9 +219,9 @@ export class ChatController {
     await this.chatService.updateSessionStatus(
       sessionId,
       'enhanced_diagnosis_complete',
-      { 
+      {
         enhancedDiagnosisResult: diagnosisResult,
-        language 
+        language
       }
     );
 

@@ -2,7 +2,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../admin/entities/user.entity';
 import { Problem } from './problem.entity';
-import { Equipment } from './equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
 import { Solution } from './solution.entity';
 import { Business } from '../../admin/entities/business.entity';
 import { ChatSession } from './chat-session.entity';
