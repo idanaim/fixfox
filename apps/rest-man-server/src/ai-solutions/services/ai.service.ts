@@ -2,9 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import axios from 'axios';
+import { Agent } from 'http';
 import { Problem } from '../entities/problem.entity';
 import { Issue } from '../entities/issue.entity';
 import { Equipment } from '../../entities/equipment.entity';
+
+// Model configuration
+const MODEL_CONFIG = {
+  DIAGNOSIS: 'gpt-4-0125-preview',  // For complex diagnosis and analysis
+  CHAT: 'gpt-3.5-turbo',           // For general chat and simple queries
+  FOLLOW_UP: 'gpt-3.5-turbo',      // For follow-up questions
+  ENHANCEMENT: 'gpt-4-0125-preview' // For description enhancement
+} as const;
 
 // Interface for problem analysis results
 interface AnalysisResult {
@@ -49,7 +58,6 @@ export class AIService {
   private readonly logger = new Logger(AIService.name);
   private readonly apiKey: string;
   private readonly apiUrl = 'https://api.openai.com/v1/chat/completions';
-  private readonly model = 'gpt-4-turbo-preview'; // Default model
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
@@ -61,6 +69,12 @@ export class AIService {
     this.openai = new OpenAI({
       apiKey: this.apiKey,
     });
+  }
+
+
+  // Helper method to select model based on task type
+  private selectModel(taskType: keyof typeof MODEL_CONFIG): string {
+    return MODEL_CONFIG[taskType];
   }
 
   /**
@@ -91,7 +105,7 @@ export class AIService {
       const response = await axios.post(
         this.apiUrl,
         {
-          model: this.model,
+          model: this.selectModel('CHAT'),
           messages: [
             {
               role: 'system',
@@ -172,7 +186,7 @@ export class AIService {
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3, // Lower temperature for more deterministic results
         max_tokens: 50, // We only need a short response
@@ -241,7 +255,7 @@ export class AIService {
 
       /* ---------- model call ---------- */
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: this.selectModel('ENHANCEMENT'),
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userPrompt  },
@@ -290,7 +304,7 @@ export class AIService {
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
       });
@@ -348,7 +362,7 @@ ${previousIssuesContext ? `Previous Issues:\n${previousIssuesContext}\n\n` : ''}
 Please analyze the problem and provide recommendations.`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('DIAGNOSIS'),
         messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
@@ -428,7 +442,7 @@ ${description}
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: this.selectModel('DIAGNOSIS'),
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt },
@@ -479,7 +493,7 @@ ${description}
       const response = await axios.post(
         this.apiUrl,
         {
-          model: this.model,
+          model: this.selectModel('CHAT'),
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
           max_tokens: 1000,
@@ -527,7 +541,7 @@ Analysis: ${analysis.summary}
 Please provide detailed step-by-step solutions.`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('DIAGNOSIS'),
         messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
@@ -573,7 +587,7 @@ Please provide detailed step-by-step solutions.`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
       });
@@ -602,6 +616,14 @@ Please provide detailed step-by-step solutions.`;
   /**
    * Generates follow-up questions based on the initial problem description
    */
+  private cleanAIResponse(response: string): string {
+    // Remove markdown code blocks if present
+    return response
+      .replace(/```json\s*/g, '')
+      .replace(/```\s*/g, '')
+      .trim();
+  }
+
   async generateFollowUpQuestions(
     description: string,
     equipment: Equipment,
@@ -624,13 +646,13 @@ Please provide detailed step-by-step solutions.`;
 הקפד שמרבית השאלות יהיו שאלות ברירה (עם אפשרויות), לא שאלות פתוחות.
 לדוגמה, במקום "מתי התחילה הבעיה?" תן אפשרויות כמו "היום", "בשבוע האחרון", "לפני מספר שבועות", "לפני מספר חודשים".
 
-החזר את התוצאה בפורמט JSON עם המבנה הבא:
+החזר את התוצאה בפורמט JSON בלבד (ללא markdown) עם המבנה הבא:
 {
   "questions": [
     {
       "question": "שאלה",
       "type": "timing|symptom|context|severity",
-      "options": ["אפשרות 1", "אפשרות 2"] // חובה עבור רוב השאלות
+      "options": ["אפשרות 1", "אפשרות 2"]
     }
   ]
 }`
@@ -646,19 +668,19 @@ Please create a list of follow-up questions that will help better understand the
 Make sure that most questions are multiple-choice (with options), not open-ended questions.
 For example, instead of "When did the problem start?" provide options like "Today", "Within the past week", "Several weeks ago", "Several months ago".
 
-Return the result in JSON format with the following structure:
+Return the result in JSON format only (no markdown) with the following structure:
 {
   "questions": [
     {
       "question": "Question",
       "type": "timing|symptom|context|severity",
-      "options": ["Option 1", "Option 2"] // Required for most questions
+      "options": ["Option 1", "Option 2"]
     }
   ]
 }`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('FOLLOW_UP'),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
@@ -669,7 +691,8 @@ Return the result in JSON format with the following structure:
     const response = completion.choices[0].message.content;
 
     try {
-      const parsedResponse = JSON.parse(response);
+      const cleanedResponse = this.cleanAIResponse(response);
+      const parsedResponse = JSON.parse(cleanedResponse);
 
       // Ensure all questions have options when possible
       return parsedResponse.questions.map(question => {
@@ -782,7 +805,7 @@ Return the result in JSON format with the following structure:
 - severity: חומרת הבעיה
 - context: הקשר או נסיבות
 
-החזר את התוצאה בפורמט JSON.`
+החזר את התוצאה בפורמט JSON בלבד (ללא markdown).`
       : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Original Description: ${originalDescription}
 Enhanced Description: ${enhancedDescription}
@@ -793,10 +816,10 @@ Please extract the following structured data:
 - severity: severity of the issue
 - context: circumstances or context
 
-Return the result in JSON format.`;
+Return the result in JSON format only (no markdown).`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('DIAGNOSIS'),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
@@ -805,7 +828,14 @@ Return the result in JSON format.`;
     });
 
     const response = completion.choices[0].message.content;
-    return JSON.parse(response);
+    
+    try {
+      const cleanedResponse = this.cleanAIResponse(response);
+      return JSON.parse(cleanedResponse);
+    } catch (error) {
+      console.error('Error parsing structured data:', error);
+      return {};
+    }
   }
 
   private async getFollowUpQuestionsContext(
@@ -850,7 +880,7 @@ Please provide relevant information about the equipment, including:
 - Maintenance tips`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('CHAT'),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
@@ -1080,7 +1110,7 @@ Please analyze the collected information and provide:
 Provide a detailed but concise response that can serve as a summary before diagnosis.`;
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: this.selectModel('CHAT'),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },

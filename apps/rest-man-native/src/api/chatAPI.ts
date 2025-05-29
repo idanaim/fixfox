@@ -227,6 +227,28 @@ export const chatApi = {
     }
   },
 
+  createIssueWithTechnicianAssignment: async (
+    businessId: number,
+    userId: number,
+    problemDescription: string,
+    equipment?: Equipment,
+  ): Promise<any> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post('/issues/assign-technician', {
+        businessId,
+        userId,
+        problemDescription,
+        equipment,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating issue with technician assignment:', error);
+      throw error;
+    }
+  },
+
   createProblem: async (
     description: string,
     businessId: number,

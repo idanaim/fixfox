@@ -12,6 +12,8 @@ interface ExistingSolutionsDisplayProps {
   onSolutionSelect?: (problem: Problem) => void;
   onRequestMoreInfo?: () => void;
   onImproveDescription?: () => void;
+  onAssignToTechnician?: () => void;
+  showAssignTechnician?: boolean;
 }
 
 const EmptyState: React.FC<{
@@ -57,112 +59,84 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
   onSolutionSelect,
   onRequestMoreInfo,
   onImproveDescription,
+  onAssignToTechnician,
+  showAssignTechnician = true,
 }) => {
   const { t } = useTranslation();
 
   if (!problems || problems.length === 0) {
     return (
-      <EmptyState
-        onRequestMoreInfo={onRequestMoreInfo}
-        onImproveDescription={onImproveDescription}
-      />
+      <View style={styles.container}>
+        <EmptyState
+          onRequestMoreInfo={onRequestMoreInfo}
+          onImproveDescription={onImproveDescription}
+        />
+        {/* Floating Assign Technician Button */}
+        {showAssignTechnician && onAssignToTechnician && (
+          <View style={styles.floatingButtonContainer}>
+            <Button
+              mode="contained"
+              onPress={onAssignToTechnician}
+              style={styles.floatingButton}
+              icon="account-wrench"
+              contentStyle={styles.floatingButtonContent}
+              labelStyle={styles.floatingButtonLabel}
+            >
+              {t('diagnosis.assignToTechnician')}
+            </Button>
+          </View>
+        )}
+      </View>
     );
   }
 
-  const renderProblemItem = ({ item }: { item: Problem }) => {
-    const isBusiness = item.equipment && (item.equipment.businessId === currentBusinessId);
-    const hasSolutions = item.solutions && item.solutions.length > 0;
-    const solutionCount = item.solutions?.length || 0;
-    const firstSolution = item.solutions?.[0];
-    const badgeColor = isBusiness ? colors.success : colors.secondary;
-
-    return (
-      <Surface style={styles.problemCard}>
-        <TouchableOpacity
-          onPress={() => onSolutionSelect && onSolutionSelect(item)}
-          style={styles.problemItem}
-          activeOpacity={0.7}
-        >
-          <View style={styles.problemHeader}>
-            <View style={styles.sourceContainer}>
-              <Icon
-                name={isBusiness ? "domain" : "earth"}
-                size={18}
-                color={badgeColor}
-                style={styles.sourceIcon}
-              />
-              <Text style={styles.sourceText}>
-                {isBusiness ? t('solution.source.business') : t('solution.source.community')}
+  const renderProblemItem = ({ item }: { item: Problem }) => (
+    <TouchableOpacity
+      style={styles.problemItem}
+      onPress={() => onSolutionSelect?.(item)}
+    >
+      <Surface style={styles.surface} elevation={1}>
+        <View style={styles.problemContent}>
+          <Text style={styles.problemDescription}>{item.description}</Text>
+          {item.solutions && item.solutions.length > 0 && (
+            <View style={styles.solutionPreview}>
+              <Text style={styles.solutionText}>
+                {item.solutions[0].treatment}
               </Text>
             </View>
-            {hasSolutions && (
-              <View style={[styles.badgeContainer, { backgroundColor: badgeColor + '20' }]}>
-                <Text style={[styles.badgeText, { color: badgeColor }]}>
-                  {`${solutionCount} ${solutionCount === 1 ? t('solution.title') : t('solution.title') + 's'}`}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <Text style={styles.problemTitle}>{item.description}</Text>
-
-          {hasSolutions && firstSolution && (
-            <>
-              <Divider style={styles.divider} />
-              <View style={styles.solutionPreview}>
-                <View style={styles.solutionHeader}>
-                  <Icon name="lightbulb-outline" size={16} color={colors.primary} />
-                  <Text style={styles.solutionPreviewLabel}>
-                    {t('solution.title')}:
-                  </Text>
-                </View>
-                <Text style={styles.solutionPreviewText} numberOfLines={2}>
-                  {firstSolution.treatment}
-                </Text>
-                <View style={styles.solutionMeta}>
-                  <Icon name="account-outline" size={14} color={colors.medium} />
-                  <Text style={styles.solutionMetaText}>
-                    {t('solution.resolvedBy', { name: firstSolution.resolvedBy })}
-                  </Text>
-                </View>
-              </View>
-            </>
           )}
-
-          <View style={styles.actionContainer}>
-            <Text style={styles.actionText}>{t('common.viewDetails')}</Text>
-            <Icon name="chevron-right" size={20} color={colors.primary} />
-          </View>
-        </TouchableOpacity>
+        </View>
+        <Icon name="chevron-right" size={20} color={colors.medium} />
       </Surface>
-    );
-  };
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
       <FlatList
         data={problems}
-        keyExtractor={(item) => (item.id || 0).toString()}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={renderProblemItem}
-        contentContainerStyle={styles.listContainer}
+        style={[styles.list, { maxHeight: 300 }]}
+        contentContainerStyle={{ paddingBottom: showAssignTechnician ? 80 : 16 }}
         showsVerticalScrollIndicator={true}
-        bounces={true}
-        overScrollMode="always"
-        ListFooterComponent={
-          onImproveDescription ? (
-            <View style={styles.footerContainer}>
-              <Button
-                mode="outlined"
-                onPress={onImproveDescription}
-                style={styles.improveButton}
-                icon="pencil-outline"
-              >
-                {t('diagnosis.emptyState.improveDescription')}
-              </Button>
-            </View>
-          ) : null
-        }
       />
+      
+      {/* Floating Assign Technician Button */}
+      {showAssignTechnician && onAssignToTechnician && (
+        <View style={styles.floatingButtonContainer}>
+          <Button
+            mode="contained"
+            onPress={onAssignToTechnician}
+            style={styles.floatingButton}
+            contentStyle={styles.floatingButtonContent}
+            icon="account-wrench"
+            compact={true}
+          >
+            {t('diagnosis.assignToTechnician')}
+          </Button>
+        </View>
+      )}
     </View>
   );
 };
@@ -310,6 +284,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: colors.primary,
   },
+  floatingButtonContainer: {
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+  },
+  floatingButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  floatingButtonContent: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  floatingButtonLabel: {
+    ...typography.button,
+    color: colors.white,
+  },
   badgeContainer: {
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -318,6 +316,39 @@ const styles = StyleSheet.create({
   badgeText: {
     ...typography.caption,
     fontWeight: '600',
+  },
+  list: {
+    padding: 16,
+    gap: 12,
+    paddingBottom: 24,
+  },
+  surface: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  problemContent: {
+    padding: 16,
+  },
+  problemDescription: {
+    ...typography.body1,
+    color: colors.dark,
+    marginBottom: 12,
+  },
+  solutionText: {
+    ...typography.body2,
+    color: colors.medium,
+    marginBottom: 8,
   },
 });
 

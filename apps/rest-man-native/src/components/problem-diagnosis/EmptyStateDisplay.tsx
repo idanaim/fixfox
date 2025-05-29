@@ -19,16 +19,18 @@ const EmptyStateDisplay: React.FC<EmptyStateDisplayProps> = ({
       <Icon name="lightbulb-off-outline" size={48} color={colors.medium} style={styles.icon} />
       <Text style={styles.title}>{t('diagnosis.emptyState.title')}</Text>
       <Text style={styles.message}>{t('diagnosis.emptyState.message')}</Text>
-      {onRequestMoreInfo && (
-        <Button
-          mode="outlined"
-          onPress={onRequestMoreInfo}
-          style={[styles.button, styles.secondaryButton]}
-          icon="help-circle-outline"
-        >
-          {t('diagnosis.emptyState.action')}
-        </Button>
-      )}
+      <View style={styles.buttonContainer}>
+        {onRequestMoreInfo && (
+          <Button
+            mode="outlined"
+            onPress={onRequestMoreInfo}
+            style={[styles.button, styles.secondaryButton]}
+            icon="help-circle-outline"
+          >
+            {t('diagnosis.emptyState.action')}
+          </Button>
+        )}
+      </View>
     </View>
   );
 };
@@ -60,6 +62,13 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderColor: colors.primary,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
   },
 });
 

@@ -46,11 +46,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           selectedBusiness={selectedBusiness}
           onSelectBusiness={onSelectBusiness}
         />
-        
-        {/* Language Switcher */}
-        <View style={styles.languageSwitcherContainer}>
-          <LanguageSwitcher />
-        </View>
+
+        {/*/!* Language Switcher *!/*/}
+        {/*<View style={styles.languageSwitcherContainer}>*/}
+        {/*  <LanguageSwitcher />*/}
+        {/*</View>*/}
       </View>
     </View>
   );
@@ -93,9 +93,12 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.dark,
     flex: 1,
+    textAlign: 'center',
   },
   languageSwitcherContainer: {
     marginLeft: 10,
+    backgroundColor: colors.primary,
+    color: colors.dark,
   },
 });
 

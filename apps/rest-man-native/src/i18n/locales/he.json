@@ -196,6 +196,8 @@
       "message": "האם תוכל לפרט יותר על הבעיה?",
       "action": "ספק פרטים נוספים",
       "improveDescription": "שפר תיאור"
-    }
+    },
+    "assignToTechnician": "הקצה לטכנאי מוגדר מחדל",
+    "technicianAssigned": "הבעיה הוקצתה לטכנאי המוגדר מחדל של העסק שלך."
   }
 }

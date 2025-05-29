@@ -5,11 +5,9 @@ import {
   ChatSession,
   DescriptionEnhancementResult,
   Equipment,
-  FollowUpQuestion,
   Problem
 } from '../api/chatAPI';
 import { useTranslation } from 'react-i18next';
-import followUpQuestions from '../components/FollowUpQuestions';
 import { QuestionAnswer } from './useFollowUpQuestions';
 
 interface UseChatLogicProps {
@@ -58,7 +56,6 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
   } = useChatStore();
 
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'he';
 
   // Initialize chat session
   useEffect(() => {
@@ -236,7 +233,6 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
     setSelectedEquipment(equipment);
     setApplianceOptions(null);
-    debugger
     setFollowUpQuestions(true);
     const sysMsg = await chatApi.addMessage(
       sessionId,
@@ -393,6 +389,69 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     }
   };
 
+  // Handle assigning issue to default technician
+  const handleAssignToTechnician = async () => {
+    try {
+      if (!sessionId) {
+        console.error('No session ID available');
+        return;
+      }
+
+      // Use the final description (enhanced if approved, or original if rejected/not enhanced)
+      const problemDescription = initialIssueDescription || enhancedDescription || messages.filter(m => m.type === 'user').pop()?.content;
+
+      if (!problemDescription) {
+        console.error('No problem description found');
+        return;
+      }
+
+      const result = await chatApi.createIssueWithTechnicianAssignment(
+        selectedBusinessId || businessId,
+        userId,
+        problemDescription,
+        selectedEquipment || undefined
+      );
+
+      // Add a system message to the chat
+      const message = t('diagnosis.technicianAssigned', {
+        defaultValue: 'Issue has been assigned to the default technician for your business.'
+      });
+
+      if (sessionId) {
+        await chatApi.addMessage(sessionId, message, 'system');
+        // Refresh messages to show the new system message
+        addMessage({
+          id: Date.now(),
+          content: message,
+          type: 'system',
+          createdAt: new Date().toISOString(),
+          metadata: {}
+        });
+      }
+
+      // Reset the chat state after successful assignment
+      resetChatState();
+
+      console.log('Issue assigned to technician:', result);
+    } catch (error) {
+      console.error('Error assigning issue to technician:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  // After we create the issue, we can reset all the state related to the chat
+  const resetChatState = () => {
+    setApplianceOptions(null);
+    setShowEquipmentForm(false);
+    setSelectedEquipment(null);
+    setDiagnosisResult(null);
+    setInitialIssueDescription('');
+    setEnhancedDescription('');
+    setOriginalDescription('');
+    setShowEnhancedDescriptionApproval(false);
+    setAwaitingDescriptionApproval(false);
+  };
+
   return {
     // State
     messages,
@@ -426,7 +485,8 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     setShowEquipmentForm,
 
     // Additional methods for external use
-    diagnoseIssue,
-    addMessage
+    resetChatState,
+    addMessage,
+    handleAssignToTechnician
   };
 };

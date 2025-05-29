@@ -20,6 +20,10 @@ export class Issue {
   @JoinColumn({ name: 'solvedBy' })
   solvedBy: User;
 
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'assignTo' })
+  assignedTo: User;
+
   @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
 

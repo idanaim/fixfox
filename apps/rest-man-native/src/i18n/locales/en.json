@@ -194,7 +194,10 @@
     "emptyState": {
       "title": "No Similar Problems Found",
       "message": "Please provide a more detailed description of your problem in the chat input below. Include specific symptoms, when they occur, and any relevant details about your equipment.",
-      "action": "Need Help?"
-    }
+      "action": "Need Help?",
+      "improveDescription": "Improve Description"
+    },
+    "assignToTechnician": "Assign to Default Technician",
+    "technicianAssigned": "Issue has been assigned to the default technician for your business."
   }
 }

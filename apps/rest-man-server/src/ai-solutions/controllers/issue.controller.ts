@@ -16,7 +16,20 @@ export class IssueController {
       equipmentDescription: string;
     }
   ) {
-
     return this.issueService.createIssue(createIssueDto);
+  }
+
+  @Post('assign-technician')
+  async createIssueWithTechnicianAssignment(
+    @Body()
+    createIssueDto: {
+      businessId: number;
+      userId: number;
+      problemDescription: string;
+      equipment?: any;
+      language?: string;
+    }
+  ) {
+    return this.issueService.createIssueWithTechnicianAssignment(createIssueDto);
   }
 }

@@ -34,7 +34,7 @@ const ChatScreen: React.FC = () => {
   const route = useRoute();
   const { businessId, userId } = route.params as RouteParams;
   const { businesses, selectedBusiness, setSelectedBusiness } = useBusinesses();
-  const { session: { id: sessionId },    isFollowUpQuestions, setFollowUpQuestions, } = useChatStore();
+  const { session: { id: sessionId },    isFollowUpQuestions, setFollowUpQuestions} = useChatStore();
   const { t } = useTranslation();
 
   const {
@@ -62,16 +62,15 @@ const ChatScreen: React.FC = () => {
     handleRequestMoreInfo,
     setApplianceOptions,
     setShowEquipmentForm,
-    addMessage,
-    diagnoseIssue,
-    handleImproveDescription
+    handleImproveDescription,
+    handleAssignToTechnician
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId,
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
-  console.log(isFollowUpQuestions,'isFollowUpQuestions');
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -119,7 +118,6 @@ const ChatScreen: React.FC = () => {
             sessionId={sessionId}
             equipment={selectedEquipment}
             onReadyForDiagnosis={(summary,isFinish) => {
-              debugger
               setFollowUpQuestions(!isFinish)
               // Send a message to the chat API with the summary
               const message = t('chat.follow_up_summary', { summary });
@@ -155,6 +153,7 @@ const ChatScreen: React.FC = () => {
                 currentBusinessId={selectedBusiness?.id || businessId}
                 onSolutionSelect={handleExistingSolutionSelect}
                 onRequestMoreInfo={handleRequestMoreInfo}
+                onAssignToTechnician={handleAssignToTechnician}
               />
             </View>
 
@@ -183,19 +182,15 @@ const ChatScreen: React.FC = () => {
             <View style={styles.componentContainer}>
               <Divider style={styles.divider} />
               <SolutionSuggestion
-                solutions={diagnosisResult.diagnosis.suggestedSolutions.filter(
-                  (s) => s.trim().length > 0
-                )}
-                // solutionSources={Array(
-                //   diagnosisResult.diagnosis.suggestedSolutions.filter(
-                //     (s) => s.trim().length > 0
-                //   ).length
-                // ).fill('ai_generated')}
-                onAcceptSolution={handleSolutionAccepted}
-                onRejectSolution={handleSolutionRejected}
-                onShowNext={() =>
-                  console.log('User requested the next solution suggestion.')
-                }
+                solutions={diagnosisResult.diagnosis.suggestedSolutions
+                  .filter((s) => s.trim().length > 0)
+                  .map((treatment, index) => ({
+                    treatment,
+                    problemId: `ai-${index}`,
+                    resolvedBy: 'AI Assistant'
+                  }))}
+                onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
+                onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
               />
             </View>
           )}
@@ -213,20 +208,14 @@ const ChatScreen: React.FC = () => {
                 solutions={diagnosisResult.issues
                   .filter((issue) => issue.solution)
                   .map((issue) => issue.solution?.treatment || '')
-                  .filter((treatment) => treatment.trim().length > 0)}
-                solutionSources={Array(
-                  diagnosisResult.issues
-                    .filter((issue) => issue.solution)
-                    .map((issue) => issue.solution?.treatment || '')
-                    .filter((treatment) => treatment.trim().length > 0).length
-                ).fill('current_business')}
-                onSolutionAccepted={handleSolutionAccepted}
-                onSolutionRejected={handleSolutionRejected}
-                onShowNext={() =>
-                  console.log(
-                    'User requested the next current business solution.'
-                  )
-                }
+                  .filter((treatment) => treatment.trim().length > 0)
+                  .map((treatment, index) => ({
+                    treatment,
+                    problemId: `business-${index}`,
+                    resolvedBy: 'Your Business'
+                  }))}
+                onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
+                onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
               />
             </View>
           )}
@@ -248,23 +237,14 @@ const ChatScreen: React.FC = () => {
                     (problem) => problem.solutions && problem.solutions.length > 0
                   )
                   .map((problem) => problem.solutions?.[0]?.treatment || '')
-                  .filter((treatment) => treatment.trim().length > 0)}
-                solutionSources={Array(
-                  diagnosisResult.problems
-                    .filter(
-                      (problem) =>
-                        problem.solutions && problem.solutions.length > 0
-                    )
-                    .map((problem) => problem.solutions?.[0]?.treatment || '')
-                    .filter((treatment) => treatment.trim().length > 0).length
-                ).fill('other_business')}
-                onSolutionAccepted={handleSolutionAccepted}
-                onSolutionRejected={handleSolutionRejected}
-                onShowNext={() =>
-                  console.log(
-                    'User requested the next solution from other businesses.'
-                  )
-                }
+                  .filter((treatment) => treatment.trim().length > 0)
+                  .map((treatment, index) => ({
+                    treatment,
+                    problemId: `community-${index}`,
+                    resolvedBy: 'Community'
+                  }))}
+                onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
+                onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
               />
             </View>
           )}

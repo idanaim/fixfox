@@ -13,6 +13,7 @@ interface ProblemDiagnosisDisplayProps {
   currentBusinessId: number;
   onSolutionSelect?: (problem: Problem) => void;
   onRequestMoreInfo?: () => void;
+  onAssignToTechnician?: () => void;
 }
 
 const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
@@ -22,6 +23,7 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
   currentBusinessId,
   onSolutionSelect,
   onRequestMoreInfo,
+  onAssignToTechnician,
 }) => {
   const { t } = useTranslation();
 
@@ -34,13 +36,16 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
             currentBusinessId={currentBusinessId}
             onSolutionSelect={onSolutionSelect}
             onRequestMoreInfo={onRequestMoreInfo}
+            onAssignToTechnician={onAssignToTechnician}
           />
         </DiagnosisLayout>
       );
     }
     return (
       <DiagnosisLayout icon="help-circle-outline" title={t('diagnosis.similarProblems.empty')}>
-        <EmptyStateDisplay onRequestMoreInfo={onRequestMoreInfo} />
+        <EmptyStateDisplay 
+          onRequestMoreInfo={onRequestMoreInfo} 
+        />
       </DiagnosisLayout>
     );
   }

@@ -20,6 +20,9 @@ export class Business {
   @Column()
   address: string;
 
+  @Column({ type: 'integer', nullable: true })
+  defaultTechnicianId: number;
+
   @Column('uuid')
   accountId: string;
 
