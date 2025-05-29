@@ -585,4 +585,37 @@ export const chatApi = {
       throw error;
     }
   },
+
+  recordSolutionEffectiveness: async (
+    solutionId: number,
+    effective: boolean,
+    businessId: number,
+    userId: number,
+    problemDescription: string,
+    equipment?: Equipment
+  ): Promise<any> => {
+    try {
+      // First record the solution effectiveness
+      await api.post(`/solutions/${solutionId}/effectiveness`, {
+        effective
+      });
+
+      // If the solution was effective, create a resolved issue with the solution
+      if (effective) {
+        const response = await api.post('/issues/resolved', {
+          businessId,
+          userId,
+          problemDescription,
+          solutionId,
+          equipment
+        });
+        return response.data;
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error recording solution effectiveness:', error);
+      throw error;
+    }
+  },
 };

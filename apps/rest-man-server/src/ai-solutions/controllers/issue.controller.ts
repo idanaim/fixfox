@@ -32,4 +32,19 @@ export class IssueController {
   ) {
     return this.issueService.createIssueWithTechnicianAssignment(createIssueDto);
   }
+
+  @Post('resolved')
+  async createResolvedIssue(
+    @Body()
+    createResolvedIssueDto: {
+      businessId: number;
+      userId: number;
+      problemDescription: string;
+      solutionId: number;
+      equipment?: any;
+      language?: string;
+    }
+  ) {
+    return this.issueService.createResolvedIssue(createResolvedIssueDto);
+  }
 }

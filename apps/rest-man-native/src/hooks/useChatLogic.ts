@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useChatStore } from '../store/chat.store';
 import {
   chatApi,
@@ -9,6 +9,7 @@ import {
 } from '../api/chatAPI';
 import { useTranslation } from 'react-i18next';
 import { QuestionAnswer } from './useFollowUpQuestions';
+import authStore from '../store/auth.store';
 
 interface UseChatLogicProps {
   sessionId: number | null;
@@ -18,6 +19,8 @@ interface UseChatLogicProps {
 }
 
 export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId }: UseChatLogicProps) => {
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
   const {
     session: { messages },
     ui: { input, loading },
@@ -156,6 +159,8 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     }
 
     try {
+      setIsLoadingAI(true);
+
       const sysMsg = await chatApi.addMessage(
         sessionId,
         t('chat.generating_ai_solutions', { defaultValue: 'Generating new AI solutions...' }),
@@ -189,6 +194,8 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       addMessage(aiSolutionsMsg);
     } catch (error) {
       console.error('Error getting AI solutions', error);
+    } finally {
+      setIsLoadingAI(false);
     }
   };
 
@@ -496,6 +503,50 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     setAwaitingDescriptionApproval(false);
   };
 
+  // Handle solution helped button click
+  const handleSolutionHelped = async (solutionId: number, problemDescription: string) => {
+    try {
+      if (!sessionId) {
+        console.error('No session ID available');
+        return;
+      }
+
+      // Record that the solution was effective and create an issue
+      const result = await chatApi.recordSolutionEffectiveness(
+        solutionId,
+        true, // effective = true
+        selectedBusinessId || businessId,
+        userId,
+        problemDescription,
+        selectedEquipment || undefined
+      );
+
+      // Add a system message to the chat
+      const message = t('diagnosis.solutionHelped', {
+        defaultValue: 'Thank you for the feedback! Solution effectiveness has been recorded and an issue has been created.'
+      });
+
+      if (sessionId) {
+        await chatApi.addMessage(sessionId, message, 'system');
+        // Refresh messages to show the new system message
+        addMessage({
+          id: Date.now(),
+          content: message,
+          type: 'system',
+          createdAt: new Date().toISOString(),
+          metadata: {}
+        });
+      }
+      // Reset the chat state after successful recording
+      resetChatState();
+
+      console.log('Solution effectiveness recorded and issue created:', result);
+    } catch (error) {
+      console.error('Error recording solution effectiveness:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
   return {
     // State
     messages,
@@ -510,6 +561,7 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     originalDescription,
     showEnhancedDescriptionApproval,
     isFollowUpQuestions,
+    isLoadingAI,
 
     // Actions
 
@@ -532,6 +584,7 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     resetChatState,
     addMessage,
     handleAssignToTechnician,
-    handleGetAISolutions
+    handleGetAISolutions,
+    handleSolutionHelped
   };
 };

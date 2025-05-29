@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Surface, Divider, Button } from 'react-native-paper';
 import { Problem } from '../../api/chatAPI';
@@ -14,7 +14,9 @@ interface ExistingSolutionsDisplayProps {
   onImproveDescription?: () => void;
   onAssignToTechnician?: () => void;
   onGetAISolutions?: () => void;
+  onSolutionHelped?: (solutionId: number, problemDescription: string) => void;
   showAssignTechnician?: boolean;
+  isLoadingAI?: boolean;
 }
 
 const EmptyState: React.FC<{
@@ -62,7 +64,9 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
   onImproveDescription,
   onAssignToTechnician,
   onGetAISolutions,
+  onSolutionHelped,
   showAssignTechnician = true,
+  isLoadingAI = false,
 }) => {
   const { t } = useTranslation();
 
@@ -82,12 +86,22 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
                   mode="outlined"
                   onPress={onGetAISolutions}
                   style={[styles.floatingButton, styles.secondaryFloatingButton]}
-                  icon="robot"
+                  icon={isLoadingAI ? undefined : "robot"}
                   contentStyle={styles.floatingButtonContent}
                   labelStyle={styles.secondaryFloatingButtonLabel}
                   compact
+                  disabled={isLoadingAI}
                 >
-                  {t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })}
+                  {isLoadingAI ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color={colors.primary} />
+                      <Text style={[styles.secondaryFloatingButtonLabel, styles.loadingText]}>
+                        {t('diagnosis.generatingAI', { defaultValue: 'Generating...' })}
+                      </Text>
+                    </View>
+                  ) : (
+                    t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })
+                  )}
                 </Button>
               )}
               {onAssignToTechnician && (
@@ -117,16 +131,38 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
     >
       <Surface style={styles.surface} elevation={1}>
         <View style={styles.problemContent}>
-          <Text style={styles.problemDescription}>{item.description}</Text>
+          <View style={styles.problemHeader}>
+            <Text style={[styles.problemDescription, { flex: 1 }]}>{item.description}</Text>
+            {item.solutions && item.solutions.length > 0 && item.solutions[0].effectiveness !== undefined && (
+              <View style={styles.effectivenessBadge}>
+                <Icon name="thumb-up" size={12} color={colors.white} />
+                <Text style={styles.effectivenessText}>{item.solutions[0].effectiveness}</Text>
+              </View>
+            )}
+          </View>
           {item.solutions && item.solutions.length > 0 && (
             <View style={styles.solutionPreview}>
               <Text style={styles.solutionText}>
                 {item.solutions[0].treatment}
               </Text>
+              {onSolutionHelped && (
+                <View style={styles.buttonContainer}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => onSolutionHelped(item.solutions![0].id, item.description)}
+                    style={styles.helpedButton}
+                    contentStyle={styles.helpedButtonContent}
+                    labelStyle={styles.helpedButtonLabel}
+                    icon="check-circle-outline"
+                    compact
+                  >
+                    {t('diagnosis.thisHelped', { defaultValue: 'This helped me!' })}
+                  </Button>
+                </View>
+              )}
             </View>
           )}
         </View>
-        <Icon name="chevron-right" size={20} color={colors.medium} />
       </Surface>
     </TouchableOpacity>
   );
@@ -141,7 +177,7 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
         contentContainerStyle={{ paddingBottom: showAssignTechnician && (onAssignToTechnician || onGetAISolutions) ? 60 : 16 }}
         showsVerticalScrollIndicator={true}
       />
-      
+
       {/* Floating Action Buttons */}
       {showAssignTechnician && (onAssignToTechnician || onGetAISolutions) && (
         <View style={styles.floatingButtonContainer}>
@@ -151,12 +187,22 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
                 mode="outlined"
                 onPress={onGetAISolutions}
                 style={[styles.floatingButton, styles.secondaryFloatingButton]}
-                icon="robot"
+                icon={isLoadingAI ? undefined : "robot"}
                 contentStyle={styles.floatingButtonContent}
                 labelStyle={styles.secondaryFloatingButtonLabel}
                 compact
+                disabled={isLoadingAI}
               >
-                {t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })}
+                {isLoadingAI ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color={colors.primary} />
+                    <Text style={[styles.secondaryFloatingButtonLabel, styles.loadingText]}>
+                      {t('diagnosis.generatingAI', { defaultValue: 'Generating...' })}
+                    </Text>
+                  </View>
+                ) : (
+                  t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })
+                )}
               </Button>
             )}
             {onAssignToTechnician && (
@@ -405,6 +451,51 @@ const styles = StyleSheet.create({
   },
   primaryFloatingButton: {
     backgroundColor: colors.primary,
+  },
+  effectivenessBadge: {
+    backgroundColor: colors.success,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  effectivenessText: {
+    ...typography.caption,
+    fontWeight: '600',
+    color: colors.white,
+    marginLeft: 4,
+    fontSize: 11,
+  },
+  helpedButton: {
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+    borderRadius: 6,
+    minHeight: 28,
+  },
+  helpedButtonContent: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    minHeight: 28,
+  },
+  helpedButtonLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.primary,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginLeft: 8,
   },
 });
 

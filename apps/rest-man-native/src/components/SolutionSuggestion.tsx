@@ -18,6 +18,7 @@ interface SolutionSuggestionProps {
   solutions: Solution[];
   onAcceptSolution: (solution: Solution) => void;
   onRejectSolution: (solution: Solution) => void;
+  onAssignToTechnician?: () => void;
 }
 
 type RootStackParamList = {
@@ -30,6 +31,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
   solutions,
   onAcceptSolution,
   onRejectSolution,
+  onAssignToTechnician,
 }) => {
   const { t } = useTranslation();
   const [currentSolutionIndex, setCurrentSolutionIndex] = useState(0);
@@ -84,7 +86,7 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
       <ScrollView style={styles.solutionContent}>
         <View style={styles.solutionInfo}>
           <Text style={styles.solutionTitle}>
-            {currentSolution.treatment || currentSolution || t('solution.title')}
+            {currentSolution.treatment || t('solution.title')}
           </Text>
 
           {currentSolution?.resolvedBy && (
@@ -127,14 +129,19 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
 
       <View style={styles.footer}>
         <View style={styles.buttonGroup}>
-          <Button
-            mode="outlined"
-            onPress={() => onRejectSolution(currentSolution)}
-            style={styles.rejectButton}
-            labelStyle={styles.rejectButtonText}
-          >
-            {t('solution.actions.skip')}
-          </Button>
+          {onAssignToTechnician && (
+            <Button
+              mode="outlined"
+              onPress={onAssignToTechnician}
+              style={styles.assignButton}
+              labelStyle={styles.assignButtonText}
+              contentStyle={styles.buttonContent}
+              icon="account-wrench"
+              compact
+            >
+              {t('solution.actions.assignTechnician', { defaultValue: 'Assign Technician' })}
+            </Button>
+          )}
 
           {currentSolutionIndex < solutions.length - 1 && (
             <Button
@@ -142,30 +149,25 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
               onPress={handleNextSolution}
               style={styles.nextButton}
               labelStyle={styles.nextButtonText}
+              contentStyle={styles.buttonContent}
+              compact
             >
               {t('solution.actions.next')}
             </Button>
           )}
         </View>
 
-        <View style={styles.buttonGroup}>
-          <Button
-            mode="contained"
-            onPress={() => onAcceptSolution(currentSolution)}
-            style={styles.acceptButton}
-            labelStyle={styles.acceptButtonText}
-          >
-            {t('solution.actions.helped')}
-          </Button>
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate('Technicians')}
-            style={[styles.acceptButton, styles.technicianButton]}
-            labelStyle={styles.acceptButtonText}
-          >
-            {t('solution.actions.getTechnician')}
-          </Button>
-        </View>
+        <Button
+          mode="contained"
+          onPress={() => onAcceptSolution(currentSolution)}
+          style={styles.acceptButton}
+          labelStyle={styles.acceptButtonText}
+          contentStyle={styles.buttonContent}
+          icon="check-circle-outline"
+          compact
+        >
+          {t('solution.actions.helped')}
+        </Button>
       </View>
     </Surface>
   );
@@ -174,17 +176,19 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 8,
-    borderRadius: 8,
+    borderRadius: 6,
     overflow: 'hidden',
+    maxHeight: 500,
+    backgroundColor: colors.white,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 2,
+        shadowRadius: 4,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
@@ -193,14 +197,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: colors.white,
+    minHeight: 56,
   },
   headerIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   headerTitle: {
     ...typography.h3,
     color: colors.dark,
     flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
   },
   sourceBadge: {
     flexDirection: 'row',
@@ -208,7 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightGray,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 6,
   },
   sourceBadgeIcon: {
     marginRight: 4,
@@ -216,13 +223,18 @@ const styles = StyleSheet.create({
   sourceBadgeText: {
     ...typography.caption,
     color: colors.dark,
+    fontSize: 12,
+    fontWeight: '500',
   },
   divider: {
     backgroundColor: colors.border,
+    height: 1,
   },
   solutionContent: {
-    maxHeight: 300,
+    flex: 1,
+    maxHeight: 320,
     padding: 16,
+    backgroundColor: colors.white,
   },
   solutionInfo: {
     marginBottom: 16,
@@ -230,12 +242,16 @@ const styles = StyleSheet.create({
   solutionTitle: {
     ...typography.h3,
     color: colors.dark,
-    marginBottom: 4,
+    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   resolvedBy: {
     ...typography.caption,
     color: colors.medium,
     fontStyle: 'italic',
+    fontSize: 12,
   },
   stepsContainer: {
     marginBottom: 16,
@@ -259,22 +275,27 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.white,
     fontWeight: 'bold',
+    fontSize: 12,
   },
   stepText: {
     ...typography.body1,
     color: colors.dark,
     flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
   },
   partsContainer: {
     backgroundColor: colors.lightGray,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 6,
+    marginTop: 8,
   },
   partsSectionTitle: {
     ...typography.body2,
     color: colors.dark,
     fontWeight: 'bold',
     marginBottom: 8,
+    fontSize: 14,
   },
   partItem: {
     flexDirection: 'row',
@@ -287,42 +308,58 @@ const styles = StyleSheet.create({
   partText: {
     ...typography.body2,
     color: colors.medium,
+    fontSize: 13,
   },
   footer: {
     padding: 16,
     backgroundColor: colors.white,
     gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    minHeight: 100,
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 8,
   },
-  rejectButton: {
-    borderColor: colors.border,
-    flex: 1,
-  },
-  rejectButtonText: {
-    ...typography.button,
-    color: colors.medium,
-  },
   nextButton: {
     flex: 1,
+    borderRadius: 6,
   },
   nextButtonText: {
     ...typography.button,
     color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   acceptButton: {
     backgroundColor: colors.primary,
-    flex: 1,
+    borderRadius: 6,
+    width: '100%',
   },
-  technicianButton: {
-    backgroundColor: colors.success,
+  assignButton: {
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+    flex: 1,
+    borderRadius: 6,
+  },
+  assignButtonText: {
+    ...typography.button,
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  buttonContent: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    minHeight: 40,
   },
   acceptButtonText: {
     ...typography.button,
     color: colors.white,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

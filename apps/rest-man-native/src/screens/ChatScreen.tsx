@@ -49,6 +49,7 @@ const ChatScreen: React.FC = () => {
     enhancedDescription,
     originalDescription,
     showEnhancedDescriptionApproval,
+    isLoadingAI,
 
     setInput,
     handleSend,
@@ -64,7 +65,8 @@ const ChatScreen: React.FC = () => {
     setShowEquipmentForm,
     handleImproveDescription,
     handleAssignToTechnician,
-    handleGetAISolutions
+    handleGetAISolutions,
+    handleSolutionHelped
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId,
@@ -156,6 +158,8 @@ const ChatScreen: React.FC = () => {
                 onRequestMoreInfo={handleRequestMoreInfo}
                 onAssignToTechnician={handleAssignToTechnician}
                 handleGetAISolutions={handleGetAISolutions}
+                onSolutionHelped={handleSolutionHelped}
+                isLoadingAI={isLoadingAI}
               />
             </View>
 
@@ -193,6 +197,7 @@ const ChatScreen: React.FC = () => {
                   }))}
                 onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
                 onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
+                onAssignToTechnician={handleAssignToTechnician}
               />
             </View>
           )}
@@ -218,6 +223,7 @@ const ChatScreen: React.FC = () => {
                   }))}
                 onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
                 onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
+                onAssignToTechnician={handleAssignToTechnician}
               />
             </View>
           )}
@@ -247,6 +253,7 @@ const ChatScreen: React.FC = () => {
                   }))}
                 onAcceptSolution={(solution) => handleSolutionAccepted(solution.treatment)}
                 onRejectSolution={(solution) => handleSolutionRejected(solution.treatment)}
+                onAssignToTechnician={handleAssignToTechnician}
               />
             </View>
           )}

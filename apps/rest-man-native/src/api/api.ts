@@ -15,7 +15,6 @@ export const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const { user, token } =useAuthStore.getState(); // Get user from Zustand store
   if (user) {
-    // TODO: Get actual token from auth state
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

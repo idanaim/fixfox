@@ -121,4 +121,65 @@ export class IssueService {
       message: `Issue assigned to default technician`
     };
   }
+
+  async createResolvedIssue(createResolvedIssueDto: {
+    businessId: number;
+    userId: number;
+    problemDescription: string;
+    solutionId: number;
+    equipment?: any;
+    language?: string;
+  }) {
+    // Get business
+    const business = await this.businessRepository.findOne({
+      where: { id: createResolvedIssueDto.businessId }
+    });
+
+    if (!business) {
+      throw new Error('Business not found');
+    }
+
+    // Create problem
+    const problem = await this.problemService.createProblem({
+      description: createResolvedIssueDto.problemDescription,
+      businessId: createResolvedIssueDto.businessId,
+      userId: createResolvedIssueDto.userId,
+    });
+
+    // Use the provided equipment object if available
+    let equipment = null;
+    if (createResolvedIssueDto.equipment) {
+      if (createResolvedIssueDto.equipment.id) {
+        equipment = createResolvedIssueDto.equipment;
+      } else {
+        // If it's a new equipment without ID, we might need to create it
+        const equipmentDescription = `${createResolvedIssueDto.equipment.manufacturer || ''} ${createResolvedIssueDto.equipment.model || ''} ${createResolvedIssueDto.equipment.type || ''}`.trim();
+        if (equipmentDescription) {
+          equipment = await this.equipmentService.identifyEquipment(
+            equipmentDescription,
+            createResolvedIssueDto.businessId
+          );
+        }
+      }
+    }
+
+    // Create issue with status 'closed' and link to solution
+    const issue = this.issueRepository.create({
+      problem,
+      equipment,
+      business: { id: createResolvedIssueDto.businessId },
+      openedBy: { id: createResolvedIssueDto.userId },
+      solvedBy: { id: createResolvedIssueDto.userId }, // User solved it using the solution
+      solution: { id: createResolvedIssueDto.solutionId },
+      status: 'closed',
+    });
+
+    const savedIssue = await this.issueRepository.save(issue);
+
+    return {
+      issue: savedIssue,
+      solutionId: createResolvedIssueDto.solutionId,
+      message: `Issue created as resolved using solution ${createResolvedIssueDto.solutionId}`
+    };
+  }
 }

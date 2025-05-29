@@ -15,6 +15,8 @@ interface ProblemDiagnosisDisplayProps {
   onRequestMoreInfo?: () => void;
   onAssignToTechnician?: () => void;
   handleGetAISolutions?: () => void;
+  onSolutionHelped?: (solutionId: number, problemDescription: string) => void;
+  isLoadingAI?: boolean;
 }
 
 const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
@@ -26,6 +28,8 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
   onRequestMoreInfo,
   onAssignToTechnician,
   handleGetAISolutions,
+  onSolutionHelped,
+  isLoadingAI,
 }) => {
   const { t } = useTranslation();
 
@@ -40,6 +44,8 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
             onRequestMoreInfo={onRequestMoreInfo}
             onAssignToTechnician={onAssignToTechnician}
             onGetAISolutions={handleGetAISolutions}
+            onSolutionHelped={onSolutionHelped}
+            isLoadingAI={isLoadingAI}
           />
         </DiagnosisLayout>
       );
