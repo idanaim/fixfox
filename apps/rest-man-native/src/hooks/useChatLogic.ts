@@ -148,6 +148,50 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     }
   };
 
+  // Get AI solutions only (skip similar solutions)
+  const handleGetAISolutions = async () => {
+    if (!sessionId || !selectedEquipment) {
+      console.error('No session ID or selected equipment available');
+      return;
+    }
+
+    try {
+      const sysMsg = await chatApi.addMessage(
+        sessionId,
+        t('chat.generating_ai_solutions', { defaultValue: 'Generating new AI solutions...' }),
+        'system'
+      );
+      addMessage(sysMsg);
+
+      // Use the final description (enhanced if approved, or original if rejected/not enhanced)
+      const problemDescription = initialIssueDescription || enhancedDescription || messages.filter(m => m.type === 'user').pop()?.content;
+
+      if (!problemDescription) {
+        console.error('No problem description found');
+        return;
+      }
+
+      const diagnosisData = await chatApi.diagnoseProblem(
+        problemDescription,
+        selectedEquipment.id,
+        selectedBusinessId || businessId,
+        sessionId,
+        true // skipSimilar = true
+      );
+
+      setDiagnosisResult(diagnosisData);
+
+      const aiSolutionsMsg = await chatApi.addMessage(
+        sessionId,
+        t('chat.ai_solutions_generated', { defaultValue: 'AI solutions generated based on your description.' }),
+        'system'
+      );
+      addMessage(aiSolutionsMsg);
+    } catch (error) {
+      console.error('Error getting AI solutions', error);
+    }
+  };
+
   // Handle enhanced description approval
   const handleApproveEnhancedDescription = async (approvedDescription: string) => {
     setShowEnhancedDescriptionApproval(false);
@@ -487,6 +531,7 @@ console.log('Improving description with follow-up questions:', followUpQuestions
     // Additional methods for external use
     resetChatState,
     addMessage,
-    handleAssignToTechnician
+    handleAssignToTechnician,
+    handleGetAISolutions
   };
 };

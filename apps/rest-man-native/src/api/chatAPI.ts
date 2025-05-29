@@ -336,7 +336,8 @@ export const chatApi = {
     description: string,
     equipmentId: number,
     businessId: number,
-    sessionId: number
+    sessionId: number,
+    skipSimilar?: boolean
   ): Promise<any> => {
     try {
       const language = getCurrentLanguage();
@@ -344,7 +345,8 @@ export const chatApi = {
         description,
         equipmentId,
         businessId,
-        language
+        language,
+        skipSimilar
       });
       return response.data;
     } catch (error) {

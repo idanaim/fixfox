@@ -13,6 +13,7 @@ interface ExistingSolutionsDisplayProps {
   onRequestMoreInfo?: () => void;
   onImproveDescription?: () => void;
   onAssignToTechnician?: () => void;
+  onGetAISolutions?: () => void;
   showAssignTechnician?: boolean;
 }
 
@@ -60,6 +61,7 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
   onRequestMoreInfo,
   onImproveDescription,
   onAssignToTechnician,
+  onGetAISolutions,
   showAssignTechnician = true,
 }) => {
   const { t } = useTranslation();
@@ -71,19 +73,37 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
           onRequestMoreInfo={onRequestMoreInfo}
           onImproveDescription={onImproveDescription}
         />
-        {/* Floating Assign Technician Button */}
-        {showAssignTechnician && onAssignToTechnician && (
+        {/* Floating Action Buttons */}
+        {showAssignTechnician && (onAssignToTechnician || onGetAISolutions) && (
           <View style={styles.floatingButtonContainer}>
-            <Button
-              mode="contained"
-              onPress={onAssignToTechnician}
-              style={styles.floatingButton}
-              icon="account-wrench"
-              contentStyle={styles.floatingButtonContent}
-              labelStyle={styles.floatingButtonLabel}
-            >
-              {t('diagnosis.assignToTechnician')}
-            </Button>
+            <View style={styles.buttonRow}>
+              {onGetAISolutions && (
+                <Button
+                  mode="outlined"
+                  onPress={onGetAISolutions}
+                  style={[styles.floatingButton, styles.secondaryFloatingButton]}
+                  icon="robot"
+                  contentStyle={styles.floatingButtonContent}
+                  labelStyle={styles.secondaryFloatingButtonLabel}
+                  compact
+                >
+                  {t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })}
+                </Button>
+              )}
+              {onAssignToTechnician && (
+                <Button
+                  mode="contained"
+                  onPress={onAssignToTechnician}
+                  style={[styles.floatingButton, styles.primaryFloatingButton]}
+                  icon="account-wrench"
+                  contentStyle={styles.floatingButtonContent}
+                  labelStyle={styles.floatingButtonLabel}
+                  compact
+                >
+                  {t('diagnosis.assignToTechnician')}
+                </Button>
+              )}
+            </View>
           </View>
         )}
       </View>
@@ -118,23 +138,41 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={renderProblemItem}
         style={[styles.list, { maxHeight: 300 }]}
-        contentContainerStyle={{ paddingBottom: showAssignTechnician ? 80 : 16 }}
+        contentContainerStyle={{ paddingBottom: showAssignTechnician && (onAssignToTechnician || onGetAISolutions) ? 60 : 16 }}
         showsVerticalScrollIndicator={true}
       />
       
-      {/* Floating Assign Technician Button */}
-      {showAssignTechnician && onAssignToTechnician && (
+      {/* Floating Action Buttons */}
+      {showAssignTechnician && (onAssignToTechnician || onGetAISolutions) && (
         <View style={styles.floatingButtonContainer}>
-          <Button
-            mode="contained"
-            onPress={onAssignToTechnician}
-            style={styles.floatingButton}
-            contentStyle={styles.floatingButtonContent}
-            icon="account-wrench"
-            compact={true}
-          >
-            {t('diagnosis.assignToTechnician')}
-          </Button>
+          <View style={styles.buttonRow}>
+            {onGetAISolutions && (
+              <Button
+                mode="outlined"
+                onPress={onGetAISolutions}
+                style={[styles.floatingButton, styles.secondaryFloatingButton]}
+                icon="robot"
+                contentStyle={styles.floatingButtonContent}
+                labelStyle={styles.secondaryFloatingButtonLabel}
+                compact
+              >
+                {t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })}
+              </Button>
+            )}
+            {onAssignToTechnician && (
+              <Button
+                mode="contained"
+                onPress={onAssignToTechnician}
+                style={[styles.floatingButton, styles.primaryFloatingButton]}
+                icon="account-wrench"
+                contentStyle={styles.floatingButtonContent}
+                labelStyle={styles.floatingButtonLabel}
+                compact
+              >
+                {t('diagnosis.assignToTechnician')}
+              </Button>
+            )}
+          </View>
         </View>
       )}
     </View>
@@ -286,26 +324,28 @@ const styles = StyleSheet.create({
   },
   floatingButtonContainer: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 12,
     left: 16,
     right: 16,
     zIndex: 10,
   },
   floatingButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    elevation: 6,
+    borderRadius: 6,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    flex: 1,
   },
   floatingButtonContent: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    minHeight: 36,
   },
   floatingButtonLabel: {
-    ...typography.button,
+    fontSize: 14,
+    fontWeight: '500',
     color: colors.white,
   },
   badgeContainer: {
@@ -349,6 +389,22 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: colors.medium,
     marginBottom: 8,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  secondaryFloatingButton: {
+    borderColor: colors.primary,
+    backgroundColor: colors.white,
+  },
+  secondaryFloatingButtonLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.primary,
+  },
+  primaryFloatingButton: {
+    backgroundColor: colors.primary,
   },
 });
 

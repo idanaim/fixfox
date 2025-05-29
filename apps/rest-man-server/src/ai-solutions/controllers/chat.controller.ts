@@ -149,7 +149,7 @@ export class ChatController {
   @Post('sessions/:sessionId/diagnose')
   async diagnoseProblem(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string; equipmentId: number; businessId: number; language?: string }
+    @Body() body: { description: string; equipmentId: number; businessId: number; language?: string; skipSimilar?: boolean }
   ) {
     // Add a message indicating we're diagnosing the problem
     const diagnosingMessage = body.language === 'he'
@@ -168,7 +168,8 @@ export class ChatController {
       body.description,
       body.equipmentId,
       body.businessId,
-      body.language
+      body.language,
+      body.skipSimilar
     );
 
     // Add the diagnosis result as a message

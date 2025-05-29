@@ -14,6 +14,7 @@ interface ProblemDiagnosisDisplayProps {
   onSolutionSelect?: (problem: Problem) => void;
   onRequestMoreInfo?: () => void;
   onAssignToTechnician?: () => void;
+  handleGetAISolutions?: () => void;
 }
 
 const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
@@ -24,6 +25,7 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
   onSolutionSelect,
   onRequestMoreInfo,
   onAssignToTechnician,
+  handleGetAISolutions,
 }) => {
   const { t } = useTranslation();
 
@@ -37,6 +39,7 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
             onSolutionSelect={onSolutionSelect}
             onRequestMoreInfo={onRequestMoreInfo}
             onAssignToTechnician={onAssignToTechnician}
+            onGetAISolutions={handleGetAISolutions}
           />
         </DiagnosisLayout>
       );
@@ -45,6 +48,7 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
       <DiagnosisLayout icon="help-circle-outline" title={t('diagnosis.similarProblems.empty')}>
         <EmptyStateDisplay 
           onRequestMoreInfo={onRequestMoreInfo} 
+          onGetAISolutions={handleGetAISolutions}
         />
       </DiagnosisLayout>
     );

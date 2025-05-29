@@ -7,10 +7,12 @@ import { colors, typography } from '../../componentsBackup/admin-dashboard/admin
 
 interface EmptyStateDisplayProps {
   onRequestMoreInfo?: () => void;
+  onGetAISolutions?: () => void;
 }
 
 const EmptyStateDisplay: React.FC<EmptyStateDisplayProps> = ({
   onRequestMoreInfo,
+  onGetAISolutions,
 }) => {
   const { t } = useTranslation();
 
@@ -20,12 +22,28 @@ const EmptyStateDisplay: React.FC<EmptyStateDisplayProps> = ({
       <Text style={styles.title}>{t('diagnosis.emptyState.title')}</Text>
       <Text style={styles.message}>{t('diagnosis.emptyState.message')}</Text>
       <View style={styles.buttonContainer}>
+        {onGetAISolutions && (
+          <Button
+            mode="contained"
+            onPress={onGetAISolutions}
+            style={[styles.button, styles.primaryButton]}
+            contentStyle={styles.buttonContent}
+            labelStyle={styles.buttonLabel}
+            icon="robot"
+            compact
+          >
+            {t('diagnosis.getAISolutions', { defaultValue: 'Get AI Solutions' })}
+          </Button>
+        )}
         {onRequestMoreInfo && (
           <Button
             mode="outlined"
             onPress={onRequestMoreInfo}
             style={[styles.button, styles.secondaryButton]}
+            contentStyle={styles.buttonContent}
+            labelStyle={styles.secondaryButtonLabel}
             icon="help-circle-outline"
+            compact
           >
             {t('diagnosis.emptyState.action')}
           </Button>
@@ -58,17 +76,34 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   button: {
-    borderRadius: 8,
+    borderRadius: 6,
+    minHeight: 36,
   },
   secondaryButton: {
     borderColor: colors.primary,
+    borderWidth: 1,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    width: '100%',
+    gap: 8,
   },
   primaryButton: {
     backgroundColor: colors.primary,
+  },
+  buttonContent: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  buttonLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.white,
+  },
+  secondaryButtonLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.primary,
   },
 });
 

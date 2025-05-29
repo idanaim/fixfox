@@ -63,7 +63,8 @@ const ChatScreen: React.FC = () => {
     setApplianceOptions,
     setShowEquipmentForm,
     handleImproveDescription,
-    handleAssignToTechnician
+    handleAssignToTechnician,
+    handleGetAISolutions
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId,
@@ -154,6 +155,7 @@ const ChatScreen: React.FC = () => {
                 onSolutionSelect={handleExistingSolutionSelect}
                 onRequestMoreInfo={handleRequestMoreInfo}
                 onAssignToTechnician={handleAssignToTechnician}
+                handleGetAISolutions={handleGetAISolutions}
               />
             </View>
 
