@@ -80,6 +80,7 @@ interface IssueTicketListProps {
   businessId: number;
   userId?: number;
   onIssuePress?: (issue: Issue) => void;
+  navigation?: any; // Navigation prop for routing to IssueDetailsScreen
 }
 
 const statusColors = {
@@ -133,9 +134,9 @@ const SlackActionButton: React.FC<{
   return (
     <TouchableOpacity onPress={onPress} style={getButtonStyle()}>
       {icon && (
-        <Icon 
-          name={icon} 
-          size={size === 'small' ? 14 : 16} 
+        <Icon
+          name={icon}
+          size={size === 'small' ? 14 : 16}
           color={variant === 'primary' || variant === 'danger' ? colors.white : colors.medium}
           style={styles.slackButtonIcon}
         />
@@ -150,7 +151,8 @@ const IssueTicketCard: React.FC<{
   onPress?: () => void;
   onStatusUpdate: (issueId: number, status: string) => void;
   onAssignTechnician: (issueId: number) => void;
-}> = ({ issue, onPress, onStatusUpdate, onAssignTechnician }) => {
+  onViewDetails: (issueId: number) => void;
+}> = ({ issue, onPress, onStatusUpdate, onAssignTechnician, onViewDetails }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -272,7 +274,7 @@ const IssueTicketCard: React.FC<{
               Assign Tech
             </SlackActionButton>
           )}
-          
+
           {statusAction && (
             <SlackActionButton
               onPress={() => onStatusUpdate(issue.id, nextStatus!)}
@@ -286,7 +288,7 @@ const IssueTicketCard: React.FC<{
 
           {/* Quick Action: View Details */}
           <SlackActionButton
-            onPress={() => {/* Handle view details */}}
+            onPress={() => onViewDetails(issue.id)}
             icon="eye"
             size="small"
           >
@@ -302,6 +304,7 @@ export const IssueTicketList: React.FC<IssueTicketListProps> = ({
   businessId,
   userId,
   onIssuePress,
+  navigation,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -324,16 +327,16 @@ export const IssueTicketList: React.FC<IssueTicketListProps> = ({
 
   const filteredIssues = React.useMemo(() => {
     if (!businessIssues?.issues) return [];
-    
+
     return businessIssues.issues.filter((issue) => {
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         issue.problem.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         issue.id.toString().includes(searchQuery) ||
         (issue.equipment?.type || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (issue.equipment?.manufacturer || '').toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === '' || issue.status === statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }, [businessIssues?.issues, searchQuery, statusFilter]);
@@ -488,6 +491,13 @@ export const IssueTicketList: React.FC<IssueTicketListProps> = ({
               onPress={() => onIssuePress?.(item)}
               onStatusUpdate={handleStatusUpdate}
               onAssignTechnician={handleAssignTechnician}
+              onViewDetails={(issueId) => {
+                navigation?.navigate('IssueDetails', {
+                  issueId,
+                  businessId,
+                  userId
+                })
+              }}
             />
           )}
           keyExtractor={(item) => item.id.toString()}
@@ -684,4 +694,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#666',
   },
-}); 
+});

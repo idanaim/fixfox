@@ -9,4 +9,9 @@ export type RootStackParamList = {
   };
   Technicians: undefined;
   TechnicianDetails: { id: string };
+  IssueDetails: {
+    issueId: number;
+    businessId: number;
+    userId?: number;
+  };
 }; 

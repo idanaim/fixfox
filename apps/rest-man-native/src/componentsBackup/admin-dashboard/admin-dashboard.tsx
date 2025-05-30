@@ -33,7 +33,7 @@ const AdminDashboard = () => {
       case 'businesses':
         return <BusinessSection showAddBusinessModal={showAddBusinessModal} setShowAddBusinessModal={setShowAddBusinessModal} />;
       case 'tickets':
-        return <IssueTicketList businessId={6} onIssuePress={(issue)=> console.log(issue)} userId={22} i18nIsDynamicList />;
+        return <IssueTicketList businessId={6} onIssuePress={(issue)=> console.log(issue)} userId={22} navigation={navigation} i18nIsDynamicList />;
       case 'settings':
         return (
           <View style={styles.comingSoonContainer}>

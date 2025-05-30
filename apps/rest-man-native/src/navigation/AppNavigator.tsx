@@ -2,10 +2,10 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import ChatScreen from '../screens/ChatScreen';
-import { HomeScreen } from '../screens/HomeScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { TechniciansScreen } from '../screens/TechniciansScreen';
 import { TechnicianDetailsScreen } from '../screens/TechnicianDetailsScreen';
+import { IssueDetailsScreen } from '../screens/IssueDetailsScreen';
 import { useAuth } from '../hooks/useAuth';
 import { RootStackParamList } from './types';
 
@@ -22,7 +22,7 @@ export const AppNavigator = () => {
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              options={{ 
+              options={{
                 title: 'Welcome',
                 headerShown: false,
               }}
@@ -30,11 +30,6 @@ export const AppNavigator = () => {
           </>
         ) : (
           <>
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{ title: 'Home' }}
-            />
             <Stack.Screen
               name="Chat"
               component={ChatScreen}
@@ -49,6 +44,11 @@ export const AppNavigator = () => {
               name="TechnicianDetails"
               component={TechnicianDetailsScreen}
               options={{ title: 'Technician Details' }}
+            />
+            <Stack.Screen
+              name="IssueDetails"
+              component={IssueDetailsScreen}
+              options={{ headerShown: false }}
             />
           </>
         )}

@@ -13,6 +13,7 @@ import ChatScreen from '../screens/ChatScreen';
 import { TechniciansScreen } from '../screens/TechniciansScreen';
 import { TechnicianDetailsScreen } from '../screens/TechnicianDetailsScreen';
 import adminDashboard from '../componentsBackup/admin-dashboard/admin-dashboard';
+import { IssueDetailsScreen } from '../screens/IssueDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,12 +27,40 @@ export const AppNavigator = () => {
       <NavigationContainer>
         <Stack.Navigator>
           {token ? (
-            <Stack.Screen
-              options={{ headerShown: false }}
-              name="Dashboard"
-              component={adminDashboard}
-              initialParams={{ businessId: 6, userId: user?.id }}
-            />
+            <>
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name="Dashboard"
+                component={adminDashboard}
+                initialParams={{ businessId: 6, userId: user?.id }}
+              />
+              <Stack.Screen name="edit-business" component={BusinessForm} />
+              <Stack.Screen
+                name="user-form"
+                component={UserForm}
+                options={{ title: 'Create User', headerShown: false }}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name="Technicians"
+                component={TechniciansScreen}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name="TechnicianDetails"
+                component={TechnicianDetailsScreen}
+              />
+              <Stack.Screen
+                name="IssueDetails"
+                component={IssueDetailsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                options={{ headerShown: false }}
+                name="Chat"
+                component={ChatScreen}
+              />
+            </>
           ) : (
             <Stack.Screen
               name="Login"
@@ -39,27 +68,6 @@ export const AppNavigator = () => {
               options={{ headerShown: false }}
             />
           )}
-          <Stack.Screen name="edit-business" component={BusinessForm} />
-          <Stack.Screen
-            name="user-form"
-            component={UserForm}
-            options={{ title: 'Create User', headerShown: false }}
-          />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="Technicians"
-            component={TechniciansScreen}
-          />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="TechnicianDetails"
-            component={TechnicianDetailsScreen}
-          />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="Chat"
-            component={ChatScreen}
-          />
         </Stack.Navigator>
       </NavigationContainer>
     </FixFoxProvidersContext.Provider>

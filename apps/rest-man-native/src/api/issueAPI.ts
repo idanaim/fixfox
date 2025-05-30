@@ -38,6 +38,7 @@ export interface Issue {
   solution?: {
     id: number;
     treatment: string;
+    resolvedBy: string;
     createdAt: string;
   };
   business: {
@@ -245,5 +246,94 @@ export const issueAPI = {
       console.error('Error creating resolved issue:', error);
       throw error;
     }
+  },
+
+  /**
+   * Update issue cost
+   */
+  updateIssueCost: async (
+    issueId: number,
+    cost: number,
+    businessId?: number
+  ): Promise<Issue> => {
+    try {
+      const response = await api.put(`/issues/${issueId}/cost`, {
+        cost,
+        businessId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating issue cost:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update issue treatment description
+   */
+  updateIssueTreatment: async (
+    issueId: number,
+    treatment: string,
+    businessId?: number,
+    userId?: number
+  ): Promise<Issue> => {
+    try {
+      const response = await api.put(`/issues/${issueId}/treatment`, {
+        treatment,
+        businessId,
+        userId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating issue treatment:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Close issue with cost and treatment
+   */
+  closeIssue: async (
+    issueId: number,
+    cost?: number,
+    treatment?: string,
+    businessId?: number,
+    userId?: number
+  ): Promise<Issue> => {
+    try {
+      const response = await api.put(`/issues/${issueId}/close`, {
+        cost,
+        treatment,
+        businessId,
+        userId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error closing issue:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Comprehensive update for issue - handles status, cost, treatment, and closing
+   */
+  updateIssueComprehensive: async (
+    issueId: number,
+    data: {
+      status?: string;
+      cost?: number;
+      treatment?: string;
+      shouldClose?: boolean;
+      businessId?: number;
+      userId?: number;
+    }
+  ): Promise<Issue> => {
+    try {
+      const response = await api.put(`/issues/${issueId}/update`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating issue comprehensively:', error);
+      throw error;
+    }
   }
-}; 
+};

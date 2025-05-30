@@ -7,6 +7,7 @@ import { ProblemService } from './problem.service';
 import { EquipmentService } from './equipment.service';
 import { SolutionService } from './solution.service';
 import { Business } from '../../admin/entities/business.entity';
+import { Solution } from '../entities/solution.entity';
 
 @Injectable()
 export class IssueService {
@@ -15,6 +16,8 @@ export class IssueService {
     private issueRepository: Repository<Issue>,
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
+    @InjectRepository(Solution)
+    private solutionRepository: Repository<Solution>,
     private problemService: ProblemService,
     private equipmentService: EquipmentService,
     private solutionService: SolutionService
@@ -355,9 +358,9 @@ export class IssueService {
     userId?: number
   ) {
     const issue = await this.getIssueById(issueId, businessId);
-    
+
     issue.status = status;
-    
+
     // If marking as closed, record who solved it
     if (status === 'closed' && userId) {
       issue.solvedBy = { id: userId } as any;
@@ -375,7 +378,7 @@ export class IssueService {
     businessId?: number
   ) {
     const issue = await this.getIssueById(issueId, businessId);
-    
+
     issue.assignedTo = { id: technicianId } as any;
     issue.status = 'assigned';
 
@@ -408,5 +411,181 @@ export class IssueService {
       closed,
       activeIssues: open + assigned + inProgress
     };
+  }
+
+  /**
+   * Update issue cost
+   */
+  async updateIssueCost(
+    issueId: number,
+    cost: number,
+    businessId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+
+    issue.cost = cost;
+
+    return this.issueRepository.save(issue);
+  }
+
+  /**
+   * Update issue treatment description
+   */
+  async updateIssueTreatment(
+    issueId: number,
+    treatment: string,
+    businessId?: number,
+    userId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+
+    // Check if issue already has a solution
+    if (issue.solution) {
+      // Update existing solution's treatment
+      issue.solution.treatment = treatment;
+      await this.solutionRepository.save(issue.solution);
+    } else {
+      // Create a new solution for this issue
+      const newSolution = this.solutionRepository.create({
+        problem: issue.problem,
+        treatment: treatment,
+        resolvedBy: userId ? `user:${userId}` : 'manual',
+        source: `business:${businessId || issue.business.id}`,
+        cause: 'Manual treatment added',
+        effectiveness: 0,
+        isExternal: false,
+      });
+
+      const savedSolution = await this.solutionRepository.save(newSolution);
+      
+      // Link the solution to the issue
+      issue.solution = savedSolution;
+    }
+
+    if (userId) {
+      issue.solvedBy = { id: userId } as any;
+    }
+
+    return this.issueRepository.save(issue);
+  }
+
+  /**
+   * Close issue with cost and treatment
+   */
+  async closeIssue(
+    issueId: number,
+    cost?: number,
+    treatment?: string,
+    businessId?: number,
+    userId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+
+    // Update issue status to closed
+    issue.status = 'closed';
+
+    // Set cost if provided
+    if (cost !== undefined) {
+      issue.cost = cost;
+    }
+
+    // Handle treatment if provided
+    if (treatment) {
+      if (issue.solution) {
+        // Update existing solution's treatment
+        issue.solution.treatment = treatment;
+        await this.solutionRepository.save(issue.solution);
+      } else {
+        // Create a new solution for this issue
+        const newSolution = this.solutionRepository.create({
+          problem: issue.problem,
+          treatment: treatment,
+          resolvedBy: userId ? `user:${userId}` : 'manual',
+          source: `business:${businessId || issue.business.id}`,
+          cause: 'Issue closed with manual treatment',
+          effectiveness: 0,
+          isExternal: false,
+        });
+
+        const savedSolution = await this.solutionRepository.save(newSolution);
+        
+        // Link the solution to the issue
+        issue.solution = savedSolution;
+      }
+    }
+
+    // Record who solved it
+    if (userId) {
+      issue.solvedBy = { id: userId } as any;
+    }
+
+    return this.issueRepository.save(issue);
+  }
+
+  /**
+   * Comprehensive update for issue - handles status, cost, treatment, and closing in one transaction
+   */
+  async updateIssueComprehensive(
+    issueId: number,
+    status?: string,
+    cost?: number,
+    treatment?: string,
+    shouldClose?: boolean,
+    businessId?: number,
+    userId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+
+    // If should close or status is closed, use close logic
+    if (shouldClose || status === 'closed') {
+      return this.closeIssue(issueId, cost, treatment, businessId, userId);
+    }
+
+    // Update status if provided
+    if (status && status !== issue.status) {
+      issue.status = status;
+      
+      // If marking as closed, record who solved it
+      if (status === 'closed' && userId) {
+        issue.solvedBy = { id: userId } as any;
+      }
+    }
+
+    // Update cost if provided
+    if (cost !== undefined) {
+      issue.cost = cost;
+    }
+
+    // Handle treatment if provided
+    if (treatment) {
+      if (issue.solution) {
+        // Update existing solution's treatment
+        issue.solution.treatment = treatment;
+        await this.solutionRepository.save(issue.solution);
+      } else {
+        // Create a new solution for this issue
+        const newSolution = this.solutionRepository.create({
+          problem: issue.problem,
+          treatment: treatment,
+          resolvedBy: userId ? `user:${userId}` : 'manual',
+          source: `business:${businessId || issue.business.id}`,
+          cause: 'Manual treatment added',
+          effectiveness: 0,
+          isExternal: false,
+        });
+
+        const savedSolution = await this.solutionRepository.save(newSolution);
+        
+        // Link the solution to the issue
+        issue.solution = savedSolution;
+      }
+
+      // Record who provided the treatment
+      if (userId) {
+        issue.solvedBy = { id: userId } as any;
+      }
+    }
+
+    return this.issueRepository.save(issue);
   }
 }

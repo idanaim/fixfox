@@ -266,4 +266,133 @@ export const useIssueManagement = (businessId: number, userId?: number) => {
     refetchUserIssues: userIssues.refetch,
     refetchStats: issueStats.refetch,
   };
+};
+
+/**
+ * Hook to update issue cost
+ */
+export const useUpdateIssueCost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ issueId, cost, businessId }: {
+      issueId: number;
+      cost: number;
+      businessId?: number;
+    }) => issueAPI.updateIssueCost(issueId, cost, businessId),
+    onSuccess: (data, variables) => {
+      // Update the specific issue in cache
+      queryClient.setQueryData(
+        issueKeys.detail(variables.issueId),
+        data
+      );
+      
+      // Invalidate all issue lists that might contain this issue
+      if (variables.businessId) {
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.business(variables.businessId)
+        });
+      }
+    },
+  });
+};
+
+/**
+ * Hook to update issue treatment
+ */
+export const useUpdateIssueTreatment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ issueId, treatment, businessId, userId }: {
+      issueId: number;
+      treatment: string;
+      businessId?: number;
+      userId?: number;
+    }) => issueAPI.updateIssueTreatment(issueId, treatment, businessId, userId),
+    onSuccess: (data, variables) => {
+      // Update the specific issue in cache
+      queryClient.setQueryData(
+        issueKeys.detail(variables.issueId),
+        data
+      );
+      
+      // Invalidate all issue lists that might contain this issue
+      if (variables.businessId) {
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.business(variables.businessId)
+        });
+      }
+    },
+  });
+};
+
+/**
+ * Hook to close issue
+ */
+export const useCloseIssue = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ issueId, cost, treatment, businessId, userId }: {
+      issueId: number;
+      cost?: number;
+      treatment?: string;
+      businessId?: number;
+      userId?: number;
+    }) => issueAPI.closeIssue(issueId, cost, treatment, businessId, userId),
+    onSuccess: (data, variables) => {
+      // Update the specific issue in cache
+      queryClient.setQueryData(
+        issueKeys.detail(variables.issueId),
+        data
+      );
+      
+      // Invalidate all issue lists that might contain this issue
+      if (variables.businessId) {
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.business(variables.businessId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.stats(variables.businessId)
+        });
+      }
+    },
+  });
+};
+
+/**
+ * Hook for comprehensive issue update
+ */
+export const useUpdateIssueComprehensive = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ issueId, ...data }: {
+      issueId: number;
+      status?: string;
+      cost?: number;
+      treatment?: string;
+      shouldClose?: boolean;
+      businessId?: number;
+      userId?: number;
+    }) => issueAPI.updateIssueComprehensive(issueId, data),
+    onSuccess: (data, variables) => {
+      // Update the specific issue in cache
+      queryClient.setQueryData(
+        issueKeys.detail(variables.issueId),
+        data
+      );
+      
+      // Invalidate all issue lists that might contain this issue
+      if (variables.businessId) {
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.business(variables.businessId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: issueKeys.stats(variables.businessId)
+        });
+      }
+    },
+  });
 }; 

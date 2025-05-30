@@ -137,4 +137,78 @@ export class IssueController {
       body.businessId
     );
   }
+
+  /**
+   * Update issue cost
+   */
+  @Put(':id/cost')
+  async updateIssueCost(
+    @Param('id') id: number,
+    @Body() body: { cost: number; businessId?: number }
+  ) {
+    return this.issueService.updateIssueCost(
+      id,
+      body.cost,
+      body.businessId
+    );
+  }
+
+  /**
+   * Update issue treatment description
+   */
+  @Put(':id/treatment')
+  async updateIssueTreatment(
+    @Param('id') id: number,
+    @Body() body: { treatment: string; businessId?: number; userId?: number }
+  ) {
+    return this.issueService.updateIssueTreatment(
+      id,
+      body.treatment,
+      body.businessId,
+      body.userId
+    );
+  }
+
+  /**
+   * Close issue with cost and treatment
+   */
+  @Put(':id/close')
+  async closeIssue(
+    @Param('id') id: number,
+    @Body() body: { cost?: number; treatment?: string; businessId?: number; userId?: number }
+  ) {
+    return this.issueService.closeIssue(
+      id,
+      body.cost,
+      body.treatment,
+      body.businessId,
+      body.userId
+    );
+  }
+
+  /**
+   * Comprehensive update for issue - handles status, cost, treatment, and closing
+   */
+  @Put(':id/update')
+  async updateIssueComprehensive(
+    @Param('id') id: number,
+    @Body() body: {
+      status?: string;
+      cost?: number;
+      treatment?: string;
+      shouldClose?: boolean;
+      businessId?: number;
+      userId?: number;
+    }
+  ) {
+    return this.issueService.updateIssueComprehensive(
+      id,
+      body.status,
+      body.cost,
+      body.treatment,
+      body.shouldClose,
+      body.businessId,
+      body.userId
+    );
+  }
 }

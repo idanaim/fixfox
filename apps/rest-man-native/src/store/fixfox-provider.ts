@@ -2,7 +2,7 @@ import { ServerApi } from '../queries/server-api';
 import { createContext } from 'react';
 interface ProvidersInterface {
   serverApi: ServerApi;
-  token: string;
+  user?: any;
 }
 
 const FixFoxProvidersContext = createContext<ProvidersInterface>({} as ProvidersInterface);
