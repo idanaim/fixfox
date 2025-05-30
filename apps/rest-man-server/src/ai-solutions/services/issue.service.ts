@@ -182,4 +182,231 @@ export class IssueService {
       message: `Issue created as resolved using solution ${createResolvedIssueDto.solutionId}`
     };
   }
+
+  /**
+   * Get all issues for a specific business with pagination and filtering
+   */
+  async getIssuesByBusiness(
+    businessId: number,
+    options: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      equipmentId?: number;
+      userId?: number;
+    } = {}
+  ) {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      equipmentId,
+      userId
+    } = options;
+
+    const queryBuilder = this.issueRepository
+      .createQueryBuilder('issue')
+      .leftJoinAndSelect('issue.problem', 'problem')
+      .leftJoinAndSelect('issue.equipment', 'equipment')
+      .leftJoinAndSelect('issue.solution', 'solution')
+      .leftJoinAndSelect('issue.business', 'business')
+      .leftJoinAndSelect('issue.openedBy', 'openedBy')
+      .leftJoinAndSelect('issue.assignedTo', 'assignedTo')
+      .leftJoinAndSelect('issue.solvedBy', 'solvedBy')
+      .where('issue.businessId = :businessId', { businessId });
+
+    // Apply additional filters
+    if (status) {
+      queryBuilder.andWhere('issue.status = :status', { status });
+    }
+
+    if (equipmentId) {
+      queryBuilder.andWhere('issue.equipmentId = :equipmentId', { equipmentId });
+    }
+
+    if (userId) {
+      queryBuilder.andWhere(
+        '(issue.openedBy = :userId OR issue.assignedTo = :userId OR issue.solvedBy = :userId)',
+        { userId }
+      );
+    }
+
+    // Order by most recent first
+    queryBuilder.orderBy('issue.createdAt', 'DESC');
+
+    // Apply pagination
+    const skip = (page - 1) * limit;
+    queryBuilder.skip(skip).take(limit);
+
+    // Get results and total count
+    const [issues, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      issues,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  /**
+   * Get issues for a specific user across all their businesses
+   */
+  async getIssuesByUser(
+    userId: number,
+    options: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      businessId?: number;
+    } = {}
+  ) {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      businessId
+    } = options;
+
+    const queryBuilder = this.issueRepository
+      .createQueryBuilder('issue')
+      .leftJoinAndSelect('issue.problem', 'problem')
+      .leftJoinAndSelect('issue.equipment', 'equipment')
+      .leftJoinAndSelect('issue.solution', 'solution')
+      .leftJoinAndSelect('issue.business', 'business')
+      .leftJoinAndSelect('issue.openedBy', 'openedBy')
+      .leftJoinAndSelect('issue.assignedTo', 'assignedTo')
+      .leftJoinAndSelect('issue.solvedBy', 'solvedBy')
+      .where(
+        '(issue.openedBy = :userId OR issue.assignedTo = :userId OR issue.solvedBy = :userId)',
+        { userId }
+      );
+
+    // Apply additional filters
+    if (status) {
+      queryBuilder.andWhere('issue.status = :status', { status });
+    }
+
+    if (businessId) {
+      queryBuilder.andWhere('issue.businessId = :businessId', { businessId });
+    }
+
+    // Order by most recent first
+    queryBuilder.orderBy('issue.createdAt', 'DESC');
+
+    // Apply pagination
+    const skip = (page - 1) * limit;
+    queryBuilder.skip(skip).take(limit);
+
+    // Get results and total count
+    const [issues, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      issues,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    };
+  }
+
+  /**
+   * Get a single issue by ID with all related data
+   */
+  async getIssueById(issueId: number, businessId?: number) {
+    const queryBuilder = this.issueRepository
+      .createQueryBuilder('issue')
+      .leftJoinAndSelect('issue.problem', 'problem')
+      .leftJoinAndSelect('issue.equipment', 'equipment')
+      .leftJoinAndSelect('issue.solution', 'solution')
+      .leftJoinAndSelect('issue.business', 'business')
+      .leftJoinAndSelect('issue.openedBy', 'openedBy')
+      .leftJoinAndSelect('issue.assignedTo', 'assignedTo')
+      .leftJoinAndSelect('issue.solvedBy', 'solvedBy')
+      .leftJoinAndSelect('issue.chatSessions', 'chatSessions')
+      .where('issue.id = :issueId', { issueId });
+
+    // Optional business filter for security
+    if (businessId) {
+      queryBuilder.andWhere('issue.businessId = :businessId', { businessId });
+    }
+
+    const issue = await queryBuilder.getOne();
+
+    if (!issue) {
+      throw new Error('Issue not found');
+    }
+
+    return issue;
+  }
+
+  /**
+   * Update issue status
+   */
+  async updateIssueStatus(
+    issueId: number,
+    status: string,
+    businessId?: number,
+    userId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+    
+    issue.status = status;
+    
+    // If marking as closed, record who solved it
+    if (status === 'closed' && userId) {
+      issue.solvedBy = { id: userId } as any;
+    }
+
+    return this.issueRepository.save(issue);
+  }
+
+  /**
+   * Assign technician to issue
+   */
+  async assignTechnician(
+    issueId: number,
+    technicianId: number,
+    businessId?: number
+  ) {
+    const issue = await this.getIssueById(issueId, businessId);
+    
+    issue.assignedTo = { id: technicianId } as any;
+    issue.status = 'assigned';
+
+    return this.issueRepository.save(issue);
+  }
+
+  /**
+   * Get issue statistics for a business
+   */
+  async getIssueStats(businessId: number) {
+    const [
+      total,
+      open,
+      assigned,
+      inProgress,
+      closed
+    ] = await Promise.all([
+      this.issueRepository.count({ where: { business: { id: businessId } } }),
+      this.issueRepository.count({ where: { business: { id: businessId }, status: 'open' } }),
+      this.issueRepository.count({ where: { business: { id: businessId }, status: 'assigned' } }),
+      this.issueRepository.count({ where: { business: { id: businessId }, status: 'in_progress' } }),
+      this.issueRepository.count({ where: { business: { id: businessId }, status: 'closed' } })
+    ]);
+
+    return {
+      total,
+      open,
+      assigned,
+      inProgress,
+      closed,
+      activeIssues: open + assigned + inProgress
+    };
+  }
 }
