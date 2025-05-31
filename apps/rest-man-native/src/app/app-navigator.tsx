@@ -14,6 +14,7 @@ import { TechniciansScreen } from '../screens/TechniciansScreen';
 import { TechnicianDetailsScreen } from '../screens/TechnicianDetailsScreen';
 import adminDashboard from '../componentsBackup/admin-dashboard/admin-dashboard';
 import { IssueDetailsScreen } from '../screens/IssueDetailsScreen';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -56,17 +57,29 @@ export const AppNavigator = () => {
                 options={{ headerShown: false }}
               />
               <Stack.Screen
+                name="Onboarding"
+                component={OnboardingScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
                 options={{ headerShown: false }}
                 name="Chat"
                 component={ChatScreen}
               />
             </>
           ) : (
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ headerShown: false }}
-            />
+            <>
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Onboarding"
+                component={OnboardingScreen}
+                options={{ headerShown: false }}
+              />
+            </>
           )}
         </Stack.Navigator>
       </NavigationContainer>

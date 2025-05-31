@@ -16,6 +16,7 @@ type RootStackParamList = {
   Dashboard: undefined;
   ForgotPassword: undefined;
   Register: undefined;
+  Onboarding: undefined;
 };
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -43,6 +44,7 @@ const LoginScreen = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+  const [imageError, setImageError] = React.useState(false);
 
   const handleLogin = (email: string, password: string) => {
     setLoading(true);
@@ -65,21 +67,28 @@ const LoginScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.keyboardAvoidingView}
     >
       <StatusBar backgroundColor={colors.primary} barStyle="light-content" />
-      
+
       <ScrollView contentContainerStyle={styles.scrollView}>
         <Surface style={styles.container}>
           <View style={styles.logoContainer}>
             <View style={styles.headerRow}>
               <View style={styles.logoWrapper}>
-                <Image
-                  source={require('../../../assets/fixfoxlogo.png')}
-                  style={styles.logo}
-                />
+                {!imageError ? (
+                  <Image
+                    source={require('../../../assets/fixfoxlogo.png')}
+                    style={styles.logo}
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <View style={styles.logoFallback}>
+                    <Icon name="tools" size={40} color={colors.primary} />
+                  </View>
+                )}
               </View>
               <View style={styles.languageSwitcherContainer}>
                 <LanguageSwitcher />
@@ -118,7 +127,7 @@ const LoginScreen = () => {
                 activeOutlineColor={colors.primary}
                 left={<TextInput.Icon icon={() => <Icon name="lock" size={20} color={colors.medium} />} />}
                 right={
-                  <TextInput.Icon 
+                  <TextInput.Icon
                     icon={() => <Icon name={secureTextEntry ? "eye" : "eye-off"} size={20} color={colors.medium} />}
                     onPress={() => setSecureTextEntry(!secureTextEntry)}
                   />
@@ -178,10 +187,11 @@ const LoginScreen = () => {
 
             <Button
               mode="text"
-              onPress={() => navigation.navigate('Register')}
-              textColor={colors.primary}
+              onPress={() => navigation.navigate('Onboarding')}
+              textColor={colors.secondary}
+              icon={() => <Icon name="rocket-launch" size={16} color={colors.secondary} />}
             >
-              Create Account
+              New Account Setup
             </Button>
           </View>
         </Surface>
@@ -230,6 +240,16 @@ const styles = StyleSheet.create({
   languageSwitcherContainer: {
     position: 'absolute',
     right: 0,
+  },
+  logoFallback: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.primary,
   },
   logo: {
     width: 80,
