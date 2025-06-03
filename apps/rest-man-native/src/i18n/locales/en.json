@@ -199,5 +199,122 @@
     },
     "assignToTechnician": "Assign to Default Technician",
     "technicianAssigned": "Issue has been assigned to the default technician for your business."
+  },
+  "onboarding": {
+    "title": "Account Setup",
+    "steps": {
+      "welcome": "Welcome",
+      "account": "Account",
+      "business": "Business",
+      "team": "Team",
+      "complete": "Complete"
+    },
+    "welcome": {
+      "title": "Welcome to FixFox!",
+      "subtitle": "Let's set up your maintenance management system in a few simple steps.",
+      "features": {
+        "manageEquipment": "Manage equipment and issues",
+        "trackCosts": "Track maintenance costs",
+        "coordinateTechnicians": "Coordinate with technicians",
+        "aiSolutions": "AI-powered solutions"
+      }
+    },
+    "account": {
+      "title": "Create Your Account",
+      "subtitle": "Set up your admin account",
+      "accountInfo": "Account Information",
+      "adminDetails": "Admin Details",
+      "accountName": "Account Name",
+      "accountNamePlaceholder": "e.g., Acme Maintenance Inc.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "emailPlaceholder": "admin@company.com",
+      "password": "Password",
+      "mobile": "Mobile Number",
+      "mobilePlaceholder": "+1 555-123-4567"
+    },
+    "business": {
+      "title": "Add Your First Business",
+      "subtitle": "Tell us about your main location",
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "e.g., Downtown Restaurant",
+      "businessType": "Business Type",
+      "address": "Address (Optional)",
+      "addressPlaceholder": "Street address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 555-123-4567",
+      "types": {
+        "restaurant": "Restaurant",
+        "hotel": "Hotel",
+        "retail": "Retail Store",
+        "office": "Office Building",
+        "manufacturing": "Manufacturing",
+        "healthcare": "Healthcare",
+        "education": "Education",
+        "other": "Other"
+      }
+    },
+    "team": {
+      "title": "Add Team Members",
+      "subtitle": "Invite colleagues to join your account (Optional)",
+      "addMember": "Add Team Member",
+      "teamMemberDetails": "Team Member Details",
+      "teamMember": "Team Member",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "mobile": "Mobile Number",
+      "mobilePlaceholder": "+1 555-123-4567",
+      "role": "Role",
+      "roles": {
+        "manager": "Manager",
+        "technician": "Technician",
+        "employee": "Employee",
+        "admin": "Admin"
+      }
+    },
+    "complete": {
+      "title": "All Set!",
+      "subtitle": "Your maintenance management system is ready to go",
+      "summary": "Summary",
+      "account": "Account",
+      "business": "Business",
+      "teamMembers": "Team Members",
+      "includingYou": "including you",
+      "accountCreated": "Account Created",
+      "businessAdded": "Business Added",
+      "getStarted": "Get Started"
+    },
+    "navigation": {
+      "back": "Back",
+      "continue": "Continue",
+      "getStarted": "Get Started",
+      "creatingAccount": "Creating Account...",
+      "launch": "Launch"
+    },
+    "validation": {
+      "missingInfo": "Missing Information",
+      "accountDetails": "Please fill in all account details",
+      "invalidEmail": "Invalid Email",
+      "validEmailRequired": "Please enter a valid email address",
+      "invalidPassword": "Invalid Password",
+      "passwordRequirements": "Password must be at least 8 characters long",
+      "invalidMobile": "Invalid Mobile Number",
+      "mobileRequirements": "Please enter a valid mobile number with country code",
+      "businessInfo": "Please provide business name, type, and phone number",
+      "invalidTeamMemberMobile": "Invalid team member mobile number",
+      "required": "This field is required"
+    },
+    "success": {
+      "title": "Setup Complete",
+      "message": "Your maintenance management system has been successfully set up.",
+      "buttonText": "Go to Dashboard"
+    },
+    "error": {
+      "title": "Setup Failed",
+      "message": "There was an error setting up your account. Please try again.",
+      "buttonText": "Try Again"
+    }
   }
 }

@@ -222,7 +222,9 @@
       "firstName": "שם פרטי",
       "lastName": "שם משפחה",
       "emailAddress": "כתובת דואר אלקטרוני",
-      "emailPlaceholder": "admin@company.com"
+      "emailPlaceholder": "admin@company.com",
+      "phone": "מספר טלפון",
+      "phonePlaceholder": "+972 50-123-4567"
     },
     "business": {
       "title": "הוסף את העסק הראשון שלך",
@@ -252,12 +254,12 @@
       "firstName": "שם פרטי",
       "lastName": "שם משפחה",
       "email": "דואר אלקטרוני",
+      "phone": "מספר טלפון",
       "role": "תפקיד",
       "addMember": "הוסף חבר צוות",
       "roles": {
         "manager": "מנהל",
-        "technician": "טכנאי",
-        "employee": "עובד",
+        "teamMember": "חבר צוות",
         "admin": "מנהל מערכת"
       }
     },

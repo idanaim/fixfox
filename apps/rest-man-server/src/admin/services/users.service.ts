@@ -4,9 +4,9 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserBusiness } from '../entities/user-business.entity';
-import { UpdateUserDto } from '../DTO/update-user.dto';
 import { Role } from '../entities/role.entity';
-import { UserPermissionsDto } from '../DTO/user-permissions.dto';
+import { UserPermissionsDto } from '../dto/user-permissions.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Injectable()
 export class UsersService {

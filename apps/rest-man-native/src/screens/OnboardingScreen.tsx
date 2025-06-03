@@ -20,6 +20,8 @@ import {
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
+import useAuthStore from '../store/auth.store';
+import { useOnboarding } from '../queries/react-query-wrapper/use-onboarding';
 
 // Slack-inspired color palette
 const colors = {
@@ -46,43 +48,84 @@ const typography = {
   button: { fontSize: 14, fontWeight: '500' as const, letterSpacing: 1.25 },
 };
 
-interface OnboardingData {
-  // Account setup
-  accountName: string;
-  adminFirstName: string;
-  adminLastName: string;
-  adminEmail: string;
+interface FormData {
+  // Account data
+  account: {
+    name: string;
+  };
   
-  // Business setup
-  businessName: string;
-  businessType: string;
-  businessAddress: string;
-  businessPhone: string;
+  // Admin user data
+  admin: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    mobile: string;
+  };
   
-  // Additional users
+  // Business data
+  business: {
+    name: string;
+    type: string;
+    address: string;
+    phone: string;
+  };
+  
+  // Team members
   teamMembers: Array<{
     firstName: string;
     lastName: string;
     email: string;
     role: string;
+    mobile: string;
   }>;
 }
 
 export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
   const { t } = useTranslation();
+  const { signIn } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<OnboardingData>({
-    accountName: '',
-    adminFirstName: '',
-    adminLastName: '',
-    adminEmail: '',
-    businessName: '',
-    businessType: '',
-    businessAddress: '',
-    businessPhone: '',
+  const [formData, setFormData] = useState<FormData>({
+    account: {
+      name: '',
+    },
+    admin: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      mobile: '',
+    },
+    business: {
+      name: '',
+      type: '',
+      address: '',
+      phone: '',
+    },
     teamMembers: [],
   });
+  
+  // Use our React Query hook for onboarding
+  const { mutate: submitOnboarding, isPending: isLoading } = useOnboarding();
+  
+  const [formErrors, setFormErrors] = useState<{
+    accountName?: string;
+    adminFirstName?: string;
+    adminLastName?: string;
+    adminEmail?: string;
+    adminPassword?: string;
+    adminPhone?: string;
+    businessName?: string;
+    businessType?: string;
+    businessPhone?: string;
+    teamMembers?: Array<{
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      mobile?: string;
+      role?: string;
+    }>;
+  }>({});
 
   const steps = [
     { id: 1, title: t('onboarding.steps.welcome'), icon: 'hand-wave' },
@@ -111,7 +154,33 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
   ];
 
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      // Handle nested paths like 'account.name', 'admin.firstName', etc.
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        
+        // Type-safe way to handle nested paths
+        if (parent === 'account' && prev.account) {
+          return {
+            ...prev,
+            account: { ...prev.account, [child]: value }
+          };
+        } else if (parent === 'admin' && prev.admin) {
+          return {
+            ...prev,
+            admin: { ...prev.admin, [child]: value }
+          };
+        } else if (parent === 'business' && prev.business) {
+          return {
+            ...prev,
+            business: { ...prev.business, [child]: value }
+          };
+        }
+      }
+      
+      // Handle non-nested fields
+      return { ...prev, [field]: value };
+    });
   };
 
   const addTeamMember = () => {
@@ -121,7 +190,8 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
         firstName: '',
         lastName: '',
         email: '',
-        role: 'Employee'
+        role: 'TeamMember',
+        mobile: '',
       }]
     }));
   };
@@ -129,7 +199,7 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
   const updateTeamMember = (index: number, field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      teamMembers: prev.teamMembers.map((member, i) => 
+      teamMembers: prev.teamMembers.map((member, i) =>
         i === index ? { ...member, [field]: value } : member
       )
     }));
@@ -140,6 +210,41 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
       ...prev,
       teamMembers: prev.teamMembers.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleComplete = () => {
+    if (!validateCurrentStep()) return;
+
+    // Use the formData directly since it now matches the structure expected by the API
+    submitOnboarding(formData, {
+      onSuccess: (data) => {
+        // Create a valid User object from the response
+        const user = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          accountId: data.accountId,
+          businessId: data.businessId,
+          mobile: formData.admin.mobile, // Include the mobile number from our form
+          // Add any other required fields with defaults
+          department: '',
+          departments: [],
+          positionTitle: ''
+        };
+        
+        signIn(data.token, user);
+        
+        // Give the auth state time to update before navigating
+        setTimeout(() => {
+          navigation.navigate('Dashboard');
+        }, 100);
+      },
+      onError: (error) => {
+        console.error('Onboarding error:', error);
+        Alert.alert(t('onboarding.error.title'), t('onboarding.error.defaultMessage'));
+      }
+    });
   };
 
   const handleNext = () => {
@@ -159,48 +264,78 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
   };
 
   const validateCurrentStep = (): boolean => {
+    const errors: any = {};
+
     switch (currentStep) {
       case 2: // Account setup
-        if (!formData.accountName || !formData.adminFirstName || !formData.adminLastName || !formData.adminEmail) {
-          Alert.alert(t('onboarding.validation.missingInfo'), t('onboarding.validation.accountDetails'));
-          return false;
+        if (!formData.account.name) {
+          errors.accountName = t('onboarding.validation.required');
         }
-        if (!formData.adminEmail.includes('@')) {
-          Alert.alert(t('onboarding.validation.invalidEmail'), t('onboarding.validation.validEmailRequired'));
-          return false;
+        if (!formData.admin.firstName) {
+          errors.adminFirstName = t('onboarding.validation.required');
+        }
+        if (!formData.admin.lastName) {
+          errors.adminLastName = t('onboarding.validation.required');
+        }
+        if (!formData.admin.email) {
+          errors.adminEmail = t('onboarding.validation.required');
+        } else if (!formData.admin.email.includes('@')) {
+          errors.adminEmail = t('onboarding.validation.validEmailRequired');
+        }
+        if (!formData.admin.password) {
+          errors.adminPassword = t('onboarding.validation.required');
+        } else if (formData.admin.password.length < 8) {
+          errors.adminPassword = t('onboarding.validation.passwordRequirements');
+        }
+        if (!formData.admin.mobile) {
+          errors.adminPhone = t('onboarding.validation.required');
+        } else if (!formData.admin.mobile.match(/^\+?[\d\s-]{8,}$/)) {
+          errors.adminPhone = t('onboarding.validation.mobileRequirements');
         }
         break;
-      case 3: // Business setup
-        if (!formData.businessName || !formData.businessType) {
-          Alert.alert(t('onboarding.validation.missingInfo'), t('onboarding.validation.businessInfo'));
-          return false;
-        }
-        break;
-      case 4: // Team setup (optional, so always valid)
-        break;
-    }
-    return true;
-  };
 
-  const handleComplete = async () => {
-    setIsLoading(true);
-    try {
-      // Here you would make API calls to create the account, business, and users
-      console.log('Onboarding data:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      Alert.alert(
-        t('onboarding.success.title'), 
-        t('onboarding.success.message'),
-        [{ text: t('onboarding.success.buttonText'), onPress: () => navigation.replace('Dashboard') }]
-      );
-    } catch (error) {
-      Alert.alert(t('onboarding.error.title'), t('onboarding.error.message'));
-    } finally {
-      setIsLoading(false);
+      case 3: // Business setup
+        if (!formData.business.name) {
+          errors.businessName = t('onboarding.validation.required');
+        }
+        if (!formData.business.type) {
+          errors.businessType = t('onboarding.validation.required');
+        }
+        if (!formData.business.phone) {
+          errors.businessPhone = t('onboarding.validation.required');
+        } else if (!formData.business.phone.match(/^\+?[\d\s-]{8,}$/)) {
+          errors.businessPhone = t('onboarding.validation.mobileRequirements');
+        }
+        break;
+
+      case 4: // Team setup
+        if (formData.teamMembers.length > 0) {
+          const teamErrors = formData.teamMembers.map(member => {
+            const memberErrors: any = {};
+            if (!member.firstName) memberErrors.firstName = t('onboarding.validation.required');
+            if (!member.lastName) memberErrors.lastName = t('onboarding.validation.required');
+            if (!member.email) {
+              memberErrors.email = t('onboarding.validation.required');
+            } else if (!member.email.includes('@')) {
+              memberErrors.email = t('onboarding.validation.validEmailRequired');
+            }
+            if (!member.mobile) {
+              memberErrors.mobile = t('onboarding.validation.required');
+            } else if (!member.mobile.match(/^\+?[\d\s-]{8,}$/)) {
+              memberErrors.mobile = t('onboarding.validation.mobileRequirements');
+            }
+            if (!member.role) memberErrors.role = t('onboarding.validation.required');
+            return memberErrors;
+          });
+          if (teamErrors.some(e => Object.keys(e).length > 0)) {
+            errors.teamMembers = teamErrors;
+          }
+        }
+        break;
     }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const renderStepIndicator = () => (
@@ -216,10 +351,10 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
               {currentStep > step.id ? (
                 <Icon name="check" size={16} color={colors.white} />
               ) : (
-                <Icon 
-                  name={step.icon} 
-                  size={16} 
-                  color={currentStep >= step.id ? colors.white : colors.medium} 
+                <Icon
+                  name={step.icon}
+                  size={16}
+                  color={currentStep >= step.id ? colors.white : colors.medium}
                 />
               )}
             </View>
@@ -232,9 +367,9 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
           </View>
         ))}
       </View>
-      <ProgressBar 
-        progress={currentStep / steps.length} 
-        color={colors.primary} 
+      <ProgressBar
+        progress={currentStep / steps.length}
+        color={colors.primary}
         style={styles.progressBar}
       />
     </Surface>
@@ -248,7 +383,7 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
         <Text style={styles.welcomeSubtitle}>
           {t('onboarding.welcome.subtitle')}
         </Text>
-        
+
         <View style={styles.featuresList}>
           <View style={styles.featureItem}>
             <Icon name="check-circle" size={20} color={colors.success} />
@@ -273,57 +408,109 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
 
   const renderAccountStep = () => (
     <View style={styles.stepContent}>
-      <View style={styles.formContainer}>
-        <View style={styles.stepHeader}>
-          <Icon name="account-circle" size={32} color={colors.primary} />
-          <Text style={styles.stepTitle}>{t('onboarding.account.title')}</Text>
-          <Text style={styles.stepSubtitle}>{t('onboarding.account.subtitle')}</Text>
-        </View>
+      <Text style={styles.stepTitle}>{t('onboarding.account.title')}</Text>
+      <Text style={styles.stepSubtitle}>{t('onboarding.account.subtitle')}</Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputGroupLabel}>{t('onboarding.account.accountInfo')}</Text>
-          <TextInput
-            label={t('onboarding.account.accountName')}
-            value={formData.accountName}
-            onChangeText={(value) => updateFormData('accountName', value)}
-            mode="outlined"
-            style={styles.slackInput}
-            left={<TextInput.Icon icon="domain" />}
-            placeholder={t('onboarding.account.accountNamePlaceholder')}
-          />
-        </View>
+      <Card style={styles.formCard}>
+        <Text style={styles.inputGroupLabel}>{t('onboarding.account.accountInfo')}</Text>
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.accountName')}
+          value={formData.account.name}
+          onChangeText={(value) => {
+            updateFormData('account.name', value);
+            setFormErrors(prev => ({ ...prev, accountName: undefined }));
+          }}
+          placeholder={t('onboarding.account.accountNamePlaceholder')}
+          error={!!formErrors.accountName}
+        />
+        {formErrors.accountName && (
+          <Text style={styles.errorText}>{formErrors.accountName}</Text>
+        )}
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.inputGroupLabel}>{t('onboarding.account.adminDetails')}</Text>
-          <View style={styles.nameRow}>
-            <TextInput
-              label={t('onboarding.account.firstName')}
-              value={formData.adminFirstName}
-              onChangeText={(value) => updateFormData('adminFirstName', value)}
-              mode="outlined"
-              style={[styles.slackInput, styles.halfWidth]}
-              left={<TextInput.Icon icon="account" />}
-            />
-            <TextInput
-              label={t('onboarding.account.lastName')}
-              value={formData.adminLastName}
-              onChangeText={(value) => updateFormData('adminLastName', value)}
-              mode="outlined"
-              style={[styles.slackInput, styles.halfWidth]}
-            />
-          </View>
-          <TextInput
-            label={t('onboarding.account.emailAddress')}
-            value={formData.adminEmail}
-            onChangeText={(value) => updateFormData('adminEmail', value)}
-            mode="outlined"
-            style={styles.slackInput}
-            keyboardType="email-address"
-            left={<TextInput.Icon icon="email" />}
-            placeholder={t('onboarding.account.emailPlaceholder')}
-          />
-        </View>
-      </View>
+        <Text style={styles.inputGroupLabel}>{t('onboarding.account.adminDetails')}</Text>
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.firstName')}
+          value={formData.admin.firstName}
+          onChangeText={(value) => {
+            updateFormData('admin.firstName', value);
+            setFormErrors(prev => ({ ...prev, adminFirstName: undefined }));
+          }}
+          error={!!formErrors.adminFirstName}
+        />
+        {formErrors.adminFirstName && (
+          <Text style={styles.errorText}>{formErrors.adminFirstName}</Text>
+        )}
+
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.lastName')}
+          value={formData.admin.lastName}
+          onChangeText={(value) => {
+            updateFormData('admin.lastName', value);
+            setFormErrors(prev => ({ ...prev, adminLastName: undefined }));
+          }}
+          error={!!formErrors.adminLastName}
+        />
+        {formErrors.adminLastName && (
+          <Text style={styles.errorText}>{formErrors.adminLastName}</Text>
+        )}
+
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.emailAddress')}
+          value={formData.admin.email}
+          onChangeText={(value) => {
+            updateFormData('admin.email', value);
+            setFormErrors(prev => ({ ...prev, adminEmail: undefined }));
+          }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          placeholder={t('onboarding.account.emailPlaceholder')}
+          error={!!formErrors.adminEmail}
+        />
+        {formErrors.adminEmail && (
+          <Text style={styles.errorText}>{formErrors.adminEmail}</Text>
+        )}
+
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.password')}
+          value={formData.admin.password}
+          onChangeText={(value) => {
+            updateFormData('admin.password', value);
+            setFormErrors(prev => ({ ...prev, adminPassword: undefined }));
+          }}
+          secureTextEntry
+          placeholder={t('onboarding.account.passwordPlaceholder')}
+          autoComplete="new-password"
+          textContentType="newPassword"
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          error={!!formErrors.adminPassword}
+        />
+        {formErrors.adminPassword && (
+          <Text style={styles.errorText}>{formErrors.adminPassword}</Text>
+        )}
+
+        <TextInput
+          style={styles.input}
+          label={t('onboarding.account.mobile')}
+          value={formData.admin.mobile}
+          onChangeText={(value) => {
+            updateFormData('admin.mobile', value);
+            setFormErrors(prev => ({ ...prev, adminPhone: undefined }));
+          }}
+          keyboardType="phone-pad"
+          placeholder={t('onboarding.account.mobilePlaceholder')}
+          error={!!formErrors.adminPhone}
+        />
+        {formErrors.adminPhone && (
+          <Text style={styles.errorText}>{formErrors.adminPhone}</Text>
+        )}
+      </Card>
     </View>
   );
 
@@ -339,26 +526,39 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
         <View style={styles.inputGroup}>
           <TextInput
             label={t('onboarding.business.businessName')}
-            value={formData.businessName}
-            onChangeText={(value) => updateFormData('businessName', value)}
+            value={formData.business.name}
+            onChangeText={(value) => {
+              updateFormData('business.name', value);
+              setFormErrors(prev => ({ ...prev, businessName: undefined }));
+            }}
             mode="outlined"
             style={styles.slackInput}
             left={<TextInput.Icon icon="store" />}
             placeholder={t('onboarding.business.businessNamePlaceholder')}
+            error={!!formErrors.businessName}
           />
-          
+          {formErrors.businessName && (
+            <Text style={styles.errorText}>{formErrors.businessName}</Text>
+          )}
+
           <Text style={styles.inputGroupLabel}>{t('onboarding.business.businessType')}</Text>
+          {formErrors.businessType && (
+            <Text style={styles.errorText}>{formErrors.businessType}</Text>
+          )}
           <View style={styles.chipContainer}>
             {businessTypeOptions.map((type) => (
               <Chip
                 key={type.key}
-                selected={formData.businessType === type.key}
-                onPress={() => updateFormData('businessType', type.key)}
+                selected={formData.business.type === type.key}
+                onPress={() => {
+                  updateFormData('business.type', type.key);
+                  setFormErrors(prev => ({ ...prev, businessType: undefined }));
+                }}
                 style={[
                   styles.businessTypeChip,
-                  formData.businessType === type.key && styles.businessTypeChipSelected
+                  formData.business.type === type.key && styles.businessTypeChipSelected
                 ]}
-                textStyle={formData.businessType === type.key ? styles.chipTextSelected : styles.chipText}
+                textStyle={formData.business.type === type.key ? styles.chipTextSelected : styles.chipText}
               >
                 {type.label}
               </Chip>
@@ -367,28 +567,165 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
 
           <TextInput
             label={t('onboarding.business.address')}
-            value={formData.businessAddress}
-            onChangeText={(value) => updateFormData('businessAddress', value)}
+            value={formData.business.address}
+            onChangeText={(value) => {
+              updateFormData('business.address', value)
+              setFormErrors(prev => ({ ...prev, businessAddress: undefined }));
+            }}
             mode="outlined"
             style={styles.slackInput}
             left={<TextInput.Icon icon="map-marker" />}
             placeholder={t('onboarding.business.addressPlaceholder')}
           />
-          
+
           <TextInput
             label={t('onboarding.business.phone')}
-            value={formData.businessPhone}
-            onChangeText={(value) => updateFormData('businessPhone', value)}
+            value={formData.business.phone}
+            onChangeText={(value) => {
+              updateFormData('business.phone', value);
+              setFormErrors(prev => ({ ...prev, businessPhone: undefined }));
+            }}
             mode="outlined"
             style={styles.slackInput}
             keyboardType="phone-pad"
             left={<TextInput.Icon icon="phone" />}
             placeholder={t('onboarding.business.phonePlaceholder')}
+            error={!!formErrors.businessPhone}
           />
+          {formErrors.businessPhone && (
+            <Text style={styles.errorText}>{formErrors.businessPhone}</Text>
+          )}
         </View>
       </View>
     </View>
   );
+
+  const renderTeamMemberForm = (member: typeof formData.teamMembers[0], index: number) => {
+    const memberErrors = formErrors.teamMembers?.[index] || {};
+
+    return (
+      <Card key={index} style={styles.teamMemberCard}>
+        <Card.Content>
+          <View style={styles.teamMemberHeader}>
+            <Text style={styles.teamMemberTitle}>{t('onboarding.team.teamMember')} {index + 1}</Text>
+            <IconButton
+              icon="close"
+              size={20}
+              onPress={() => removeTeamMember(index)}
+              iconColor={colors.error}
+            />
+          </View>
+
+          <View style={styles.nameRow}>
+            <TextInput
+              label={t('onboarding.team.firstName')}
+              value={member.firstName}
+              onChangeText={(value) => {
+                updateTeamMember(index, 'firstName', value);
+                const newErrors = { ...formErrors };
+                if (newErrors.teamMembers?.[index]) {
+                  newErrors.teamMembers[index].firstName = undefined;
+                }
+                setFormErrors(newErrors);
+              }}
+              mode="outlined"
+              style={[styles.slackInput, styles.halfWidth]}
+              error={!!memberErrors.firstName}
+            />
+            <TextInput
+              label={t('onboarding.team.lastName')}
+              value={member.lastName}
+              onChangeText={(value) => {
+                updateTeamMember(index, 'lastName', value);
+                const newErrors = { ...formErrors };
+                if (newErrors.teamMembers?.[index]) {
+                  newErrors.teamMembers[index].lastName = undefined;
+                }
+                setFormErrors(newErrors);
+              }}
+              mode="outlined"
+              style={[styles.slackInput, styles.halfWidth]}
+              error={!!memberErrors.lastName}
+            />
+          </View>
+          {(memberErrors.firstName || memberErrors.lastName) && (
+            <Text style={styles.errorText}>
+              {memberErrors.firstName || memberErrors.lastName}
+            </Text>
+          )}
+
+          <TextInput
+            label={t('onboarding.team.email')}
+            value={member.email}
+            onChangeText={(value) => {
+              updateTeamMember(index, 'email', value);
+              const newErrors = { ...formErrors };
+              if (newErrors.teamMembers?.[index]) {
+                newErrors.teamMembers[index].email = undefined;
+              }
+              setFormErrors(newErrors);
+            }}
+            mode="outlined"
+            style={styles.slackInput}
+            keyboardType="email-address"
+            error={!!memberErrors.email}
+          />
+          {memberErrors.email && (
+            <Text style={styles.errorText}>{memberErrors.email}</Text>
+          )}
+
+          <TextInput
+            label={t('onboarding.team.mobile')}
+            value={member.mobile}
+            onChangeText={(value) => {
+              updateTeamMember(index, 'mobile', value);
+              const newErrors = { ...formErrors };
+              if (newErrors.teamMembers?.[index]) {
+                newErrors.teamMembers[index].mobile = undefined;
+              }
+              setFormErrors(newErrors);
+            }}
+            mode="outlined"
+            style={styles.slackInput}
+            keyboardType="phone-pad"
+            placeholder={t('onboarding.team.mobilePlaceholder')}
+            error={!!memberErrors.mobile}
+          />
+          {memberErrors.mobile && (
+            <Text style={styles.errorText}>{memberErrors.mobile}</Text>
+          )}
+
+          <Text style={styles.inputGroupLabel}>{t('onboarding.team.role')}</Text>
+          {memberErrors.role && (
+            <Text style={styles.errorText}>{memberErrors.role}</Text>
+          )}
+          <View style={styles.chipContainer}>
+            {userRoleOptions.map((role) => (
+              <Chip
+                key={role.key}
+                selected={member.role === role.key}
+                onPress={() => {
+                  updateTeamMember(index, 'role', role.key);
+                  const newErrors = { ...formErrors };
+                  if (newErrors.teamMembers?.[index]) {
+                    newErrors.teamMembers[index].role = undefined;
+                  }
+                  setFormErrors(newErrors);
+                }}
+                style={[
+                  styles.roleChip,
+                  member.role === role.key && styles.roleChipSelected
+                ]}
+                textStyle={member.role === role.key ? styles.chipTextSelected : styles.chipText}
+              >
+                {role.label}
+              </Chip>
+            ))}
+          </View>
+        </Card.Content>
+      </Card>
+    );
+  };
 
   const renderTeamStep = () => (
     <View style={styles.stepContent}>
@@ -400,66 +737,8 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
         </View>
 
         <ScrollView style={styles.teamMembersContainer} showsVerticalScrollIndicator={false}>
-          {formData.teamMembers.map((member, index) => (
-            <Card key={index} style={styles.teamMemberCard}>
-              <Card.Content>
-                <View style={styles.teamMemberHeader}>
-                  <Text style={styles.teamMemberTitle}>{t('onboarding.team.teamMember')} {index + 1}</Text>
-                  <IconButton
-                    icon="close"
-                    size={20}
-                    onPress={() => removeTeamMember(index)}
-                    iconColor={colors.error}
-                  />
-                </View>
-                
-                <View style={styles.nameRow}>
-                  <TextInput
-                    label={t('onboarding.team.firstName')}
-                    value={member.firstName}
-                    onChangeText={(value) => updateTeamMember(index, 'firstName', value)}
-                    mode="outlined"
-                    style={[styles.slackInput, styles.halfWidth]}
-                  />
-                  <TextInput
-                    label={t('onboarding.team.lastName')}
-                    value={member.lastName}
-                    onChangeText={(value) => updateTeamMember(index, 'lastName', value)}
-                    mode="outlined"
-                    style={[styles.slackInput, styles.halfWidth]}
-                  />
-                </View>
-                
-                <TextInput
-                  label={t('onboarding.team.email')}
-                  value={member.email}
-                  onChangeText={(value) => updateTeamMember(index, 'email', value)}
-                  mode="outlined"
-                  style={styles.slackInput}
-                  keyboardType="email-address"
-                />
-                
-                <Text style={styles.inputGroupLabel}>{t('onboarding.team.role')}</Text>
-                <View style={styles.chipContainer}>
-                  {userRoleOptions.map((role) => (
-                    <Chip
-                      key={role.key}
-                      selected={member.role === role.key}
-                      onPress={() => updateTeamMember(index, 'role', role.key)}
-                      style={[
-                        styles.roleChip,
-                        member.role === role.key && styles.roleChipSelected
-                      ]}
-                      textStyle={member.role === role.key ? styles.chipTextSelected : styles.chipText}
-                    >
-                      {role.label}
-                    </Chip>
-                  ))}
-                </View>
-              </Card.Content>
-            </Card>
-          ))}
-          
+          {formData.teamMembers.map((member, index) => renderTeamMemberForm(member, index))}
+
           <TouchableOpacity style={styles.addMemberButton} onPress={addTeamMember}>
             <Icon name="plus-circle" size={24} color={colors.primary} />
             <Text style={styles.addMemberText}>{t('onboarding.team.addMember')}</Text>
@@ -477,15 +756,15 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
         <Text style={styles.completeSubtitle}>
           {t('onboarding.complete.subtitle')}
         </Text>
-        
+
         <View style={styles.summaryContainer}>
           <View style={styles.summaryItem}>
             <Icon name="account-circle" size={20} color={colors.primary} />
-            <Text style={styles.summaryText}>{t('onboarding.complete.account')}: {formData.accountName}</Text>
+            <Text style={styles.summaryText}>{t('onboarding.complete.account')}: {formData.account.name}</Text>
           </View>
           <View style={styles.summaryItem}>
             <Icon name="domain" size={20} color={colors.primary} />
-            <Text style={styles.summaryText}>{t('onboarding.complete.business')}: {formData.businessName}</Text>
+            <Text style={styles.summaryText}>{t('onboarding.complete.business')}: {formData.business.name}</Text>
           </View>
           <View style={styles.summaryItem}>
             <Icon name="account-group" size={20} color={colors.primary} />
@@ -522,10 +801,10 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
           <Appbar.BackAction onPress={handleBack} color={colors.white} />
         )}
         <Appbar.Content title={t('onboarding.title')} titleStyle={styles.headerTitle} />
-        <Appbar.Action 
-          icon="close" 
-          onPress={() => navigation.goBack()} 
-          color={colors.white} 
+        <Appbar.Action
+          icon="close"
+          onPress={() => navigation.goBack()}
+          color={colors.white}
         />
       </Appbar.Header>
 
@@ -548,7 +827,7 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
               {t('onboarding.navigation.back')}
             </Button>
           )}
-          
+
           <Button
             mode="contained"
             onPress={handleNext}
@@ -558,8 +837,8 @@ export const OnboardingScreen: React.FC<any> = ({ navigation }) => {
             disabled={isLoading}
             icon={currentStep === 5 ? "rocket-launch" : "arrow-right"}
           >
-            {currentStep === 1 ? t('onboarding.navigation.getStarted') : 
-             currentStep === 5 ? (isLoading ? t('onboarding.navigation.creatingAccount') : t('onboarding.navigation.launch')) : 
+            {currentStep === 1 ? t('onboarding.navigation.getStarted') :
+             currentStep === 5 ? (isLoading ? t('onboarding.navigation.creatingAccount') : t('onboarding.navigation.launch')) :
              t('onboarding.navigation.continue')}
           </Button>
         </View>
@@ -830,4 +1109,17 @@ const styles = StyleSheet.create({
     color: colors.white,
     ...typography.button,
   },
-}); 
+  formCard: {
+    padding: 16,
+  },
+  input: {
+    marginBottom: 12,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+});
