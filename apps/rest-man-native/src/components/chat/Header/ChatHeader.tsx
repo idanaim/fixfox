@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import BusinessSwitcher from './BusinessSwitcher';
 import LanguageSwitcher from '../../LanguageSwitcher';
 import { Business } from '../Types/business';
-import { colors, typography } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors, typography } from '../../admin-dashboard/admin-dashboard-styles';
 
 interface ChatHeaderProps {
   title: string;

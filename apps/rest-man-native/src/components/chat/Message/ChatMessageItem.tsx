@@ -4,14 +4,14 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { ChatMessage } from '../../../api/chatAPI';
-import { colors, typography } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors, typography } from '../../admin-dashboard/admin-dashboard-styles';
 import { isHebrew } from '../../../i18n';
 
 export const MessageItem = (message: ChatMessage) => {
   const isUser = message.type === 'user';
   const isSystem = message.type === 'system';
   const { i18n } = useTranslation();
-  
+
   // Detect if the message contains Hebrew text
   const messageHasHebrew = isHebrew(message.content);
   const textAlign = messageHasHebrew ? 'right' : 'left';

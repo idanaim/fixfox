@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { ChatMessage } from '../../../api/chatAPI';
 import { MessageItem } from './ChatMessageItem';
-import { colors } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors } from '../../admin-dashboard/admin-dashboard-styles';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];

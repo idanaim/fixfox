@@ -13,8 +13,9 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findByEmail(email);
-    const valid =password === user.password; // await bcrypt.compare(password, user.password);
+    const valid = password === user.password; // await bcrypt.compare(password, user.password);
     if (user && valid) {
+      
       return user;
     }
     return null;
@@ -26,9 +27,15 @@ export class AuthService {
     if(!foundUser) {
       return { message: 'Invalid credentials' };
     }
+    
+    // Get user permissions based on their role
+    const userPermissions = await this.usersService.getUserPermissions(foundUser.id);
+    
     return {
       access_token: this.jwtService.sign(payload),
-      user:foundUser
+      user: foundUser,
+      permissions: userPermissions.permissions,
+      role: userPermissions.role
     };
   }
 
