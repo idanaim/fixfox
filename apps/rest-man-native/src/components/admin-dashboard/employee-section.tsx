@@ -16,6 +16,13 @@ import { useDepartments } from '../../queries/react-query-wrapper/use-department
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Avatar, IconButton, Surface } from 'react-native-paper';
 
+/**
+ * Displays a list of employees associated with the current admin's account, including their roles, departments, and contact information.
+ *
+ * Shows loading and error states, and provides navigation to edit user details. If no employees are found, displays an empty state message.
+ *
+ * @param businessId - Optional business ID to filter employees by business.
+ */
 export function EmployeeSection({ businessId }: { businessId?: number }) {
   const { user } = useAuthStore();
   const {
