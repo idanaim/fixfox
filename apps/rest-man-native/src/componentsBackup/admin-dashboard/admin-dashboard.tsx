@@ -6,12 +6,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { styles } from './admin-dashboard-styles';
 import { EmployeeSection } from './employee-section';
 import { BusinessSection } from './business-section/business-section';
-import { TicketsManagement } from '../tickets-management/fixfox-tickets-management';
 import { ChatButton } from '../ChatButton';
 import { AccountSection } from './account-section/account-section';
 import useAuthStore from '../../store/auth.store';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { IssueTicketList } from '../../components/ticket-management/IssueTicketList';
 
 type TabType = 'users' | 'businesses' | 'tickets' | 'settings';
 
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
       case 'businesses':
         return <BusinessSection showAddBusinessModal={showAddBusinessModal} setShowAddBusinessModal={setShowAddBusinessModal} />;
       case 'tickets':
-        return <TicketsManagement />;
+        return <IssueTicketList businessId={6} onIssuePress={(issue)=> console.log(issue)} userId={22} navigation={navigation} i18nIsDynamicList />;
       case 'settings':
         return (
           <View style={styles.comingSoonContainer}>
@@ -69,8 +69,8 @@ const AdminDashboard = () => {
         />
       </Appbar.Header>
 
-      <AccountSection 
-        accountId={user?.accountId || '1'} 
+      <AccountSection
+        accountId={user?.accountId || '1'}
         fallbackStats={{
           activeUsers: 28,
           businesses: 5,

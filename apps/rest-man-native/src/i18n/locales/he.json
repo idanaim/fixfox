@@ -182,5 +182,124 @@
       "title": "בעיה",
       "description": "תיאור"
     }
+  },
+  "diagnosis": {
+    "similarProblems": {
+      "title": "בעיות דומות נמצאו",
+      "empty": "לא נמצאו בעיות דומות"
+    },
+    "aiDiagnosis": {
+      "title": "אבחון בינה מלאכותית"
+    },
+    "emptyState": {
+      "title": "לא נמצאו פתרונות",
+      "message": "האם תוכל לפרט יותר על הבעיה?",
+      "action": "ספק פרטים נוספים",
+      "improveDescription": "שפר תיאור"
+    },
+    "assignToTechnician": "הקצה לטכנאי מוגדר מחדל",
+    "technicianAssigned": "הבעיה הוקצתה לטכנאי המוגדר מחדל של העסק שלך."
+  },
+  "onboarding": {
+    "title": "הגדרת חשבון",
+    "welcome": {
+      "title": "ברוכים הבאים ל-FixFox!",
+      "subtitle": "בואו נגדיר את מערכת ניהול התחזוקה שלכם בכמה צעדים פשוטים וקצרים.",
+      "features": {
+        "manageEquipment": "ניהול ציוד ובעיות",
+        "trackCosts": "מעקב אחר עלויות תחזוקה",
+        "coordinateTechnicians": "תיאום עם טכנאים",
+        "aiSolutions": "פתרונות מבוססי בינה מלאכותית"
+      }
+    },
+    "account": {
+      "title": "צור את החשבון שלך",
+      "subtitle": "הגדר את חשבון המנהל שלך",
+      "accountInfo": "מידע החשבון",
+      "adminDetails": "פרטי המנהל",
+      "accountName": "שם החשבון",
+      "accountNamePlaceholder": "לדוגמה, תחזוקה אקמי בע״מ",
+      "firstName": "שם פרטי",
+      "lastName": "שם משפחה",
+      "emailAddress": "כתובת דואר אלקטרוני",
+      "emailPlaceholder": "admin@company.com",
+      "phone": "מספר טלפון",
+      "phonePlaceholder": "+972 50-123-4567"
+    },
+    "business": {
+      "title": "הוסף את העסק הראשון שלך",
+      "subtitle": "ספר לנו על המיקום הראשי שלך",
+      "businessName": "שם העסק",
+      "businessNamePlaceholder": "לדוגמה, מסעדה במרכז העיר",
+      "businessType": "סוג העסק",
+      "address": "כתובת (אופציונלי)",
+      "addressPlaceholder": "כתובת רחוב",
+      "phone": "מספר טלפון (אופציונלי)",
+      "phonePlaceholder": "+972 50-123-4567",
+      "types": {
+        "restaurant": "מסעדה",
+        "hotel": "מלון",
+        "retail": "חנות קמעונאות",
+        "office": "בניין משרדים",
+        "manufacturing": "ייצור",
+        "healthcare": "שירותי בריאות",
+        "education": "חינוך",
+        "other": "אחר"
+      }
+    },
+    "team": {
+      "title": "הוסף חברי צוות",
+      "subtitle": "הזמן עמיתים להצטרף לחשבון שלך (אופציונלי)",
+      "teamMember": "חבר צוות",
+      "firstName": "שם פרטי",
+      "lastName": "שם משפחה",
+      "email": "דואר אלקטרוני",
+      "phone": "מספר טלפון",
+      "role": "תפקיד",
+      "addMember": "הוסף חבר צוות",
+      "roles": {
+        "manager": "מנהל",
+        "teamMember": "חבר צוות",
+        "admin": "מנהל מערכת"
+      }
+    },
+    "complete": {
+      "title": "הכל מוכן!",
+      "subtitle": "חשבון FixFox שלך מוכן. הנה מה שהגדרנו בשבילך:",
+      "account": "חשבון",
+      "business": "עסק",
+      "teamMembers": "חברי צוות",
+      "includingYou": "(כולל אותך)"
+    },
+    "navigation": {
+      "back": "חזור",
+      "getStarted": "בואו נתחיל",
+      "continue": "המשך",
+      "launch": "הפעל FixFox",
+      "creatingAccount": "יוצר חשבון..."
+    },
+    "steps": {
+      "welcome": "ברוכים הבאים",
+      "account": "חשבון",
+      "business": "עסק",
+      "team": "צוות",
+      "complete": "הושלם"
+    },
+    "validation": {
+      "missingInfo": "מידע חסר",
+      "accountDetails": "אנא מלא את כל פרטי החשבון",
+      "invalidEmail": "דואר אלקטרוני לא תקין",
+      "validEmailRequired": "אנא הזן כתובת דואר אלקטרוני תקינה",
+      "businessInfo": "אנא ספק שם עסק וסוג עסק"
+    },
+    "success": {
+      "title": "ברוכים הבאים ל-FixFox!",
+      "message": "החשבון שלך נוצר בהצלחה. כעת תוכל להתחיל לנהל את בקשות התחזוקה שלך.",
+      "buttonText": "בואו נתחיל"
+    },
+    "error": {
+      "title": "שגיאה",
+      "message": "יצירת החשבון נכשלה. אנא נסה שוב."
+    }
   }
 }

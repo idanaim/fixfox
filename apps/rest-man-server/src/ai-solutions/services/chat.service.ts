@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { ChatSession } from '../entities/chat-session.entity';
 import { ChatMessage } from '../entities/chat-message.entity';
 import { Issue } from '../entities/issue.entity';
-import { Equipment } from '../entities/equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
 import { AIService } from './ai.service';
 import { Problem } from '../entities/problem.entity';
 import { ProblemService } from './problem.service';
@@ -23,8 +23,6 @@ export class ChatService {
     private equipmentRepository: Repository<Equipment>,
     @InjectRepository(Issue)
     private issueRepository: Repository<Issue>,
-    @InjectRepository(Problem)
-    private problemRepository: Repository<Problem>,
     private aiService: AIService,
     private problemService: ProblemService,
     private solutionService: SolutionService
@@ -105,6 +103,7 @@ export class ChatService {
     sessionId: number,
     description: string,
     equipment: Equipment,
+    followUpQuestions:Record<string, string>[] = [],
     language = 'en'
   ): Promise<{
     originalDescription: string;
@@ -130,6 +129,7 @@ export class ChatService {
       description,
       language,
       equipment,
+      followUpQuestions,
     );
 
     // Extract potential equipment types from the enhanced description
@@ -225,88 +225,114 @@ export class ChatService {
     return savedIssue;
   }
 
-  async analyzeIssue(sessionId: number, issueId: number): Promise<void> {
+  /**
+   * Gets a chat session with all relations loaded
+   */
+  async getSessionWithRelations(sessionId: number): Promise<ChatSession> {
     const session = await this.chatSessionRepository.findOne({
       where: { id: sessionId },
-      relations: ['issue', 'issue.equipment', 'issue.problem'],
+      relations: ['issue', 'issue.equipment', 'issue.problem', 'issue.solution']
     });
 
-    if (!session?.issue) {
-      throw new Error('No issue found for this session');
+    if (!session) {
+      throw new Error(`Chat session with ID ${sessionId} not found`);
+    }
+
+    return session;
+  }
+
+  /**
+   * Gets all user messages for a session
+   */
+  async getUserMessages(sessionId: number): Promise<ChatMessage[]> {
+    const messages = await this.chatMessageRepository.find({
+      where: {
+        session: { id: sessionId },
+        type: 'user'
+      },
+      order: { createdAt: 'ASC' }
+    });
+
+    return messages;
+  }
+
+  /**
+   * Analyzes the issue for a session
+   */
+  async analyzeIssue(sessionId: number, issueId?: number): Promise<any> {
+    const session = await this.getSessionWithRelations(sessionId);
+
+    if (!issueId && session.issue) {
+      issueId = session.issue.id;
+    }
+
+    if (!session?.issue?.equipment) {
+      throw new Error('No equipment found for this session');
     }
 
     const language = session.metadata?.language || 'en';
 
-    // Get previous issues for this equipment
-    const previousIssues = await this.issueRepository.find({
-      where: { equipment: { id: session.issue.equipment.id } },
-      relations: ['problem', 'solution'],
-      take: 5,
-      order: { createdAt: 'DESC' },
-    });
+    // Get user messages to analyze
+    const userMessages = await this.getUserMessages(sessionId);
+    const combinedText = userMessages.map(msg => msg.content).join('\n');
 
-    // Analyze the problem using AI
-    const analysis = await this.aiService.analyzeProblem(
-      session.issue.problem.description,
+    // Get follow-up questions from the AI service
+    const followUpQuestions = await this.aiService.generateFollowUpQuestions(
+      combinedText,
       session.issue.equipment,
-      previousIssues,
       language
     );
 
-    // Update the issue with AI analysis
-    await this.issueRepository.save({
-      id: issueId,
-      aiAnalysis: analysis,
-    });
-
-    // Add AI analysis message to chat
-    await this.addMessage(
-      sessionId,
-      this.formatAnalysisMessage(analysis, language),
-      'ai',
-      analysis
+    // Find similar problems
+    const problems = await this.problemService.findSimilarProblems(
+      combinedText,
+      session.issue.equipment.id,
+      session.issue.equipment.businessId
     );
 
-    // If no dtos is needed, generate solutions
-    if (!analysis.requiresTechnician) {
-      const solutions = await this.aiService.generateSolution(
-        session.issue.problem.description,
-        analysis,
+    // If this session doesn't have an issue yet, create one
+    if (!session.issue && session.issue.equipment) {
+      const issue = await this.issueRepository.save({
+        session: { id: sessionId },
+        equipment: { id: session.issue.equipment.id },
+        problem: { description: combinedText },
+        status: 'open',
+        createdAt: new Date()
+      });
+
+      // Update the session with the issue
+      await this.chatSessionRepository.update(sessionId, {
+        issue: { id: issue.id }
+      });
+    }
+
+    // If no additional questions, generate an enhanced diagnosis
+    if (followUpQuestions.length === 0) {
+      const enhancedDiagnosis = await this.aiService.enhancedDiagnosis(
+        combinedText,
         session.issue.equipment,
         language
       );
 
-      // Update the problem with the solutions
-      await this.problemRepository.save({
-        id: session.issue.problem.id,
-        possibleSolutions: solutions,
-      });
+      // If no technician is needed, generate solutions
+      if (!enhancedDiagnosis.structuredData?.requiresTechnician) {
+        // Future implementation for solutions
+      }
 
-      // Add solutions message to chat
-      await this.addMessage(
-        sessionId,
-        this.formatSolutionsMessage(solutions as string[], language),
-        'ai',
-        { solutions }
-      );
-    } else {
-      // Update issue status for dtos
-      await this.issueRepository.save({
-        id: issueId,
-        status: 'pending_technician',
-      });
-
-      // Add dtos message to chat
-      const technicianMessage = language === 'he'
-        ? 'תבסס על הניתוח, בעיה זו דורשת טכנאי מקצועי. האם תרצה שאעזור לך למצוא טכנאי מוסמך?'
-        : 'Based on the analysis, this issue requires a professional dtos. Would you like me to help you find a qualified dtos?';
-
-      await this.addMessage(
-        sessionId,
-        technicianMessage,
-        'system'
-      );
+      return {
+        problems,
+        followUpQuestions: [],
+        confidence: enhancedDiagnosis.confidence,
+        isDiagnosisReady: true
+      };
     }
+
+    return {
+      problems,
+      followUpQuestions,
+      confidence: 'medium',
+      isDiagnosisReady: false
+    };
   }
 
   private formatAnalysisMessage(analysis: any, language = 'en'): string {
@@ -332,5 +358,72 @@ export class ChatService {
       message += '\nWould you like to try these solutions? Let me know if you need any clarification on any step.';
       return message;
     }
+  }
+
+  /**
+   * Adds a user's answer to a follow-up question
+   */
+  async addFollowUpAnswer(
+    sessionId: number,
+    questionType: string,
+    answer: string
+  ): Promise<void> {
+    const session = await this.chatSessionRepository.findOne({
+      where: { id: sessionId }
+    });
+
+    if (!session) {
+      throw new Error(`Chat session with ID ${sessionId} not found`);
+    }
+
+    // Initialize metadata if needed
+    const metadata = session.metadata || {};
+
+    // Initialize answers array if needed
+    metadata.followUpAnswers = metadata.followUpAnswers || [];
+
+    // Add the answer with question type and timestamp
+    metadata.followUpAnswers.push({
+      questionType,
+      answer,
+      timestamp: new Date().toISOString()
+    });
+
+    // Update the session metadata
+    await this.chatSessionRepository.update(sessionId, {
+      metadata
+    });
+  }
+
+  /**
+   * Updates the session with the current follow-up question
+   */
+  async setCurrentFollowUpQuestion(
+    sessionId: number,
+    question: any // Changed type to any to avoid type conflicts
+  ): Promise<void> {
+    const session = await this.chatSessionRepository.findOne({
+      where: { id: sessionId }
+    });
+
+    if (!session) {
+      throw new Error(`Chat session with ID ${sessionId} not found`);
+    }
+
+    // Initialize metadata if needed
+    const metadata = session.metadata || {};
+
+    // Set the current follow-up question (storing it as a plain object)
+    metadata.currentFollowUpQuestion = {
+      question: question.question,
+      type: question.type,
+      options: question.options,
+      context: question.context
+    };
+
+    // Update the session metadata
+    await this.chatSessionRepository.update(sessionId, {
+      metadata
+    });
   }
 }

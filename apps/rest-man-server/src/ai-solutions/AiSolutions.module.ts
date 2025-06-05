@@ -6,7 +6,7 @@ import { AdminModule } from '../admin/admin.module';
 import { IssueController } from './controllers/issue.controller';
 import { Issue } from './entities/issue.entity';
 import { Problem } from './entities/problem.entity';
-import { Equipment } from './entities/equipment.entity';
+import { Equipment } from '../entities/equipment.entity';
 import { ProblemService } from './services/problem.service';
 import { IssueService } from './services/issue.service';
 import { EquipmentService } from './services/equipment.service';

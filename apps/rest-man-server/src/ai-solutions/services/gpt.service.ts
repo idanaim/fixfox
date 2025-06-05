@@ -2,7 +2,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { Equipment } from '../entities/equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
 import OpenAI from 'openai';
 import { Problem } from '../entities/problem.entity';
 

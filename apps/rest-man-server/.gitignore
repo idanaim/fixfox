@@ -1,0 +1,6 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# ... rest of your gitignore content ... 

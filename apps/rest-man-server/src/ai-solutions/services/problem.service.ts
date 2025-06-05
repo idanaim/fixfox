@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Problem } from '../entities/problem.entity';
-import { Equipment } from '../entities/equipment.entity';
+import { Equipment } from '../../entities/equipment.entity';
 import { AIService } from './ai.service';
 import { CreateProblemDto } from '../dtos/create-problem.dto';
 import { Issue } from '../entities/issue.entity';
@@ -117,32 +117,36 @@ export class ProblemService {
     description: string,
     equipmentId: number,
     businessId: number,
-    language = 'en'
+    language = 'en',
+    skipSimilar = false
   ): Promise<any> {
-    // First, try to find similar problems that already have solutions
-    const similarProblems = await this.findSimilarProblems(
-      description,
-      equipmentId,
-      businessId
-    );
+    // If skipSimilar is true, skip the similar problems search and go directly to AI diagnosis
+    if (!skipSimilar) {
+      // First, try to find similar problems that already have solutions
+      const similarProblems = await this.findSimilarProblems(
+        description,
+        equipmentId,
+        businessId
+      );
 
-    // If we found similar problems with solutions, return those
-    const problemsWithSolutions = similarProblems.filter(
-      (problem) => problem.solutions && problem.solutions.length > 0
-    );
+      // If we found similar problems with solutions, return those
+      const problemsWithSolutions = similarProblems.filter(
+        (problem) => problem.solutions && problem.solutions.length > 0
+      );
 
-    if (problemsWithSolutions.length > 0) {
-      return {
-        type: 'existing_solutions',
-        message:
-          language === 'he'
-            ? 'נמצאו פתרונות קודמים לבעיות דומות'
-            : 'Found existing solutions for similar problems',
-        problems: problemsWithSolutions,
-      };
+      if (problemsWithSolutions.length > 0) {
+        return {
+          type: 'existing_solutions',
+          message:
+            language === 'he'
+              ? 'נמצאו פתרונות קודמים לבעיות דומות'
+              : 'Found existing solutions for similar problems',
+          problems: problemsWithSolutions,
+        };
+      }
     }
 
-    // If no similar problems with solutions, use AI for diagnosis
+    // If no similar problems with solutions (or skipSimilar is true), use AI for diagnosis
     const equipment = await this.equipmentRepository.findOne({
       where: { id: equipmentId },
     });

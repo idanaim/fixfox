@@ -30,7 +30,8 @@ import { TechnicianModule } from '../technician/technician.module';
     ChatModule,
     TechnicianModule,
     AdminModule,
-    EquipmentModule
+    EquipmentModule,
+    ConfigModule,
   ],
   exports: [ ],
   controllers: [

@@ -1,6 +1,7 @@
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
+  Onboarding: undefined;
   Chat: {
     userId: number;
     businessId: number;
@@ -9,4 +10,9 @@ export type RootStackParamList = {
   };
   Technicians: undefined;
   TechnicianDetails: { id: string };
+  IssueDetails: {
+    issueId: number;
+    businessId: number;
+    userId?: number;
+  };
 }; 

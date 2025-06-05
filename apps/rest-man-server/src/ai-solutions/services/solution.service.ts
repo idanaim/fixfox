@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Solution } from '../entities/solution.entity';
 import { Problem } from '../entities/problem.entity';
-import { Equipment } from '../entities/equipment.entity';
 import { AIService } from './ai.service';
 import { CreateSolutionDto, UpdateSolutionDto, SolutionResponseDto } from '../dtos/solution.dto';
 
