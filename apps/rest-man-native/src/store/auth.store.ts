@@ -5,12 +5,14 @@ import { User } from '../interfaces/business';
 interface AuthState {
   token: string | null;
   user: User | null;
+  permissions: string[];
+  role: string | null;
   isLoading: boolean;
   error: string | null;
 }
 
 interface AuthActions {
-  signIn: (token: string, user: User) => void;
+  signIn: (token: string, user: User, permissions?: string[], role?: string) => void;
   signOut: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -22,15 +24,17 @@ const useAuthStore = create<AuthState & AuthActions>()(
     (set, get) => ({
       token: null,
       user: null,
+      permissions: [],
+      role: null,
       isLoading: false,
       error: null,
 
-      signIn: (token, user) => {
-        set({ token, user, error: null });
+      signIn: (token, user, permissions = [], role = null) => {
+        set({ token, user, permissions, role, error: null });
       },
 
       signOut: () => {
-        set({ token: null, user: null });
+        set({ token: null, user: null, permissions: [], role: null });
       },
 
       setLoading: (loading) => set({ isLoading: loading }),
@@ -44,7 +48,12 @@ const useAuthStore = create<AuthState & AuthActions>()(
           if (storage) {
             const state = JSON.parse(storage);
             // Add token validation logic here if needed
-            set({ token: state.token, user: state.user });
+            set({ 
+              token: state.token, 
+              user: state.user, 
+              permissions: state.permissions || [], 
+              role: state.role || null 
+            });
           }
         } catch (error) {
           console.error('Auth check failed:', error);

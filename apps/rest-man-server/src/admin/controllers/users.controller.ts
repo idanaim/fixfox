@@ -21,7 +21,6 @@ export class UserController {
 
   @Post(':accountId')
   async create(@Param('accountId') accountId: string, @Body() data: User) {
-    debugger
     data.accountId = accountId;
     return this.usersService.create(data);
   }
@@ -41,35 +40,6 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto
   ) {
     return this.usersService.update(parseInt(id, 10), updateUserDto);
-  }
-
-  @Post('admin/signUp')
-  async signUp(@Body() data: any) {
-    const { admin, businesses, users } = data;
-    // Create Admin
-    const adminUser = await this.usersService.create({
-      ...admin,
-      role: 'admin',
-    });
-
-    // Create Businesses (no employees here)
-    for (const businessData of businesses) {
-      await this.businessesService.create({
-        ...businessData,
-        admin: adminUser, // Link business to admin
-      });
-    }
-
-    // Create Employees (no businesses here)
-    for (const employeeData of users) {
-      await this.usersService.create({
-        ...employeeData,
-        role: employeeData.role || 'Employee',
-        admin: adminUser, // Link employee to admin
-      });
-    }
-
-    return { message: 'Admin, businesses, and employees created successfully' };
   }
 
   @Get(':userId/permissions')

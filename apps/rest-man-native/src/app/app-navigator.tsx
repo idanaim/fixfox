@@ -2,17 +2,16 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import useAuthStore from '../store/auth.store';
-import LoginScreen from '../componentsBackup/login/login';
-import UserForm from '../componentsBackup/admin-dashboard/user-form/user-form';
+import LoginScreen from '../components/login/login';
+import UserForm from '../components/admin-dashboard/user-form/user-form';
 import React, { useMemo } from 'react';
-// import AdminRegistration from '../componentsBackupBackup/admin-registration/admin-registration';
 import { ServerApi } from '../queries/server-api';
 import { FixFoxProvidersContext } from '../store/fixfox-provider';
-import BusinessForm from '../componentsBackup/admin-dashboard/business-form/business-form';
+import BusinessForm from '../components/admin-dashboard/business-form/business-form';
 import ChatScreen from '../screens/ChatScreen';
 import { TechniciansScreen } from '../screens/TechniciansScreen';
 import { TechnicianDetailsScreen } from '../screens/TechnicianDetailsScreen';
-import adminDashboard from '../componentsBackup/admin-dashboard/admin-dashboard';
+import adminDashboard from '../components/admin-dashboard/admin-dashboard';
 import { IssueDetailsScreen } from '../screens/IssueDetailsScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 

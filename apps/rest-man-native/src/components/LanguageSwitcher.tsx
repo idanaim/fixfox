@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../i18n';
-import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors, typography } from './admin-dashboard/admin-dashboard-styles';
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LanguageSwitcher; 
+export default LanguageSwitcher;

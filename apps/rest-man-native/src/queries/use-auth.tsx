@@ -1,8 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { postCall } from './server-api';
 import { FixFoxProvidersContext } from '../store/fixfox-provider';
 import { useContext } from 'react';
-
 
 export const useAuth=() =>{
   const { serverApi } = useContext(FixFoxProvidersContext);
