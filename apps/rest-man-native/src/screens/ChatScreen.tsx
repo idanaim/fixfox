@@ -13,16 +13,16 @@ import { useTranslation } from 'react-i18next';
 import ChatHeader from '../components/chat/Header/ChatHeader';
 import ChatMessages from '../components/chat/Message/ChatMessages';
 import ChatInput from '../components/chat/Input/ChatInput';
-import ApplianceSelector from '../components/ApplianceSelector';
-import EquipmentForm from '../components/EquipmentForm';
-import SolutionSuggestion from '../components/SolutionSuggestion';
-import ProblemDiagnosisDisplay from '../components/ProblemDiagnosisDisplay';
-import EnhancedDescriptionApproval from '../components/EnhancedDescriptionApproval';
-import FollowUpQuestionsContainer from '../components/FollowUpQuestionsContainer';
+import ApplianceSelector from '../components/chat/ApplianceSelector';
+import EquipmentForm from '../components/chat/EquipmentForm';
+import SolutionSuggestion from '../components/chat/SolutionSuggestion';
+import ProblemDiagnosisDisplay from '../components/chat/ProblemDiagnosisDisplay';
+import EnhancedDescriptionApproval from '../components/chat/EnhancedDescriptionApproval';
+import FollowUpQuestionsContainer from '../components/chat/FollowUpQuestionsContainer';
 import { useBusinesses } from '../hooks/useBusinesses';
 import { useChatLogic } from '../hooks/useChatLogic';
 import { useChatStore } from '../store/chat.store';
-import { colors, typography } from '../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors, typography } from '../components/admin-dashboard/admin-dashboard-styles';
 import { chatApi } from '../api/chatAPI';
 
 interface RouteParams {

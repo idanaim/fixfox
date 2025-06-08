@@ -21,16 +21,3 @@ export interface User{
   positionTitle?: string;
 }
 
-export const InitUser: User = {
-  name: '',
-  role: '',
-  email: '',
-  mobile: '',
-  businessId: 0,
-  adminId: 0,
-  password: '',
-  accountId: '',
-  department: '',
-  departments: [],
-  positionTitle: ''
-}

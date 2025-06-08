@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Platform, I18nManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { colors, typography } from '../../../componentsBackup/admin-dashboard/admin-dashboard-styles';
+import { colors, typography } from '../../admin-dashboard/admin-dashboard-styles';
 import { useLanguageDetection } from '../../../hooks/useLanguageDetection';
 
 interface ChatInputProps {
