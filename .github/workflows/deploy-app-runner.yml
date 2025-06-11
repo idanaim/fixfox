@@ -1,0 +1,85 @@
+name: Deploy to AWS App Runner
+
+on:
+  push:
+    branches: [ main, master, backend-aws ]
+    paths:
+      - 'apps/rest-man-server/**'
+      - '.github/workflows/deploy-app-runner.yml'
+      - 'apprunner.yaml'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  AWS_REGION: 'us-west-2'
+  SERVICE_NAME: 'fixfox-api'
+
+jobs:
+  deploy:
+    name: Deploy to AWS App Runner
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Deploy to App Runner
+      run: |
+        echo "🚀 Triggering App Runner deployment..."
+        
+        # Get the service ARN
+        SERVICE_ARN=$(aws apprunner list-services \
+          --region ${{ env.AWS_REGION }} \
+          --query "ServiceSummaryList[?ServiceName=='${{ env.SERVICE_NAME }}'].ServiceArn" \
+          --output text)
+        
+        if [ -z "$SERVICE_ARN" ] || [ "$SERVICE_ARN" = "None" ]; then
+          echo "❌ App Runner service '${{ env.SERVICE_NAME }}' not found."
+          echo "Please create the service first using the setup script or AWS Console."
+          exit 1
+        fi
+        
+        echo "Found service: $SERVICE_ARN"
+        
+        # Start deployment
+        aws apprunner start-deployment \
+          --service-arn "$SERVICE_ARN" \
+          --region ${{ env.AWS_REGION }}
+        
+        echo "✅ Deployment started successfully!"
+        
+    - name: Get service URL
+      run: |
+        # Get the service ARN
+        SERVICE_ARN=$(aws apprunner list-services \
+          --region ${{ env.AWS_REGION }} \
+          --query "ServiceSummaryList[?ServiceName=='${{ env.SERVICE_NAME }}'].ServiceArn" \
+          --output text)
+        
+        # Get the service URL
+        SERVICE_URL=$(aws apprunner describe-service \
+          --service-arn "$SERVICE_ARN" \
+          --region ${{ env.AWS_REGION }} \
+          --query "Service.ServiceUrl" \
+          --output text)
+        
+        echo "🌐 Service URL: https://$SERVICE_URL"
+        echo "🏥 Health Check: https://$SERVICE_URL/api/health"
+        
+    - name: Deployment Success Notification
+      if: success()
+      run: |
+        echo "🎉 App Runner deployment completed successfully!"
+        echo "Your FixFox API is now live and auto-scaling!"
+        
+    - name: Deployment Failure Notification
+      if: failure()
+      run: |
+        echo "❌ App Runner deployment failed!"
+        echo "Check the App Runner console for detailed logs." 
