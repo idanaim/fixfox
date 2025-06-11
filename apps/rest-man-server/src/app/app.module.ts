@@ -7,6 +7,7 @@ import { AiSolutionsModule } from '../ai-solutions/AiSolutions.module';
 import { ChatModule } from '../ai-solutions/chat.module';
 import { EquipmentModule } from './equipment.module';
 import { TechnicianModule } from '../technician/technician.module';
+import { StorageModule } from '../storage/storage.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -36,6 +37,7 @@ import { AppService } from './app.service';
     TechnicianModule,
     AdminModule,
     EquipmentModule,
+    StorageModule,
     ConfigModule,
   ],
   exports: [ ],
