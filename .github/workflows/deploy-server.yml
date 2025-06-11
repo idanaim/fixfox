@@ -2,7 +2,7 @@ name: Deploy REST API Server to AWS
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, backend-aws ]
     paths:
       - 'apps/rest-man-server/**'
       - '.github/workflows/deploy-server.yml'
