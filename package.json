@@ -5,6 +5,7 @@
   "scripts": {
     "ui-native": "nx serve rest-man-native",
     "serve": "nx serve rest-man-server",
+    "start": "node dist/apps/rest-man-server/main.js",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm migration:generate -- -d ./apps/rest-man-server/typeorm.config.js",
     "migration:run": "npm run typeorm migration:run -- -d ./apps/rest-man-server/typeorm.config.js",
