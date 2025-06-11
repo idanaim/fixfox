@@ -1,8 +1,8 @@
 import { Controller, Get, Param, UseGuards, Logger, Post, Body } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AccountsService } from '../services/accounts.service';
-import { AccountSummaryDto } from '../dto/account-summary.dto';
-import { OnboardingDto } from '../dto/onboarding.dto';
+import { AccountSummaryDto } from '../DTO/account-summary.dto';
+import { OnboardingDto } from '../DTO/onboarding.dto';
 
 @Controller('accounts')
 // @UseGuards(JwtAuthGuard)

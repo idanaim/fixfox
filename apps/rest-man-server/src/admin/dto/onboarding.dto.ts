@@ -1,3 +1,4 @@
+// DTO for onboarding process
 export class OnboardingDto {
   account: {
     name: string;
