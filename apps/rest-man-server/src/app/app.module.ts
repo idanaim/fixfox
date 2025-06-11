@@ -7,6 +7,8 @@ import { AiSolutionsModule } from '../ai-solutions/AiSolutions.module';
 import { ChatModule } from '../ai-solutions/chat.module';
 import { EquipmentModule } from './equipment.module';
 import { TechnicianModule } from '../technician/technician.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -15,15 +17,18 @@ import { TechnicianModule } from '../technician/technician.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com',
       port: 5432,
-      username: 'fixfox_user',
-      password: '12345',
-      database: 'fixfox_db',
+      username: 'idanaim',
+      password: 'In16051982',
+      database: 'fixfoxdb',
       autoLoadEntities: true,
       synchronize: false, // Disable auto-sync
       migrations: ['dist/migrations/*.js'], // Path to migrations
       migrationsRun: true, // Run migrations on startup
+      ssl: {
+        rejectUnauthorized: false, // Accept AWS RDS's default cert
+      },
     }),
     AuthModule,
     AiSolutionsModule,
@@ -35,8 +40,9 @@ import { TechnicianModule } from '../technician/technician.module';
   ],
   exports: [ ],
   controllers: [
+    AppController
   ],
 
-  providers: [],
+  providers: [AppService],
 })
 export class AppModule {}
