@@ -14,7 +14,7 @@ export const useAuth=() =>{
       return data;
     },
     onSuccess: () => {
-      console.log('Login Success!');
+      console.log('Login Success');
     },
   });
 }

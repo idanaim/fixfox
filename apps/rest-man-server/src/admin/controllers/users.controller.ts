@@ -2,8 +2,9 @@ import { Controller, Post, Body, Param, Get, Put, UseGuards } from '@nestjs/comm
 import { UsersService } from '../services/users.service';
 import { BusinessesService } from '../services/businesses.service';
 import { User } from '../entities/user.entity';
-import { UpdateUserDto } from '../dto/update-user.dto';
+
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserPermissionsDto } from '../dto/user-permissions.dto';
 
 @Controller('user')

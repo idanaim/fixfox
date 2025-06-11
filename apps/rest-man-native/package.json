@@ -26,6 +26,7 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "expo": "~51.0.8",
+    "expo-document-picker": "^13.1.5",
     "expo-image-picker": "^16.0.6",
     "expo-linear-gradient": "^14.0.2",
     "expo-modules-core": "^2.3.13",
