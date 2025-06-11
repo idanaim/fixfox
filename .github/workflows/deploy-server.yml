@@ -16,7 +16,7 @@ env:
   NODE_VERSION: '18'
   AWS_REGION: 'us-west-2'
   EB_APPLICATION_NAME: 'fixfox-api'
-  EB_ENVIRONMENT_NAME: 'fixfox-api-prod'
+  EB_ENVIRONMENT_NAME: 'fixfox-api-env'
   # Disable Nx Cloud
   NX_CLOUD_DISTRIBUTED_EXECUTION: false
   NX_CLOUD_ACCESS_TOKEN: ''
