@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from '../admin/admin.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
@@ -16,20 +16,24 @@ import { AppService } from './app.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com',
-      port: 5432,
-      username: 'idanaim',
-      password: 'In16051982',
-      database: 'fixfoxdb',
-      autoLoadEntities: true,
-      synchronize: false, // Disable auto-sync
-      migrations: ['dist/migrations/*.js'], // Path to migrations
-      migrationsRun: true, // Run migrations on startup
-      ssl: {
-        rejectUnauthorized: false, // Accept AWS RDS's default cert
-      },
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST', 'fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get<string>('DB_USERNAME', 'idanaim'),
+        password: configService.get<string>('DB_PASSWORD', 'In16051982'),
+        database: configService.get<string>('DB_DATABASE', 'fixfoxdb'),
+        autoLoadEntities: true,
+        synchronize: false, // Disable auto-sync
+        migrations: ['dist/migrations/*.js'], // Path to migrations
+        migrationsRun: true, // Run migrations on startup
+        ssl: {
+          rejectUnauthorized: false, // Accept AWS RDS's default cert
+        },
+      }),
+      inject: [ConfigService],
     }),
     AuthModule,
     AiSolutionsModule,

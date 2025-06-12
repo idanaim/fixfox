@@ -25,4 +25,18 @@ run:
     - name: PORT
       value: "3000"
     - name: OPENAI_API_KEY
-      value: "dummy-key-for-production" 
+      value: "dummy-key-for-production"
+    - name: DB_HOST
+      value: "fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com"
+    - name: DB_PORT
+      value: "5432"
+    - name: DB_USERNAME
+      value: "idanaim"
+    - name: DB_PASSWORD
+      value: "In16051982"
+    - name: DB_DATABASE
+      value: "fixfoxdb"
+    - name: AWS_S3_BUCKET_NAME
+      value: "fixfox-files"
+    - name: AWS_REGION
+      value: "us-west-2" 
