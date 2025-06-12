@@ -15,7 +15,7 @@ build:
       - cd deployment && npm ci --production
 run:
   runtime-version: nodejs18
-  command: npm start
+  command: cd deployment && npm start
   network:
     port: 3000
     env: PORT
