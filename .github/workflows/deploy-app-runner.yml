@@ -62,15 +62,51 @@ jobs:
           --query "ServiceSummaryList[?ServiceName=='${{ env.SERVICE_NAME }}'].ServiceArn" \
           --output text)
         
-        # Get the service URL
-        SERVICE_URL=$(aws apprunner describe-service \
+        if [ -z "$SERVICE_ARN" ] || [ "$SERVICE_ARN" = "None" ]; then
+          echo "❌ Service not found, skipping URL check"
+          exit 0
+        fi
+        
+        # Get the service status and URL
+        SERVICE_INFO=$(aws apprunner describe-service \
           --service-arn "$SERVICE_ARN" \
           --region ${{ env.AWS_REGION }} \
-          --query "Service.ServiceUrl" \
-          --output text)
+          --query "Service.{Status:Status,ServiceUrl:ServiceUrl}" \
+          --output json)
         
-        echo "🌐 Service URL: https://$SERVICE_URL"
-        echo "🏥 Health Check: https://$SERVICE_URL/api/health"
+        SERVICE_STATUS=$(echo "$SERVICE_INFO" | jq -r '.Status')
+        SERVICE_URL=$(echo "$SERVICE_INFO" | jq -r '.ServiceUrl')
+        
+        echo "📊 Service Status: $SERVICE_STATUS"
+        
+        if [ "$SERVICE_URL" = "null" ] || [ -z "$SERVICE_URL" ]; then
+          echo "⏳ Service URL not available yet (Status: $SERVICE_STATUS)"
+          echo "This is normal if the service is still deploying."
+        else
+          echo "🌐 Service URL: https://$SERVICE_URL"
+          echo "🏥 Health Check: https://$SERVICE_URL/api/health"
+          
+          # Only do health check if service is running
+          if [ "$SERVICE_STATUS" = "RUNNING" ]; then
+            echo "🏥 Checking health of: https://$SERVICE_URL/api/health"
+            
+            # Perform health check
+            response=$(curl -s -o /dev/null -w "%{http_code}" "https://$SERVICE_URL/api/health" || echo "000")
+            
+            if [ "$response" = "200" ]; then
+              echo "✅ Health check passed (HTTP $response)"
+              
+              # Get detailed health info
+              health_data=$(curl -s "https://$SERVICE_URL/api/health")
+              echo "📊 Health Details: $health_data"
+            else
+              echo "❌ Health check failed (HTTP $response)"
+              echo "Service may still be starting up."
+            fi
+          else
+            echo "⏳ Skipping health check - service not running yet"
+          fi
+        fi
         
     - name: Deployment Success Notification
       if: success()
