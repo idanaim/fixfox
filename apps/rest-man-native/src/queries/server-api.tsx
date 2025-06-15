@@ -1,9 +1,10 @@
+import { config } from '../config/environment';
 
 export class ServerApi {
   public headers = { 'Content-Type': 'application/json' };
-  public baseUrl = 'http://localhost:3000/api/';
+  public baseUrl = config.API_BASE_URL.endsWith('/') ? config.API_BASE_URL : `${config.API_BASE_URL}/`;
 
-  constructor(extraHeaders) {
+  constructor(extraHeaders: Record<string, string> = {}) {
     this.headers = {
       ...extraHeaders,
       'Content-Type': 'application/json',

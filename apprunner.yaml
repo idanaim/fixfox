@@ -10,12 +10,12 @@ build:
       - echo "Preparing deployment..."
       - mkdir -p deployment
       - cp -r dist/apps/rest-man-server/* deployment/
-      - cp package.json deployment/
-      - cp package-lock.json deployment/
+      - cp deployment-package.json deployment/package.json
+      - echo "Installing production dependencies..."
       - cd deployment && npm ci --production
 run:
   runtime-version: nodejs18
-  command: cd deployment && npm start
+  command: cd deployment && node main.js
   network:
     port: 3000
     env: PORT
