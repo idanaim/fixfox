@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  /**
+   * Health check endpoint to verify the status of the REST API server.
+   */
   @Get('health')
   getHealth() {
     return {
