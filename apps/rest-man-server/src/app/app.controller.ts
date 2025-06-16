@@ -14,7 +14,6 @@ export class AppController {
       environment: process.env.NODE_ENV || 'development'
     };
   }
-
   @Get()
   getRoot() {
     return {
