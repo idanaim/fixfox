@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "build": "nx build rest-man-server",
     "ui-native": "nx serve rest-man-native",
     "serve": "nx serve rest-man-server",
     "start": "node dist/apps/rest-man-server/main.js",
