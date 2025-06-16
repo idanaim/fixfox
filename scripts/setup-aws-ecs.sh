@@ -287,6 +287,10 @@ cat > task-definition.json << EOF
         {
           "name": "PORT",
           "value": "3000"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "value": "dummy-key-for-demo"
         }
       ]
     }
