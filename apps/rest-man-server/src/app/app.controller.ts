@@ -6,7 +6,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   /**
-   * Health check endpoint to verify the status of the REST API server.
+   * Health check endpoint to verify the status of the REST API server test.
    */
   @Get('health')
   getHealth() {
