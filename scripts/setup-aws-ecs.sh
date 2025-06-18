@@ -311,17 +311,35 @@ aws ecs register-task-definition \
 rm -f task-definition.json
 
 # Create ECS service
-echo "🎯 Creating ECS service..."
-aws ecs create-service \
-  --cluster $CLUSTER_NAME \
-  --service-name $SERVICE_NAME \
-  --task-definition $TASK_DEFINITION_NAME \
-  --desired-count $DESIRED_COUNT \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_IDS],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}" \
-  --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=$PROJECT_NAME-api,containerPort=3000" \
-  --region $REGION \
-  2>/dev/null || echo "Service already exists or failed to create"
+SERVICE_COUNT=$(aws ecs describe-services --cluster "$CLUSTER_NAME" --services "$SERVICE_NAME" --region "$REGION" --query "length(services[?status=='ACTIVE'])" --output text 2>/dev/null || echo 0)
+
+if [[ "$SERVICE_COUNT" -gt 0 ]]; then
+  echo "✅ ECS Service '$SERVICE_NAME' already exists."
+else
+  echo "🎯 Creating ECS service '$SERVICE_NAME'..."
+  # Create a JSON file for the network configuration
+  cat > network-config.json << EOF
+{
+  "awsvpcConfiguration": {
+    "subnets": ["${SUBNET_IDS// /"\", \"}"],
+    "securityGroups": ["$SECURITY_GROUP_ID"],
+    "assignPublicIp": "ENABLED"
+  }
+}
+EOF
+  
+  aws ecs create-service \
+    --cluster "$CLUSTER_NAME" \
+    --service-name "$SERVICE_NAME" \
+    --task-definition "$TASK_DEFINITION_NAME" \
+    --desired-count "$DESIRED_COUNT" \
+    --launch-type FARGATE \
+    --network-configuration file://network-config.json \
+    --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=${PROJECT_NAME}-api,containerPort=3000" \
+    --region "$REGION" >/dev/null
+
+  rm network-config.json
+fi
 
 # Get ALB DNS name
 ALB_DNS=$(aws elbv2 describe-load-balancers \
