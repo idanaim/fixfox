@@ -9,6 +9,8 @@ import { AppModule } from './app/app.module';
 
 // Test deployment workflow - new DevOps setup
 
+// Re-triggering deployment after infrastructure fix
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';

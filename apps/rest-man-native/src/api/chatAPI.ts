@@ -2,7 +2,7 @@ import { api } from './api';
 import { User } from '../interfaces/business';
 import i18n from 'i18next';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'http://fixfox-alb-dev-896725991.us-west-2.elb.amazonaws.com/api';
 
 export interface ChatSession {
   id: number;
