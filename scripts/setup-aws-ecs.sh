@@ -174,11 +174,17 @@ if [[ "$DEFAULT_VPC_ID" == "None" ]]; then
 fi
 
 # Get subnets
-SUBNET_IDS=$(aws ec2 describe-subnets \
+SUBNET_IDS_RAW=$(aws ec2 describe-subnets \
   --filters "Name=vpc-id,Values=$DEFAULT_VPC_ID" \
   --query "Subnets[*].SubnetId" \
   --output text \
   --region $REGION)
+
+# Format for AWS CLI commands that need a space-delimited list
+SUBNET_IDS_SPACED=$(echo $SUBNET_IDS_RAW)
+
+# Format for JSON arrays
+SUBNET_IDS_JSON="[\"$(echo $SUBNET_IDS_RAW | sed 's/\t/","/g')\"]"
 
 # Create security group
 SECURITY_GROUP_NAME="${PROJECT_NAME}-sg-${ENVIRONMENT}"
@@ -210,7 +216,7 @@ ALB_NAME="${PROJECT_NAME}-alb-${ENVIRONMENT}"
 
 ALB_ARN=$(aws elbv2 create-load-balancer \
   --name $ALB_NAME \
-  --subnets $SUBNET_IDS \
+  --subnets $SUBNET_IDS_SPACED \
   --security-groups $SECURITY_GROUP_ID \
   --scheme internet-facing \
   --type application \
@@ -318,15 +324,16 @@ if [[ "$SERVICE_COUNT" -gt 0 ]]; then
 else
   echo "🎯 Creating ECS service '$SERVICE_NAME'..."
   # Create a JSON file for the network configuration
-  cat > network-config.json << EOF
+  NETWORK_CONFIG=$(cat <<EOF
 {
   "awsvpcConfiguration": {
-    "subnets": ["${SUBNET_IDS// /"\", \"}"],
+    "subnets": $SUBNET_IDS_JSON,
     "securityGroups": ["$SECURITY_GROUP_ID"],
     "assignPublicIp": "ENABLED"
   }
 }
 EOF
+)
   
   aws ecs create-service \
     --cluster "$CLUSTER_NAME" \
@@ -334,11 +341,10 @@ EOF
     --task-definition "$TASK_DEFINITION_NAME" \
     --desired-count "$DESIRED_COUNT" \
     --launch-type FARGATE \
-    --network-configuration file://network-config.json \
+    --network-configuration "$NETWORK_CONFIG" \
     --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=${PROJECT_NAME}-api,containerPort=3000" \
     --region "$REGION" >/dev/null
 
-  rm network-config.json
 fi
 
 # Get ALB DNS name
