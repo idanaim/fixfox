@@ -7,7 +7,6 @@ import { Business } from '../entities/business.entity';
 import { AccountAdmin } from '../entities/account-admin.entity';
 import { Issue } from '../../ai-solutions/entities/issue.entity';
 import { AccountSummaryDto } from '../dto/account-summary.dto';
-import { CreateAccountDto } from '../dto/create-account.dto';
 import { OnboardingDto } from '../dto/onboarding.dto';
 import { UserRole } from '../enums/role.enum';
 import * as bcrypt from 'bcrypt';
