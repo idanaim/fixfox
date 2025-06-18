@@ -63,12 +63,15 @@ echo "Account ID: $ACCOUNT_ID"
 echo ""
 
 # Create ECR repository
-echo "🗂️ Creating ECR repository..."
-aws ecr create-repository \
-  --repository-name $ECR_REPO_NAME \
-  --region $REGION \
-  --image-scanning-configuration scanOnPush=true \
-  2>/dev/null || echo "Repository already exists"
+if aws ecr describe-repositories --repository-names "$ECR_REPO_NAME" --region "$REGION" >/dev/null 2>&1; then
+  echo "✅ ECR repository '$ECR_REPO_NAME' already exists."
+else
+  echo "🗂️ Creating ECR repository '$ECR_REPO_NAME'..."
+  aws ecr create-repository \
+    --repository-name "$ECR_REPO_NAME" \
+    --region "$REGION" \
+    --image-scanning-configuration scanOnPush=true >/dev/null
+fi
 
 # Set lifecycle policy for ECR
 echo "📋 Setting ECR lifecycle policy..."
@@ -99,13 +102,16 @@ aws ecr put-lifecycle-policy \
 rm -f ecr-lifecycle-policy.json
 
 # Create ECS cluster
-echo "🏗️ Creating ECS cluster..."
-aws ecs create-cluster \
-  --cluster-name $CLUSTER_NAME \
-  --capacity-providers FARGATE \
-  --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
-  --region $REGION \
-  2>/dev/null || echo "Cluster already exists"
+if aws ecs describe-clusters --clusters "$CLUSTER_NAME" --region "$REGION" --query "clusters[?status=='ACTIVE']" --output text | grep -q "$CLUSTER_NAME"; then
+  echo "✅ ECS Cluster '$CLUSTER_NAME' already exists."
+else
+  echo "🏗️ Creating ECS cluster '$CLUSTER_NAME'..."
+  aws ecs create-cluster \
+    --cluster-name "$CLUSTER_NAME" \
+    --capacity-providers FARGATE \
+    --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
+    --region "$REGION" >/dev/null
+fi
 
 # Create CloudWatch log group
 echo "📊 Creating CloudWatch log group..."

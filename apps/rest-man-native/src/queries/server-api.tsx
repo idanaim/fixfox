@@ -1,7 +1,7 @@
 
 export class ServerApi {
   public headers = { 'Content-Type': 'application/json' };
-  public baseUrl = 'http://localhost:3000/api/';
+  public baseUrl = 'http://fixfox-alb-dev-896725991.us-west-2.elb.amazonaws.com/api/';
 
   constructor(extraHeaders) {
     this.headers = {
