@@ -184,7 +184,17 @@ SUBNET_IDS_RAW=$(aws ec2 describe-subnets \
 SUBNET_IDS_SPACED=$(echo $SUBNET_IDS_RAW)
 
 # Format for JSON arrays
-SUBNET_IDS_JSON="[\"$(echo $SUBNET_IDS_RAW | sed 's/\t/","/g')\"]"
+SUBNET_IDS_JSON="["
+FIRST=true
+for SUBNET_ID in $SUBNET_IDS_RAW; do
+  if [ "$FIRST" = true ]; then
+    FIRST=false
+  else
+    SUBNET_IDS_JSON="$SUBNET_IDS_JSON,"
+  fi
+  SUBNET_IDS_JSON="$SUBNET_IDS_JSON\"$SUBNET_ID\""
+done
+SUBNET_IDS_JSON="$SUBNET_IDS_JSON]"
 
 # Create security group
 SECURITY_GROUP_NAME="${PROJECT_NAME}-sg-${ENVIRONMENT}"
