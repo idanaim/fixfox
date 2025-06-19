@@ -11,5 +11,4 @@ export class RolesController {
   async findAll(): Promise<RoleDto[]> {
     return this.rolesService.findAll();
   }
-  // Additional methods for creating, updating, and deleting roles can be added here
 }
