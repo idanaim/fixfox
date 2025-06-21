@@ -285,7 +285,7 @@ cat > task-definition.json << EOF
   "containerDefinitions": [
     {
       "name": "$PROJECT_NAME-api",
-      "image": "nginx:alpine",
+      "image": "node:18-alpine",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -293,6 +293,7 @@ cat > task-definition.json << EOF
         }
       ],
       "essential": true,
+      "command": ["sh", "-c", "echo 'Placeholder container - waiting for real deployment' && sleep 30 && exit 0"],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
@@ -313,6 +314,26 @@ cat > task-definition.json << EOF
         {
           "name": "OPENAI_API_KEY",
           "value": "dummy-key-for-demo"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_USERNAME",
+          "value": "idanaim"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "In16051982"
+        },
+        {
+          "name": "DB_DATABASE",
+          "value": "fixfoxdb"
         }
       ]
     }
@@ -383,4 +404,14 @@ echo ""
 echo "💡 Add these secrets to GitHub:"
 echo "  AWS_ACCOUNT_ID: $ACCOUNT_ID"
 echo "  AWS_ACCESS_KEY_ID: <your-access-key>"
-echo "  AWS_SECRET_ACCESS_KEY: <your-secret-key>" 
+echo "  AWS_SECRET_ACCESS_KEY: <your-secret-key>"
+
+# Get current task definition
+aws ecs describe-task-definition --task-definition fixfox-api-prod --region us-west-2 --query 'taskDefinition' > task-def.json
+
+# Edit task-def.json to change the image from nginx:alpine to your actual image
+# Then register the new version
+aws ecs register-task-definition --cli-input-json file://task-def.json --region us-west-2
+
+# Update the service
+aws ecs update-service --cluster fixfox-prod --service fixfox-api-prod --task-definition fixfox-api-prod --region us-west-2 
