@@ -406,12 +406,4 @@ echo "  AWS_ACCOUNT_ID: $ACCOUNT_ID"
 echo "  AWS_ACCESS_KEY_ID: <your-access-key>"
 echo "  AWS_SECRET_ACCESS_KEY: <your-secret-key>"
 
-# Get current task definition
-aws ecs describe-task-definition --task-definition fixfox-api-prod --region us-west-2 --query 'taskDefinition' > task-def.json
-
-# Edit task-def.json to change the image from nginx:alpine to your actual image
-# Then register the new version
-aws ecs register-task-definition --cli-input-json file://task-def.json --region us-west-2
-
-# Update the service
-aws ecs update-service --cluster fixfox-prod --service fixfox-api-prod --task-definition fixfox-api-prod --region us-west-2 
+ 
