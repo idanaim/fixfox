@@ -1,47 +1,29 @@
-name: Deploy to AWS ECS
+name: Build and Push Server Image
 
 on:
   push:
-    branches: [main, dev]
+    branches:
+      - main
     paths:
-      - 'apps/rest-man-server/**'
-      - 'package.json'
-      - 'nx.json'
+      - 'server/**'
       - 'Dockerfile'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy'
-        required: true
-        default: 'dev'
-        type: choice
-        options: [dev, prod]
 
 env:
   AWS_REGION: us-west-2
-  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-west-2.amazonaws.com
+  ECR_REPOSITORY: fixfox-api
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  build-and-deploy:
-    name: Build & Deploy
+  build-and-push:
+    name: Build and Push to ECR
     runs-on: ubuntu-latest
-    
+    environment: production
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -50,152 +32,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Determine environment
-        id: env
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            ENV="${{ github.event.inputs.environment }}"
-          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            ENV="prod"
-          else
-            ENV="dev"
-          fi
-
-          echo "environment=$ENV" >> $GITHUB_OUTPUT
-          echo "cluster_name=fixfox-$ENV" >> $GITHUB_OUTPUT
-          echo "service_name=fixfox-api-$ENV" >> $GITHUB_OUTPUT
-          echo "image_uri=${{ env.ECR_REGISTRY }}/fixfox-api:$ENV-${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
-
-          echo "🚀 Deploying to: $ENV"
-          echo "🏗️ Cluster: fixfox-$ENV"
-          echo "📦 Service: fixfox-api-$ENV"
-
-      - name: Setup AWS Infrastructure
-        id: setup-infra
-        run: |
-          chmod +x scripts/setup-aws-ecs.sh
-          bash scripts/setup-aws-ecs.sh ${{ steps.env.outputs.environment }}
-
-      - name: Nx Set SHAs
-        uses: nrwl/nx-set-shas@v4
-
-      - name: Check if server changed
-        id: changes
-        run: |
-          if npx nx affected --target=build --plain | grep -q "rest-man-server"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "✅ Server app has changes, building..."
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "⏭️ No server changes, skipping build..."
-          fi
-
-      - name: Build Docker image
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          echo "🔨 Building Docker image..."
-          docker build -t ${{ steps.env.outputs.image_uri }} .
-          echo "✅ Docker image built: ${{ steps.env.outputs.image_uri }}"
-
       - name: Login to Amazon ECR
-        if: steps.changes.outputs.changed == 'true'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
-          docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          # Build the docker image
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+          
+          # Push the images to ECR
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }} --all-tags
+          echo "::set-output name=image_uri::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
 
-      - name: Create ECR repository if not exists
-        if: steps.changes.outputs.changed == 'true'
+      - name: Summary
         run: |
-          aws ecr describe-repositories --repository-names fixfox-api --region ${{ env.AWS_REGION }} || \
-          aws ecr create-repository --repository-name fixfox-api --region ${{ env.AWS_REGION }}
-
-      - name: Push to ECR
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          echo "📤 Pushing to ECR..."
-          docker push ${{ steps.env.outputs.image_uri }}
-          echo "✅ Image pushed to ECR"
-
-      - name: Update ECS service
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          echo "🚀 Updating ECS service..."
-
-          # Update task definition with new image
-          TASK_DEFINITION=$(aws ecs describe-task-definition \
-            --task-definition fixfox-api-${{ steps.env.outputs.environment }} \
-            --region ${{ env.AWS_REGION }} \
-            --query 'taskDefinition' \
-            --output json)
-
-          # Update image URI in task definition
-          NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${{ steps.env.outputs.image_uri }}" \
-            '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.placementConstraints) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
-
-          # Register new task definition
-          aws ecs register-task-definition \
-            --cli-input-json "$NEW_TASK_DEFINITION" \
-            --region ${{ env.AWS_REGION }}
-
-          # Update service to use new task definition
-          aws ecs update-service \
-            --cluster ${{ steps.env.outputs.cluster_name }} \
-            --service ${{ steps.env.outputs.service_name }} \
-            --task-definition fixfox-api-${{ steps.env.outputs.environment }} \
-            --region ${{ env.AWS_REGION }}
-
-          echo "✅ ECS service updated"
-
-      - name: Wait for deployment
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          echo "⏳ Waiting for deployment to complete..."
-          aws ecs wait services-stable \
-            --cluster ${{ steps.env.outputs.cluster_name }} \
-            --services ${{ steps.env.outputs.service_name }} \
-            --region ${{ env.AWS_REGION }}
-          echo "✅ Deployment completed"
-
-      - name: Get service URL and health check
-        if: steps.changes.outputs.changed == 'true'
-        run: |
-          # Get service details
-          SERVICE_INFO=$(aws ecs describe-services \
-            --cluster ${{ steps.env.outputs.cluster_name }} \
-            --services ${{ steps.env.outputs.service_name }} \
-            --region ${{ env.AWS_REGION }} \
-            --query 'services[0]' \
-            --output json)
-
-          # Get load balancer URL from service
-          LB_ARN=$(echo $SERVICE_INFO | jq -r '.loadBalancers[0].targetGroupArn' | cut -d'/' -f2)
-          if [ "$LB_ARN" != "null" ] && [ -n "$LB_ARN" ]; then
-            LB_DNS=$(aws elbv2 describe-load-balancers \
-              --query "LoadBalancers[?contains(LoadBalancerArn, '$LB_ARN')].DNSName" \
-              --output text --region ${{ env.AWS_REGION }})
-
-            if [ -n "$LB_DNS" ]; then
-              echo "🌐 Service URL: http://$LB_DNS"
-              echo "🏥 Health Check: http://$LB_DNS/api/health"
-
-              # Health check
-              echo "🏥 Performing health check..."
-              for i in {1..5}; do
-                if curl -f "http://$LB_DNS/api/health" > /dev/null 2>&1; then
-                  echo "✅ Health check passed"
-                  break
-                else
-                  echo "⏳ Health check attempt $i/5 failed, retrying..."
-                  sleep 30
-                fi
-              done
-            fi
-          fi
-
-      - name: Deployment complete
-        run: |
-          if [ "${{ steps.changes.outputs.changed }}" = "true" ]; then
-            echo "🎉 Deployment to ${{ steps.env.outputs.environment }} completed successfully!"
-          else
-            echo "⏭️ No changes detected, deployment skipped"
-          fi
+          echo "🎉 Image build and push complete."
+          echo "Image URI: ${{ steps.build-image.outputs.image_uri }}"
