@@ -21,7 +21,7 @@ import { AuthController } from './auth.controller';
       inject: [ConfigService],
     }),
   ],
-  controllers:[AuthController],
+  controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })

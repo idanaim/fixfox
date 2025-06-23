@@ -20,7 +20,10 @@ import { AppService } from './app.service';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com'),
+        host: configService.get<string>(
+          'DB_HOST',
+          'fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com'
+        ),
         port: configService.get<number>('DB_PORT', 5432),
         username: configService.get<string>('DB_USERNAME', 'idanaim'),
         password: configService.get<string>('DB_PASSWORD', 'In16051982'),
@@ -44,10 +47,8 @@ import { AppService } from './app.service';
     StorageModule,
     ConfigModule,
   ],
-  exports: [ ],
-  controllers: [
-    AppController
-  ],
+  exports: [],
+  controllers: [AppController],
 
   providers: [AppService],
 })

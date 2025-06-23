@@ -9,10 +9,10 @@ import { Equipment } from '../../entities/equipment.entity';
 
 // Model configuration
 const MODEL_CONFIG = {
-  DIAGNOSIS: 'gpt-4-0125-preview',  // For complex diagnosis and analysis
-  CHAT: 'gpt-3.5-turbo',           // For general chat and simple queries
-  FOLLOW_UP: 'gpt-3.5-turbo',      // For follow-up questions
-  ENHANCEMENT: 'gpt-4-0125-preview' // For description enhancement
+  DIAGNOSIS: 'gpt-4-0125-preview', // For complex diagnosis and analysis
+  CHAT: 'gpt-3.5-turbo', // For general chat and simple queries
+  FOLLOW_UP: 'gpt-3.5-turbo', // For follow-up questions
+  ENHANCEMENT: 'gpt-4-0125-preview', // For description enhancement
 } as const;
 
 // Interface for problem analysis results
@@ -70,7 +70,6 @@ export class AIService {
       apiKey: this.apiKey,
     });
   }
-
 
   // Helper method to select model based on task type
   private selectModel(taskType: keyof typeof MODEL_CONFIG): string {
@@ -217,48 +216,60 @@ export class AIService {
     followUpQuestions: Record<string, string>[] = []
   ): Promise<string> {
     try {
-      const equipmentContext = equipment ? await this.getEquipmentContext(equipment, language) : '';
-      const followUpQuestionsContext = followUpQuestions.length > 0 ?
-        await this.getFollowUpQuestionsContext(followUpQuestions) : '';
+      const equipmentContext = equipment
+        ? await this.getEquipmentContext(equipment, language)
+        : '';
+      const followUpQuestionsContext =
+        followUpQuestions.length > 0
+          ? await this.getFollowUpQuestionsContext(followUpQuestions)
+          : '';
 
       /* ---------- strict system prompt ---------- */
       const systemPrompt =
         language === 'he'
           ? `אתה מומחה טכני שמשפר תיאורי תקלות.\n` +
-          `כלל ברזל: מותר להשתמש רק במידע שמופיע ב"תיאור המקורי" ` +
-          `או ב-equipmentContext או ב-followUpQuestionsContext. אסור להמציא עובדות חדשות.\n` +
-          `שלב במידת האפשר פרטים מ-equipmentContext ו-followUpQuestionsContext, ושמור על אורך ≤150 תווים.`
+            `כלל ברזל: מותר להשתמש רק במידע שמופיע ב"תיאור המקורי" ` +
+            `או ב-equipmentContext או ב-followUpQuestionsContext. אסור להמציא עובדות חדשות.\n` +
+            `שלב במידת האפשר פרטים מ-equipmentContext ו-followUpQuestionsContext, ושמור על אורך ≤150 תווים.`
           : `You are a technical expert refining problem descriptions.\n` +
-          `Rule: you may use ONLY facts found in the ORIGINAL DESCRIPTION, ` +
-          `equipmentContext, or followUpQuestionsContext—nothing else.\n` +
-          `Include details from both contexts when available, keep length ≤150 chars.`;
+            `Rule: you may use ONLY facts found in the ORIGINAL DESCRIPTION, ` +
+            `equipmentContext, or followUpQuestionsContext—nothing else.\n` +
+            `Include details from both contexts when available, keep length ≤150 chars.`;
 
       /* ---------- user prompt ---------- */
       const userPrompt =
         language === 'he'
           ? `שפר את התיאור הבא (עד 150 תווים).\n` +
-          `1. אל תוסיף מותג/דגם/מיקום/תסמין שלא קיים במקור, ב-equipmentContext, או ב-followUpQuestionsContext.\n` +
-          `2. אם יש equipmentContext או followUpQuestionsContext – שלב אותם בתיאור.\n` +
-          `3. השתמש במונחים טכניים מדויקים ותבנה ניסוח ברור ותמציתי.\n\n` +
-          `תיאור מקורי:\n"${userDescription}"\n\n` +
-          (equipmentContext ? `equipmentContext:\n${equipmentContext}\n\n` : '') +
-          (followUpQuestionsContext ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n` : '') +
-          `תיאור משופר:`
+            `1. אל תוסיף מותג/דגם/מיקום/תסמין שלא קיים במקור, ב-equipmentContext, או ב-followUpQuestionsContext.\n` +
+            `2. אם יש equipmentContext או followUpQuestionsContext – שלב אותם בתיאור.\n` +
+            `3. השתמש במונחים טכניים מדויקים ותבנה ניסוח ברור ותמציתי.\n\n` +
+            `תיאור מקורי:\n"${userDescription}"\n\n` +
+            (equipmentContext
+              ? `equipmentContext:\n${equipmentContext}\n\n`
+              : '') +
+            (followUpQuestionsContext
+              ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n`
+              : '') +
+            `תיאור משופר:`
           : `Enhance the text below (≤150 chars).\n` +
-          `1. Do NOT add brand/model/location/symptom not found in original, equipmentContext, or followUpQuestionsContext.\n` +
-          `2. If contexts are provided—incorporate their info.\n` +
-          `3. Use precise technical wording; keep it concise & clear.\n\n` +
-          `ORIGINAL DESCRIPTION:\n"${userDescription}"\n\n` +
-          (equipmentContext ? `equipmentContext:\n${equipmentContext}\n\n` : '') +
-          (followUpQuestionsContext ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n` : '') +
-          `ENHANCED DESCRIPTION:`;
+            `1. Do NOT add brand/model/location/symptom not found in original, equipmentContext, or followUpQuestionsContext.\n` +
+            `2. If contexts are provided—incorporate their info.\n` +
+            `3. Use precise technical wording; keep it concise & clear.\n\n` +
+            `ORIGINAL DESCRIPTION:\n"${userDescription}"\n\n` +
+            (equipmentContext
+              ? `equipmentContext:\n${equipmentContext}\n\n`
+              : '') +
+            (followUpQuestionsContext
+              ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n`
+              : '') +
+            `ENHANCED DESCRIPTION:`;
 
       /* ---------- model call ---------- */
       const response = await this.openai.chat.completions.create({
         model: this.selectModel('ENHANCEMENT'),
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userPrompt  },
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.2,
         top_p: 0.9,
@@ -271,7 +282,6 @@ export class AIService {
       return userDescription;
     }
   }
-
 
   /**
    * Finds similar problems using AI
@@ -363,12 +373,12 @@ Please analyze the problem and provide recommendations.`;
 
     const completion = await this.openai.chat.completions.create({
       model: this.selectModel('DIAGNOSIS'),
-        messages: [
+      messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
-        ],
-        temperature: 0.7,
-      });
+      ],
+      temperature: 0.7,
+    });
 
     const response = completion.choices[0].message.content;
     return this.parseAnalysisResponse(response, language);
@@ -542,11 +552,11 @@ Please provide detailed step-by-step solutions.`;
 
     const completion = await this.openai.chat.completions.create({
       model: this.selectModel('DIAGNOSIS'),
-        messages: [
+      messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
-        ],
-        temperature: 0.7,
+      ],
+      temperature: 0.7,
     });
 
     const response = completion.choices[0].message.content;
@@ -602,8 +612,8 @@ Please provide detailed step-by-step solutions.`;
       const similarIssueIds = Array.isArray(result.similar_issues)
         ? result.similar_issues
         : Array.isArray(result.similar_issues)
-        ? result.similar_issues
-        : [];
+          ? result.similar_issues
+          : [];
 
       // Return the IDs, limited to the requested number
       return similarIssueIds.slice(0, limit);
@@ -629,12 +639,14 @@ Please provide detailed step-by-step solutions.`;
     equipment: Equipment,
     language = 'en'
   ): Promise<FollowUpQuestion[]> {
-    const systemPrompt = language === 'he'
-      ? 'אתה מומחה טכני שמסייע לאבחן בעיות בציוד. שאל שאלות ממוקדות כדי להבין טוב יותר את הבעיה. עדיף שאלות עם אפשרויות בחירה.'
-      : 'You are a technical expert helping diagnose equipment problems. Ask focused questions to better understand the issue. Prefer multiple-choice questions when possible.';
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמסייע לאבחן בעיות בציוד. שאל שאלות ממוקדות כדי להבין טוב יותר את הבעיה. עדיף שאלות עם אפשרויות בחירה.'
+        : 'You are a technical expert helping diagnose equipment problems. Ask focused questions to better understand the issue. Prefer multiple-choice questions when possible.';
 
-    const prompt = language === 'he'
-      ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
 תיאור הבעיה: ${description}
 
 אנא צור רשימה של שאלות מעקב שיעזרו להבין טוב יותר את הבעיה. כל שאלה צריכה להיות מסוג אחד מהבאים:
@@ -656,7 +668,7 @@ Please provide detailed step-by-step solutions.`;
     }
   ]
 }`
-      : `Equipment: ${equipment.manufacturer} ${equipment.model}
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Problem Description: ${description}
 
 Please create a list of follow-up questions that will help better understand the issue. Each question should be of one of the following types:
@@ -695,7 +707,7 @@ Return the result in JSON format only (no markdown) with the following structure
       const parsedResponse = JSON.parse(cleanedResponse);
 
       // Ensure all questions have options when possible
-      return parsedResponse.questions.map(question => {
+      return parsedResponse.questions.map((question) => {
         // If no options are provided, add some generic ones based on the question type
         if (!question.options || question.options.length === 0) {
           if (question.type === 'timing') {
@@ -703,13 +715,13 @@ Return the result in JSON format only (no markdown) with the following structure
               language === 'he' ? 'היום' : 'Today',
               language === 'he' ? 'בשבוע האחרון' : 'Within the past week',
               language === 'he' ? 'לפני מספר שבועות' : 'Several weeks ago',
-              language === 'he' ? 'לפני מספר חודשים' : 'Several months ago'
+              language === 'he' ? 'לפני מספר חודשים' : 'Several months ago',
             ];
           } else if (question.type === 'severity') {
             question.options = [
               language === 'he' ? 'קלה' : 'Minor',
               language === 'he' ? 'בינונית' : 'Moderate',
-              language === 'he' ? 'חמורה' : 'Severe'
+              language === 'he' ? 'חמורה' : 'Severe',
             ];
           }
         }
@@ -772,7 +784,7 @@ Return the result in JSON format only (no markdown) with the following structure
       followUpQuestions,
       structuredData,
       equipmentContext,
-      confidence
+      confidence,
     };
   }
 
@@ -790,12 +802,14 @@ Return the result in JSON format only (no markdown) with the following structure
     severity?: string;
     context?: string;
   }> {
-    const systemPrompt = language === 'he'
-      ? 'אתה מומחה טכני שמנתח תיאורי בעיות בציוד. חלץ מידע מובנה מהתיאור.'
-      : 'You are a technical expert analyzing equipment problem descriptions. Extract structured data from the description.';
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמנתח תיאורי בעיות בציוד. חלץ מידע מובנה מהתיאור.'
+        : 'You are a technical expert analyzing equipment problem descriptions. Extract structured data from the description.';
 
-    const prompt = language === 'he'
-      ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
 תיאור מקורי: ${originalDescription}
 תיאור משופר: ${enhancedDescription}
 
@@ -806,7 +820,7 @@ Return the result in JSON format only (no markdown) with the following structure
 - context: הקשר או נסיבות
 
 החזר את התוצאה בפורמט JSON בלבד (ללא markdown).`
-      : `Equipment: ${equipment.manufacturer} ${equipment.model}
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Original Description: ${originalDescription}
 Enhanced Description: ${enhancedDescription}
 
@@ -828,7 +842,7 @@ Return the result in JSON format only (no markdown).`;
     });
 
     const response = completion.choices[0].message.content;
-    
+
     try {
       const cleanedResponse = this.cleanAIResponse(response);
       return JSON.parse(cleanedResponse);
@@ -857,12 +871,14 @@ Return the result in JSON format only (no markdown).`;
     equipment: Equipment,
     language = 'en'
   ): Promise<string> {
-    const systemPrompt = language === 'he'
-      ? 'אתה מומחה טכני שמספק מידע על ציוד. ספק מידע רלוונטי על הציוד.'
-      : 'You are a technical expert providing information about equipment. Provide relevant information about the equipment.';
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמספק מידע על ציוד. ספק מידע רלוונטי על הציוד.'
+        : 'You are a technical expert providing information about equipment. Provide relevant information about the equipment.';
 
-    const prompt = language === 'he'
-      ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
 סוג: ${equipment.type}
 קטגוריה: ${equipment.category}
 
@@ -870,7 +886,7 @@ Return the result in JSON format only (no markdown).`;
 - תכונות עיקריות
 - בעיות נפוצות
 - טיפים לתחזוקה`
-      : `Equipment: ${equipment.manufacturer} ${equipment.model}
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Type: ${equipment.type}
 Category: ${equipment.category}
 
@@ -906,15 +922,23 @@ Please provide relevant information about the equipment, including:
     // 3. Equipment match
     // 4. Historical data (if available)
 
-    const descriptionScore = this.calculateDescriptionScore(originalDescription, enhancedDescription);
-    const structuredDataScore = this.calculateStructuredDataScore(structuredData);
+    const descriptionScore = this.calculateDescriptionScore(
+      originalDescription,
+      enhancedDescription
+    );
+    const structuredDataScore =
+      this.calculateStructuredDataScore(structuredData);
     const equipmentScore = this.calculateEquipmentScore(equipment);
 
-    const totalScore = (descriptionScore + structuredDataScore + equipmentScore) / 3;
+    const totalScore =
+      (descriptionScore + structuredDataScore + equipmentScore) / 3;
     return `${Math.round(totalScore * 100)}%`;
   }
 
-  private calculateDescriptionScore(original: string, enhanced: string): number {
+  private calculateDescriptionScore(
+    original: string,
+    enhanced: string
+  ): number {
     // Compare original and enhanced descriptions
     // Higher score if enhanced description adds significant value
     const originalLength = original.length;
@@ -1077,12 +1101,14 @@ Format response as JSON:
     equipment: Equipment,
     language = 'en'
   ): Promise<string> {
-    const systemPrompt = language === 'he'
-      ? 'אתה מומחה טכני שמסייע בסיכום מידע על בעיות בציוד. נתח את המידע שנאסף ותן סיכום מפורט.'
-      : 'You are a technical expert helping summarize information about equipment problems. Analyze the collected information and provide a detailed summary.';
+    const systemPrompt =
+      language === 'he'
+        ? 'אתה מומחה טכני שמסייע בסיכום מידע על בעיות בציוד. נתח את המידע שנאסף ותן סיכום מפורט.'
+        : 'You are a technical expert helping summarize information about equipment problems. Analyze the collected information and provide a detailed summary.';
 
-    const prompt = language === 'he'
-      ? `ציוד: ${equipment.manufacturer} ${equipment.model}
+    const prompt =
+      language === 'he'
+        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
 סוג: ${equipment.type}
 מידע שנאסף מהמשתמש:
 ${combinedDescription}
@@ -1095,7 +1121,7 @@ ${combinedDescription}
 5. חומרת הבעיה (נמוכה, בינונית, גבוהה)
 
 תן תשובה מפורטת אך תמציתית שיכולה לשמש כסיכום לפני אבחון.`
-      : `Equipment: ${equipment.manufacturer} ${equipment.model}
+        : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Type: ${equipment.type}
 Information collected from user:
 ${combinedDescription}

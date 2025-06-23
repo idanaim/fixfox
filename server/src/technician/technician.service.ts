@@ -16,11 +16,13 @@ export class TechnicianService {
     @InjectRepository(Location)
     private locationRepository: Repository<Location>,
     @InjectRepository(Rating)
-    private ratingRepository: Repository<Rating>,
+    private ratingRepository: Repository<Rating>
   ) {}
 
   async create(createTechnicianDto: CreateTechnicianDto): Promise<Technician> {
-    const locations = await this.locationRepository.findByIds(createTechnicianDto.locationIds);
+    const locations = await this.locationRepository.findByIds(
+      createTechnicianDto.locationIds
+    );
     if (locations.length !== createTechnicianDto.locationIds.length) {
       throw new NotFoundException('One or more locations not found');
     }
@@ -34,7 +36,6 @@ export class TechnicianService {
   }
 
   async findAll(): Promise<Technician[]> {
-
     return this.technicianRepository.find({
       relations: ['locations', 'ratings'],
     });
@@ -53,11 +54,16 @@ export class TechnicianService {
     return technician;
   }
 
-  async update(id: string, updateTechnicianDto: UpdateTechnicianDto): Promise<Technician> {
+  async update(
+    id: string,
+    updateTechnicianDto: UpdateTechnicianDto
+  ): Promise<Technician> {
     const technician = await this.findOne(id);
 
     if (updateTechnicianDto.locationIds) {
-      const locations = await this.locationRepository.findByIds(updateTechnicianDto.locationIds);
+      const locations = await this.locationRepository.findByIds(
+        updateTechnicianDto.locationIds
+      );
       if (locations.length !== updateTechnicianDto.locationIds.length) {
         throw new NotFoundException('One or more locations not found');
       }
@@ -75,7 +81,10 @@ export class TechnicianService {
     }
   }
 
-  async addRating(technicianId: string, createRatingDto: CreateRatingDto): Promise<Rating> {
+  async addRating(
+    technicianId: string,
+    createRatingDto: CreateRatingDto
+  ): Promise<Rating> {
     const technician = await this.findOne(technicianId);
     const rating = this.ratingRepository.create({
       ...createRatingDto,
@@ -99,21 +108,24 @@ export class TechnicianService {
       return null;
     }
 
-    const sum = ratings.reduce((acc, rating) => ({
-      responseTime: acc.responseTime + rating.response_time,
-      price: acc.price + rating.price,
-      qualityAccuracy: acc.qualityAccuracy + rating.quality_accuracy,
-      professionalism: acc.professionalism + rating.professionalism,
-      efficiency: acc.efficiency + rating.efficiency,
-      aesthetics: acc.aesthetics + rating.aesthetics,
-    }), {
-      responseTime: 0,
-      price: 0,
-      qualityAccuracy: 0,
-      professionalism: 0,
-      efficiency: 0,
-      aesthetics: 0,
-    });
+    const sum = ratings.reduce(
+      (acc, rating) => ({
+        responseTime: acc.responseTime + rating.response_time,
+        price: acc.price + rating.price,
+        qualityAccuracy: acc.qualityAccuracy + rating.quality_accuracy,
+        professionalism: acc.professionalism + rating.professionalism,
+        efficiency: acc.efficiency + rating.efficiency,
+        aesthetics: acc.aesthetics + rating.aesthetics,
+      }),
+      {
+        responseTime: 0,
+        price: 0,
+        qualityAccuracy: 0,
+        professionalism: 0,
+        efficiency: 0,
+        aesthetics: 0,
+      }
+    );
 
     const count = ratings.length;
     return {
@@ -130,7 +142,9 @@ export class TechnicianService {
   async findByProfession(profession: string): Promise<Technician[]> {
     return this.technicianRepository
       .createQueryBuilder('technician')
-      .where('dtos.professions @> ARRAY[:profession]::profession[]', { profession })
+      .where('dtos.professions @> ARRAY[:profession]::profession[]', {
+        profession,
+      })
       .leftJoinAndSelect('dtos.locations', 'location')
       .leftJoinAndSelect('dtos.ratings', 'rating')
       .getMany();

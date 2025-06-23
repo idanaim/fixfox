@@ -1,4 +1,11 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsPhoneNumber, ArrayMinSize } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  IsPhoneNumber,
+  ArrayMinSize,
+} from 'class-validator';
 import { ServiceType, Profession } from '../technician.entity';
 
 export class CreateTechnicianDto {

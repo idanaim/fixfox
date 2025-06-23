@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource } from 'typeorm';
 import { Account } from '../entities/account.entity';
@@ -27,13 +31,12 @@ export class AccountsService {
     private issueRepository: Repository<Issue>,
     private dataSource: DataSource,
     private jwtService: JwtService
-  ) {
-  }
+  ) {}
 
   async onboarding(onboardingDto: OnboardingDto) {
     // Check if admin email already exists
     const existingUser = await this.userRepository.findOne({
-      where: { email: onboardingDto.admin.email }
+      where: { email: onboardingDto.admin.email },
     });
 
     if (existingUser) {
@@ -48,26 +51,29 @@ export class AccountsService {
     try {
       // 1. Create account
       const account = this.accountRepository.create({
-        name: onboardingDto.account.name
+        name: onboardingDto.account.name,
       });
       const savedAccount = await queryRunner.manager.save(account);
 
       // 2. Create admin user
-      const hashedPassword = await bcrypt.hash(onboardingDto.admin.password || '12345', 10);
+      const hashedPassword = await bcrypt.hash(
+        onboardingDto.admin.password || '12345',
+        10
+      );
       const adminUser = this.userRepository.create({
         name: `${onboardingDto.admin.firstName} ${onboardingDto.admin.lastName}`,
         email: onboardingDto.admin.email,
         password: hashedPassword,
         mobile: onboardingDto.admin.mobile,
         role: UserRole.ADMIN,
-        accountId: savedAccount.accountId
+        accountId: savedAccount.accountId,
       });
       const savedAdminUser = await queryRunner.manager.save(adminUser);
 
       // 3. Create account_admin record
       const accountAdmin = this.accountAdminRepository.create({
         accountId: savedAccount.accountId,
-        userId: savedAdminUser.id
+        userId: savedAdminUser.id,
       });
       await queryRunner.manager.save(accountAdmin);
 
@@ -77,7 +83,7 @@ export class AccountsService {
         type: onboardingDto.business.type,
         address: onboardingDto.business.address || null,
         mobile: onboardingDto.business.phone,
-        accountId: savedAccount.accountId
+        accountId: savedAccount.accountId,
       });
       const savedBusiness = await queryRunner.manager.save(business);
 
@@ -92,7 +98,7 @@ export class AccountsService {
             password: memberHashedPassword,
             mobile: member.mobile,
             role: UserRole[member.role] || UserRole.TEAM_MEMBER,
-            accountId: savedAccount.accountId
+            accountId: savedAccount.accountId,
           });
           const savedMember = await queryRunner.manager.save(teamMember);
           savedTeamMembers.push(savedMember);
@@ -106,7 +112,7 @@ export class AccountsService {
         sub: savedAdminUser.id,
         email: savedAdminUser.email,
         role: savedAdminUser.role,
-        accountId: savedAccount.accountId
+        accountId: savedAccount.accountId,
       };
       const token = this.jwtService.sign(payload);
 
@@ -119,9 +125,9 @@ export class AccountsService {
           id: savedAdminUser.id,
           name: savedAdminUser.name,
           email: savedAdminUser.email,
-          role: savedAdminUser.role
+          role: savedAdminUser.role,
         },
-        businessId: savedBusiness.id
+        businessId: savedBusiness.id,
       };
     } catch (error) {
       // If any operation fails, roll back the entire transaction
@@ -137,7 +143,7 @@ export class AccountsService {
     // Check if account exists
     const account = await this.accountRepository.findOne({
       where: { accountId },
-      relations: ['businesses', 'users']
+      relations: ['businesses', 'users'],
     });
 
     if (!account) {
@@ -145,7 +151,7 @@ export class AccountsService {
     }
 
     // Get count of open issues across all businesses for this account
-    const businessIds = account.businesses.map(business => business.id);
+    const businessIds = account.businesses.map((business) => business.id);
 
     // Count open issues if there are businesses associated with the account
     let openIssuesCount = 0;
@@ -153,8 +159,8 @@ export class AccountsService {
       openIssuesCount = await this.issueRepository.count({
         where: {
           business: { id: In(businessIds) },
-          status: 'open'
-        }
+          status: 'open',
+        },
       });
     }
 
@@ -162,7 +168,7 @@ export class AccountsService {
       accountId: account.accountId,
       totalUsers: account.users.length,
       totalBusinesses: account.businesses.length,
-      openIssuesCount
+      openIssuesCount,
     };
   }
 }

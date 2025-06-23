@@ -1,7 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Account } from './account.entity';
 import { User } from './user.entity';
-
 
 @Entity('account_admins')
 export class AccountAdmin {

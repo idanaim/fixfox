@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { BusinessesService } from '../services/businesses.service';
 import { Business } from '../entities/business.entity';
 
@@ -15,23 +23,23 @@ export class BusinessesController {
       mobile: string;
       type: string;
       accountId: string;
-    },
+    }
   ): Promise<Business> {
     return this.businessesService.create(body);
   }
 
   @Put(':id')
-async updateBusiness(
-  @Param('id') id: number,
-  @Body()
-  body: {
-    name: string;
-    address: string;
-    mobile: string;
-    type: string;
-  }
-): Promise<Business> {
-  return this.businessesService.update(id, body);
+  async updateBusiness(
+    @Param('id') id: number,
+    @Body()
+    body: {
+      name: string;
+      address: string;
+      mobile: string;
+      type: string;
+    }
+  ): Promise<Business> {
+    return this.businessesService.update(id, body);
   }
 
   @Get()

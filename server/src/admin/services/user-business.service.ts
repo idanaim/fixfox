@@ -9,7 +9,7 @@ import { User } from '../entities/user.entity';
 export class UserBusinessService {
   constructor(
     @InjectRepository(UserBusiness)
-    private userBusinessRepository: Repository<UserBusiness>,
+    private userBusinessRepository: Repository<UserBusiness>
   ) {}
 
   async findUsersByAdmin(adminId: number): Promise<User[]> {
@@ -21,8 +21,10 @@ export class UserBusinessService {
       .getMany();
 
     // Extract unique users
-    return userBusinesses.map((ub) => ub.user).filter((user, index, self) =>
-      self.findIndex((u) => u.id === user.id) === index
-    );
+    return userBusinesses
+      .map((ub) => ub.user)
+      .filter(
+        (user, index, self) => self.findIndex((u) => u.id === user.id) === index
+      );
   }
 }

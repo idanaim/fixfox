@@ -1,12 +1,12 @@
-import { 
-  Entity, 
-  Column, 
-  PrimaryGeneratedColumn, 
-  CreateDateColumn, 
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
   Index,
   ManyToOne,
   JoinColumn,
-  OneToMany
+  OneToMany,
 } from 'typeorm';
 import { Problem } from '../ai-solutions/entities/problem.entity';
 import { Business } from '../admin/entities/business.entity';
@@ -73,7 +73,7 @@ export class Equipment {
   @Column({
     type: 'enum',
     enum: EquipmentStatus,
-    default: EquipmentStatus.OPERATIONAL
+    default: EquipmentStatus.OPERATIONAL,
   })
   status: EquipmentStatus;
 
@@ -127,4 +127,4 @@ export class Equipment {
 
   @OneToMany(() => Problem, (problem) => problem.equipment)
   problems: Problem[];
-} 
+}

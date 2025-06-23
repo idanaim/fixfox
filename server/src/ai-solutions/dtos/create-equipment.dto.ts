@@ -1,5 +1,11 @@
 // create-equipment.dtos.ts
-import { IsDateString, IsInt, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateEquipmentDto {
   @IsString()

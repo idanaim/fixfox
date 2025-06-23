@@ -6,7 +6,7 @@ import { BusinessesService } from '../services/businesses.service';
 export class AdminController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly businessesService: BusinessesService,
+    private readonly businessesService: BusinessesService
   ) {}
 
   @Post('signup')

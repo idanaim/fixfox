@@ -34,4 +34,4 @@ export class CreateRatingDto {
   @IsOptional()
   @IsString()
   reviewComment?: string;
-} 
+}

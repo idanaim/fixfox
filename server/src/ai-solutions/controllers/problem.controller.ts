@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ProblemService } from '../services/problem.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -14,12 +23,10 @@ export class ProblemController {
    * This is used for administrative purposes outside of the chat flow
    */
   @Post()
-  async createProblem(
-    @Body() body: { user: User, problem: CreateProblemDto }
-  ) {
+  async createProblem(@Body() body: { user: User; problem: CreateProblemDto }) {
     return this.problemService.createProblem({
       ...body.problem,
-      userId: body.user.id
+      userId: body.user.id,
     });
   }
 
@@ -38,9 +45,7 @@ export class ProblemController {
    * Retrieve a specific problem with its solutions
    */
   @Get(':id')
-  async getProblemWithSolutions(
-    @Param('id') id: number
-  ) {
+  async getProblemWithSolutions(@Param('id') id: number) {
     return this.problemService.getProblemWithSolutions(id);
   }
 
@@ -64,7 +69,11 @@ export class ProblemController {
     @Query('equipmentId') equipmentId: number,
     @Query('businessId') businessId: number
   ) {
-    return this.problemService.findSimilarProblems(description, equipmentId, businessId);
+    return this.problemService.findSimilarProblems(
+      description,
+      equipmentId,
+      businessId
+    );
   }
 
   /**
@@ -73,13 +82,13 @@ export class ProblemController {
    */
   @Post('diagnose')
   async diagnoseProblem(
-    @Body() data: {
+    @Body()
+    data: {
       description: string;
       equipmentId: number;
       businessId: number;
     }
   ) {
-
     return this.problemService.diagnoseProblem(
       data.description,
       data.equipmentId,
@@ -93,14 +102,14 @@ export class ProblemController {
    */
   @Post('enhanced-diagnosis')
   async enhancedDiagnosis(
-    @Body() data: {
+    @Body()
+    data: {
       description: string;
       equipmentId: number;
       businessId: number;
       maxResults?: number;
     }
   ) {
-
     return this.problemService.enhancedDiagnosis(
       data.description,
       data.equipmentId,

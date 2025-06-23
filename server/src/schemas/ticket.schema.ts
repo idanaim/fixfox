@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose';
 
 export const TicketSchema = new Schema({
   _id: Number,
@@ -10,5 +10,5 @@ export const TicketSchema = new Schema({
   updated: Date,
   priority: String,
   description: String,
-  equipmentDetails: String
+  equipmentDetails: String,
 });

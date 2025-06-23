@@ -12,6 +12,6 @@ export class Location {
   @Column()
   area: string;
 
-  @ManyToMany(() => Technician, technician => technician.locations)
+  @ManyToMany(() => Technician, (technician) => technician.locations)
   technicians: Technician[];
-} 
+}

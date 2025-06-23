@@ -68,7 +68,7 @@ export class IssueService {
   }) {
     // Get business with default technician
     const business = await this.businessRepository.findOne({
-      where: { id: createIssueDto.businessId }
+      where: { id: createIssueDto.businessId },
     });
 
     if (!business) {
@@ -96,7 +96,8 @@ export class IssueService {
       } else {
         // If it's a new equipment without ID, we might need to create it
         // For now, let's use the equipment identification service as fallback
-        const equipmentDescription = `${createIssueDto.equipment.manufacturer || ''} ${createIssueDto.equipment.model || ''} ${createIssueDto.equipment.type || ''}`.trim();
+        const equipmentDescription =
+          `${createIssueDto.equipment.manufacturer || ''} ${createIssueDto.equipment.model || ''} ${createIssueDto.equipment.type || ''}`.trim();
         if (equipmentDescription) {
           equipment = await this.equipmentService.identifyEquipment(
             equipmentDescription,
@@ -121,7 +122,7 @@ export class IssueService {
     return {
       issue: savedIssue,
       assignedTechnicianId: business.defaultTechnicianId,
-      message: `Issue assigned to default technician`
+      message: `Issue assigned to default technician`,
     };
   }
 
@@ -135,7 +136,7 @@ export class IssueService {
   }) {
     // Get business
     const business = await this.businessRepository.findOne({
-      where: { id: createResolvedIssueDto.businessId }
+      where: { id: createResolvedIssueDto.businessId },
     });
 
     if (!business) {
@@ -156,7 +157,8 @@ export class IssueService {
         equipment = createResolvedIssueDto.equipment;
       } else {
         // If it's a new equipment without ID, we might need to create it
-        const equipmentDescription = `${createResolvedIssueDto.equipment.manufacturer || ''} ${createResolvedIssueDto.equipment.model || ''} ${createResolvedIssueDto.equipment.type || ''}`.trim();
+        const equipmentDescription =
+          `${createResolvedIssueDto.equipment.manufacturer || ''} ${createResolvedIssueDto.equipment.model || ''} ${createResolvedIssueDto.equipment.type || ''}`.trim();
         if (equipmentDescription) {
           equipment = await this.equipmentService.identifyEquipment(
             equipmentDescription,
@@ -182,7 +184,7 @@ export class IssueService {
     return {
       issue: savedIssue,
       solutionId: createResolvedIssueDto.solutionId,
-      message: `Issue created as resolved using solution ${createResolvedIssueDto.solutionId}`
+      message: `Issue created as resolved using solution ${createResolvedIssueDto.solutionId}`,
     };
   }
 
@@ -199,13 +201,7 @@ export class IssueService {
       userId?: number;
     } = {}
   ) {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      equipmentId,
-      userId
-    } = options;
+    const { page = 1, limit = 10, status, equipmentId, userId } = options;
 
     const queryBuilder = this.issueRepository
       .createQueryBuilder('issue')
@@ -224,7 +220,9 @@ export class IssueService {
     }
 
     if (equipmentId) {
-      queryBuilder.andWhere('issue.equipmentId = :equipmentId', { equipmentId });
+      queryBuilder.andWhere('issue.equipmentId = :equipmentId', {
+        equipmentId,
+      });
     }
 
     if (userId) {
@@ -250,8 +248,8 @@ export class IssueService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -267,12 +265,7 @@ export class IssueService {
       businessId?: number;
     } = {}
   ) {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      businessId
-    } = options;
+    const { page = 1, limit = 10, status, businessId } = options;
 
     const queryBuilder = this.issueRepository
       .createQueryBuilder('issue')
@@ -313,8 +306,8 @@ export class IssueService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -389,18 +382,20 @@ export class IssueService {
    * Get issue statistics for a business
    */
   async getIssueStats(businessId: number) {
-    const [
-      total,
-      open,
-      assigned,
-      inProgress,
-      closed
-    ] = await Promise.all([
+    const [total, open, assigned, inProgress, closed] = await Promise.all([
       this.issueRepository.count({ where: { business: { id: businessId } } }),
-      this.issueRepository.count({ where: { business: { id: businessId }, status: 'open' } }),
-      this.issueRepository.count({ where: { business: { id: businessId }, status: 'assigned' } }),
-      this.issueRepository.count({ where: { business: { id: businessId }, status: 'in_progress' } }),
-      this.issueRepository.count({ where: { business: { id: businessId }, status: 'closed' } })
+      this.issueRepository.count({
+        where: { business: { id: businessId }, status: 'open' },
+      }),
+      this.issueRepository.count({
+        where: { business: { id: businessId }, status: 'assigned' },
+      }),
+      this.issueRepository.count({
+        where: { business: { id: businessId }, status: 'in_progress' },
+      }),
+      this.issueRepository.count({
+        where: { business: { id: businessId }, status: 'closed' },
+      }),
     ]);
 
     return {
@@ -409,18 +404,14 @@ export class IssueService {
       assigned,
       inProgress,
       closed,
-      activeIssues: open + assigned + inProgress
+      activeIssues: open + assigned + inProgress,
     };
   }
 
   /**
    * Update issue cost
    */
-  async updateIssueCost(
-    issueId: number,
-    cost: number,
-    businessId?: number
-  ) {
+  async updateIssueCost(issueId: number, cost: number, businessId?: number) {
     const issue = await this.getIssueById(issueId, businessId);
 
     issue.cost = cost;
@@ -457,7 +448,7 @@ export class IssueService {
       });
 
       const savedSolution = await this.solutionRepository.save(newSolution);
-      
+
       // Link the solution to the issue
       issue.solution = savedSolution;
     }
@@ -508,7 +499,7 @@ export class IssueService {
         });
 
         const savedSolution = await this.solutionRepository.save(newSolution);
-        
+
         // Link the solution to the issue
         issue.solution = savedSolution;
       }
@@ -544,7 +535,7 @@ export class IssueService {
     // Update status if provided
     if (status && status !== issue.status) {
       issue.status = status;
-      
+
       // If marking as closed, record who solved it
       if (status === 'closed' && userId) {
         issue.solvedBy = { id: userId } as any;
@@ -575,7 +566,7 @@ export class IssueService {
         });
 
         const savedSolution = await this.solutionRepository.save(newSolution);
-        
+
         // Link the solution to the issue
         issue.solution = savedSolution;
       }

@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('permissions')
 export class Permission {
@@ -13,4 +19,4 @@ export class Permission {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-} 
+}

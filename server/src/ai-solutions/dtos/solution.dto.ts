@@ -1,4 +1,10 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateSolutionDto {
   @IsNumber()
@@ -69,4 +75,4 @@ export class SolutionResponseDto {
     type: 'current_business' | 'other_business' | 'ai_generated';
     label: string;
   };
-} 
+}

@@ -20,11 +20,11 @@ import { SolutionService } from './services/solution.service';
       Issue,
       Equipment,
       Problem,
-      Solution
-    ])
+      Solution,
+    ]),
   ],
   controllers: [ChatController],
   providers: [ChatService, AIService, ProblemService, SolutionService],
-  exports: [ChatService, AIService]
+  exports: [ChatService, AIService],
 })
 export class ChatModule {}

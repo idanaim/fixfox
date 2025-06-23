@@ -8,13 +8,13 @@ import { RoleDto } from '../dto/role.dto';
 export class RolesService {
   constructor(
     @InjectRepository(Role)
-    private rolesRepository: Repository<Role>,
+    private rolesRepository: Repository<Role>
   ) {}
 
   async findAll(): Promise<RoleDto[]> {
     const roles = await this.rolesRepository.find();
 
-    return roles.map(role => ({
+    return roles.map((role) => ({
       id: role.roleId,
       name: role.roleName,
       description: role.description,

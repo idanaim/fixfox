@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
   NotFoundException,
-  ForbiddenException
+  ForbiddenException,
 } from '@nestjs/common';
 import { EquipmentService } from '../services/equipment.service';
 import { Equipment } from '../entities/equipment.entity';
@@ -29,14 +29,12 @@ export class EquipmentController {
   ) {
     return this.equipmentService.create({
       ...createEquipmentDto,
-      businessId
+      businessId,
     });
   }
 
   @Get()
-  async findAll(
-    @Query('businessId') businessId: number
-  ) {
+  async findAll(@Query('businessId') businessId: number) {
     return this.equipmentService.findAll(businessId);
   }
 
@@ -125,9 +123,7 @@ export class EquipmentController {
   }
 
   @Get('maintenance/due')
-  async findDueForMaintenance(
-    @Query('businessId') businessId: number
-  ) {
+  async findDueForMaintenance(@Query('businessId') businessId: number) {
     return this.equipmentService.findDueForMaintenance(businessId);
   }
 
@@ -137,9 +133,9 @@ export class EquipmentController {
     @Body('businessId') businessId: number
   ) {
     // Ensure businessId is set for all equipment
-    const equipmentsWithBusiness = equipments.map(equipment => ({
+    const equipmentsWithBusiness = equipments.map((equipment) => ({
       ...equipment,
-      businessId
+      businessId,
     }));
 
     return this.equipmentService.bulkCreate(equipmentsWithBusiness);

@@ -5,13 +5,11 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../admin/services/users.service';
 import { User } from '../admin/entities/user.entity';
 
-;
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private usersService: UsersService,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

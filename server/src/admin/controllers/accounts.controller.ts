@@ -11,14 +11,18 @@ export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Get(':accountId/summary')
-  async getAccountSummary(@Param('accountId') accountId: string): Promise<AccountSummaryDto> {
+  async getAccountSummary(
+    @Param('accountId') accountId: string
+  ): Promise<AccountSummaryDto> {
     this.logger.log(`Fetching account summary for account ID: ${accountId}`);
     return this.accountsService.getAccountSummary(accountId);
   }
   @Post('onboarding')
   async onboarding(@Body() body: OnboardingDto): Promise<any> {
-    this.logger.log(`Onboarding request received with body: ${JSON.stringify(body)}`);
+    this.logger.log(
+      `Onboarding request received with body: ${JSON.stringify(body)}`
+    );
     // Implement onboarding logic here
-    return  this.accountsService.onboarding(body);
+    return this.accountsService.onboarding(body);
   }
 }

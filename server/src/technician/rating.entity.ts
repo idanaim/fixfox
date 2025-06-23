@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Technician } from './technician.entity';
 
 @Entity('rating')
@@ -6,7 +13,7 @@ export class Rating {
   @PrimaryGeneratedColumn('uuid')
   rating_id: string;
 
-  @ManyToOne(() => Technician, technician => technician.ratings)
+  @ManyToOne(() => Technician, (technician) => technician.ratings)
   @JoinColumn({ name: 'technician_id' })
   technician: Technician;
 
@@ -33,4 +40,4 @@ export class Rating {
 
   @CreateDateColumn()
   rated_at: Date;
-} 
+}

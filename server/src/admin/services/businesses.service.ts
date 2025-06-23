@@ -10,10 +10,12 @@ export class BusinessesService {
     @InjectRepository(Business)
     private businessesRepository: Repository<Business>,
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: Repository<User>
   ) {}
 
-  async create(business: Partial<Business> & { accountId: string }): Promise<Business> {
+  async create(
+    business: Partial<Business> & { accountId: string }
+  ): Promise<Business> {
     // Create the business and associate it with the account
     const newBusiness = this.businessesRepository.create({
       ...business,
@@ -25,7 +27,7 @@ export class BusinessesService {
 
   async findAll(): Promise<Business[]> {
     return this.businessesRepository.find({
-      relations: ['account', 'admin', 'user']
+      relations: ['account', 'admin', 'user'],
     });
   }
 
@@ -33,7 +35,7 @@ export class BusinessesService {
     await this.businessesRepository.update(id, business);
     return this.businessesRepository.findOne({
       where: { id },
-      relations: ['account', 'admin', 'employees', 'employees.user']
+      relations: ['account', 'admin', 'employees', 'employees.user'],
     });
   }
 
