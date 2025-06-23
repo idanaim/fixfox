@@ -44,8 +44,10 @@ test_server() {
     echo "Running TypeScript check..."
     npx tsc --noEmit
     
-    echo "Running tests..."
+    echo "Running tests (unit only)..."
     npm run test
+    
+    echo "Note: E2E tests are excluded from CI pipeline"
     
     echo "Building application..."
     npm run build
@@ -178,4 +180,5 @@ if [ "$SECURITY_TEST" = true ]; then
 fi
 
 echo -e "\n${GREEN}🎉 All tests passed successfully!${NC}"
-echo -e "${YELLOW}💡 Ready for CI/CD pipeline${NC}" 
+echo -e "${YELLOW}💡 Ready for CI/CD pipeline${NC}"
+echo -e "${BLUE}ℹ️  Note: E2E tests are excluded from CI. Run 'npm run test:e2e' manually if needed.${NC}" 

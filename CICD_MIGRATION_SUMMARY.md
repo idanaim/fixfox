@@ -128,7 +128,7 @@ AUTO_SUBMIT=true                  # For automatic app store submission
 - [ ] Add ESLint/Prettier configurations
 - [ ] Set up staging environment
 - [ ] Configure app store credentials  
-- [ ] Add end-to-end tests
+- [ ] Add separate E2E test workflow (if needed)
 
 ### Medium Term (Month 1)
 - [ ] Blue-green deployments

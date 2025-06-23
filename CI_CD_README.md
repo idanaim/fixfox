@@ -36,6 +36,7 @@ FixFox now uses a modern CI/CD pipeline with **Node.js 20+** after separating fr
 **Features:**
 - **Smart change detection** - Only runs relevant jobs based on file changes
 - **Multi-version testing** - Tests server on Node 20 & 21
+- **Unit testing only** - E2E tests excluded for performance
 - **Security auditing** - Runs `npm audit` on dependencies
 - **Docker validation** - Tests Docker build process
 - **Parallel execution** - Runs server and mobile tests simultaneously
