@@ -13,7 +13,7 @@
     "lint:check": "npx eslint \"{src,apps,libs,test}/**/*.ts\"",
     "format": "npx prettier --write \"src/**/*.ts\"",
     "format:check": "npx prettier --check \"src/**/*.ts\"",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch", 
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -25,7 +25,7 @@
     "migration:revert": "npm run typeorm migration:revert -- -d ./typeorm.config.js",
     "docker:build": "docker build -t fixfox-server .",
     "docker:run": "docker run -p 3000:3000 fixfox-server",
-    "ci": "npm run lint:check && npm run format:check && npm run test && npm run build"
+    "ci": "npm run lint:check && npm run format:check && npx tsc --noEmit && npm run test && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.826.0",
