@@ -1,0 +1,320 @@
+{
+  "common": {
+    "solve_equipment_issue": "Solve Equipment Issue",
+    "maintenance_assistant": "Maintenance Assistant",
+    "solutions_your_business": "Solutions Used in Your Business:",
+    "solutions_other_businesses": "Solutions Used by Other Businesses:",
+    "ai_generated_solutions": "AI-Generated Solutions:",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "send": "Send",
+    "add_new": "Add New",
+    "approve": "Approve",
+    "reject": "Reject",
+    "request_more_info": "Request More Information",
+    "next": "Next",
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "use_original": "Use Original",
+    "use_enhanced": "Use Enhanced"
+  },
+  "equipment": {
+    "select_equipment": "Equipment Selection",
+    "equipment_form_title": "Add New Equipment",
+    "equipment_name": "Equipment Name",
+    "equipment_type": "Equipment Type",
+    "manufacturer": "Manufacturer",
+    "model": "Model",
+    "serial_number": "Serial Number",
+    "found_matching": "Found {{count}} matching appliance{{count, plural, one='' other='s'}}",
+    "unknown_category": "Equipment",
+    "active": "Active",
+    "add_new_equipment": "Add New Equipment",
+    "no_matching": "We couldn't find a matching appliance. Please provide more details below."
+  },
+  "chat": {
+    "session_started": "What can I help with?",
+    "type_message": "Type a message...",
+    "enhanced_description": "Enhanced Description",
+    "original_description": "Original Description",
+    "approve_description": "Approve this enhanced description?",
+    "diagnosis_results": "Diagnosis Results",
+    "problem_identified": "Problem Identified",
+    "suggested_solutions": "Suggested Solutions",
+    "ai_enhanced": "AI Enhanced",
+    "diagnosing": "Diagnosing the problem...",
+    "equipment_selected": "Equipment selected",
+    "enhancing_description": "Enhancing problem description based on selected equipment...",
+    "found_similar_problems": "Found {{count}} similar problem(s).",
+    "no_similar_problems": "No similar problems found.",
+    "using_enhanced_description": "Using enhanced description: \"{{description}}\"",
+    "using_original_description": "Using original description for diagnosis.",
+    "additional_info_prompt": "Thank you for the additional information. Is there anything else you'd like to add?"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "activeUsers": "Active Users",
+      "businesses": "Businesses",
+      "openTickets": "Open Tickets",
+      "resolvedToday": "Resolved Today"
+    },
+    "navigation": {
+      "users": "Users",
+      "businesses": "Businesses",
+      "tickets": "Tickets",
+      "settings": "Settings"
+    },
+    "sections": {
+      "userManagement": "User Management",
+      "businessManagement": "Business Management",
+      "ticketManagement": "Ticket Management",
+      "systemSettings": "System Settings"
+    },
+    "settings": {
+      "comingSoon": "Settings Coming Soon"
+    },
+    "userForm": {
+      "title": "New User",
+      "editTitle": "{{name}} Details",
+      "basicInfo": "Basic Information",
+      "fullName": "Full Name",
+      "emailAddress": "Email Address",
+      "updatePassword": "Update Password",
+      "newPassword": "Password",
+      "roleDepartment": "Role & Department",
+      "role": "Role",
+      "department": "Department",
+      "departments": "Departments",
+      "positionTitle": "Position Title",
+      "enterFullName": "Enter full name",
+      "enterEmail": "Enter email address",
+      "enterPassword": "Enter password",
+      "keepCurrent": "Leave blank to keep current",
+      "selectRole": "Select role",
+      "selectDepartment": "Select department",
+      "enterPosition": "Enter position title",
+      "deleteConfirm": "Are you sure you want to delete this employee?",
+      "deleteTitle": "Delete Employee",
+      "successUpdate": "Employee updated successfully",
+      "successAdd": "Employee added successfully",
+      "errorUpdate": "Failed to update employee",
+      "errorAdd": "Failed to add employee"
+    },
+    "businessForm": {
+      "title": "Edit Business",
+      "businessName": "Business Name",
+      "phoneNumber": "Phone Number",
+      "address": "Address",
+      "businessType": "Business Type",
+      "saveChanges": "Save Changes",
+      "enterBusinessName": "Enter business name",
+      "enterPhone": "Enter phone number",
+      "enterAddress": "Enter address",
+      "enterType": "Enter business type",
+      "errorFields": "Please fill in all fields",
+      "successUpdate": "Business updated successfully",
+      "errorUpdate": "Failed to update business",
+      "noAddress": "No address provided",
+      "noPhone": "No phone provided",
+      "employees": "employees",
+      "addUsers": "Add Users",
+      "editBusiness": "Edit Business",
+      "deleteBusiness": "Delete Business",
+      "noBusinesses": "No businesses found",
+      "addUsersTo": "Add Users to {{business}}",
+      "searchUsers": "Search users...",
+      "usersAvailable": "users available",
+      "selected": "selected",
+      "addNewBusiness": "Add New Business",
+      "creating": "Creating...",
+      "createBusiness": "Create Business"
+    }
+  },
+  "technician": {
+    "title": "Technicians",
+    "searchPlaceholder": "Search technicians...",
+    "viewDetails": "View Details",
+    "serviceType": {
+      "onSite": "On-site Service",
+      "lab": "Lab Service"
+    },
+    "reviews": "Reviews",
+    "contact": "Contact",
+    "locations": "Locations",
+    "professions": {
+      "title": "Technician Professions",
+      "electrician": "Electrician",
+      "plumber": "Plumber",
+      "refrigeration_specialist": "Refrigeration Specialist",
+      "hvac_technician": "HVAC Technician",
+      "appliance_technician": "Appliance Technician",
+      "gas_technician": "Gas Technician",
+      "handyman": "Handyman",
+      "it_pos_technician": "IT/POS Technician",
+      "fire_safety_technician": "Fire Safety Technician",
+      "pest_control_specialist": "Pest Control Specialist",
+      "dishwasher_technician": "Dishwasher Technician",
+      "laundry_equipment_technician": "Laundry Equipment Technician",
+      "floor_equipment_specialist": "Floor Equipment Specialist",
+      "building_maintenance_technician": "Building Maintenance Technician",
+      "kitchen_exhaust_specialist": "Kitchen Exhaust Specialist",
+      "other": "Other"
+    }
+  },
+  "solution": {
+    "title": "Recommended Solution",
+    "source": {
+      "business": "Business",
+      "community": "Community",
+      "ai": "AI Generated"
+    },
+    "resolvedBy": "Resolved by: {{name}}",
+    "partsRequired": "Parts Required:",
+    "actions": {
+      "skip": "Skip",
+      "next": "Next Solution",
+      "helped": "It helped",
+      "getTechnician": "Get Technician"
+    },
+    "problem": {
+      "title": "Problem",
+      "description": "Description"
+    }
+  },
+  "diagnosis": {
+    "similarProblems": {
+      "title": "Similar Problems Found",
+      "empty": "No Similar Problems"
+    },
+    "aiDiagnosis": {
+      "title": "AI Diagnosis"
+    },
+    "emptyState": {
+      "title": "No Similar Problems Found",
+      "message": "Please provide a more detailed description of your problem in the chat input below. Include specific symptoms, when they occur, and any relevant details about your equipment.",
+      "action": "Need Help?",
+      "improveDescription": "Improve Description"
+    },
+    "assignToTechnician": "Assign to Default Technician",
+    "technicianAssigned": "Issue has been assigned to the default technician for your business."
+  },
+  "onboarding": {
+    "title": "Account Setup",
+    "steps": {
+      "welcome": "Welcome",
+      "account": "Account",
+      "business": "Business",
+      "team": "Team",
+      "complete": "Complete"
+    },
+    "welcome": {
+      "title": "Welcome to FixFox!",
+      "subtitle": "Let's set up your maintenance management system in a few simple steps.",
+      "features": {
+        "manageEquipment": "Manage equipment and issues",
+        "trackCosts": "Track maintenance costs",
+        "coordinateTechnicians": "Coordinate with technicians",
+        "aiSolutions": "AI-powered solutions"
+      }
+    },
+    "account": {
+      "title": "Create Your Account",
+      "subtitle": "Set up your admin account",
+      "accountInfo": "Account Information",
+      "adminDetails": "Admin Details",
+      "accountName": "Account Name",
+      "accountNamePlaceholder": "e.g., Acme Maintenance Inc.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailAddress": "Email Address",
+      "emailPlaceholder": "admin@company.com",
+      "password": "Password",
+      "mobile": "Mobile Number",
+      "mobilePlaceholder": "+1 555-123-4567"
+    },
+    "business": {
+      "title": "Add Your First Business",
+      "subtitle": "Tell us about your main location",
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "e.g., Downtown Restaurant",
+      "businessType": "Business Type",
+      "address": "Address (Optional)",
+      "addressPlaceholder": "Street address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 555-123-4567",
+      "types": {
+        "restaurant": "Restaurant",
+        "hotel": "Hotel",
+        "retail": "Retail Store",
+        "office": "Office Building",
+        "manufacturing": "Manufacturing",
+        "healthcare": "Healthcare",
+        "education": "Education",
+        "other": "Other"
+      }
+    },
+    "team": {
+      "title": "Add Team Members",
+      "subtitle": "Invite colleagues to join your account (Optional)",
+      "addMember": "Add Team Member",
+      "teamMemberDetails": "Team Member Details",
+      "teamMember": "Team Member",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "mobile": "Mobile Number",
+      "mobilePlaceholder": "+1 555-123-4567",
+      "role": "Role",
+      "roles": {
+        "manager": "Manager",
+        "technician": "Technician",
+        "employee": "Employee",
+        "admin": "Admin"
+      }
+    },
+    "complete": {
+      "title": "All Set!",
+      "subtitle": "Your maintenance management system is ready to go",
+      "summary": "Summary",
+      "account": "Account",
+      "business": "Business",
+      "teamMembers": "Team Members",
+      "includingYou": "including you",
+      "accountCreated": "Account Created",
+      "businessAdded": "Business Added",
+      "getStarted": "Get Started"
+    },
+    "navigation": {
+      "back": "Back",
+      "continue": "Continue",
+      "getStarted": "Get Started",
+      "creatingAccount": "Creating Account...",
+      "launch": "Launch"
+    },
+    "validation": {
+      "missingInfo": "Missing Information",
+      "accountDetails": "Please fill in all account details",
+      "invalidEmail": "Invalid Email",
+      "validEmailRequired": "Please enter a valid email address",
+      "invalidPassword": "Invalid Password",
+      "passwordRequirements": "Password must be at least 8 characters long",
+      "invalidMobile": "Invalid Mobile Number",
+      "mobileRequirements": "Please enter a valid mobile number with country code",
+      "businessInfo": "Please provide business name, type, and phone number",
+      "invalidTeamMemberMobile": "Invalid team member mobile number",
+      "required": "This field is required"
+    },
+    "success": {
+      "title": "Setup Complete",
+      "message": "Your maintenance management system has been successfully set up.",
+      "buttonText": "Go to Dashboard"
+    },
+    "error": {
+      "title": "Setup Failed",
+      "message": "There was an error setting up your account. Please try again.",
+      "buttonText": "Try Again"
+    }
+  }
+}
