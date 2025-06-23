@@ -1,35 +1,46 @@
-# FixFox API Dockerfile
-FROM node:18-alpine AS builder
+# FixFox API Dockerfile - Standalone Version
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY apps/rest-man-server/package*.json ./apps/rest-man-server/
+# Copy package files for the standalone server
+COPY server/package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy source code
-COPY . .
+COPY server/ ./
 
-# Build the application using NX
+# Build the application
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Install curl for health checks
 RUN apk add --no-cache curl
 
 WORKDIR /app
 
-# Copy the complete build output from NX (includes generated package.json with dependencies)
-COPY --from=builder /app/dist/apps/rest-man-server ./
+# Copy package files and install production dependencies
+COPY server/package*.json ./
+RUN npm ci --production && npm cache clean --force
 
-# Install production dependencies (using the generated package.json)
-RUN npm ci --production
+# Copy the built application from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Copy any additional files that might be needed
+COPY server/.env* ./
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S fixfox -u 1001
+
+# Change ownership of the app directory
+RUN chown -R fixfox:nodejs /app
+USER fixfox
 
 # Expose port
 EXPOSE 3000
@@ -38,5 +49,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start the application (main.js is in the current directory, not dist/main.js)
-CMD ["node", "main.js"] 
+# Start the application
+CMD ["node", "dist/main.js"] 

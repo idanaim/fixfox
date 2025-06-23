@@ -1,4 +1,4 @@
-name: Build and Push Server Image
+name: Build and Deploy Server
 
 on:
   push:
@@ -14,11 +14,44 @@ env:
   AWS_REGION: us-west-2
   ECR_REPOSITORY: fixfox-api
   IMAGE_TAG: ${{ github.sha }}
+  NODE_VERSION: '20'
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run linting
+        working-directory: ./server
+        run: npm run lint --if-present
+
+      - name: Run tests
+        working-directory: ./server
+        run: npm test --if-present
+
+      - name: Run build
+        working-directory: ./server
+        run: npm run build
+
   build-and-push:
     name: Build and Push to ECR
     runs-on: ubuntu-latest
+    needs: test
     environment: production
 
     steps:
@@ -48,9 +81,18 @@ jobs:
           # Push the images to ECR
           echo "Pushing image to ECR..."
           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }} --all-tags
-          echo "::set-output name=image_uri::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          echo "image_uri=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to ECS (if configured)
+        if: vars.ECS_SERVICE_NAME && vars.ECS_CLUSTER_NAME
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
+            --service ${{ vars.ECS_SERVICE_NAME }} \
+            --force-new-deployment
 
       - name: Summary
         run: |
           echo "🎉 Image build and push complete."
           echo "Image URI: ${{ steps.build-image.outputs.image_uri }}"
+          echo "Node Version: ${{ env.NODE_VERSION }}"

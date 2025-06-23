@@ -45,21 +45,25 @@ const initI18n = async () => {
   const deviceLanguage = getDeviceLanguage();
   const initialLanguage = savedLanguage || deviceLanguage;
 
+  const resources = {
+    en: {
+      translation: en,
+    },
+    he: {
+      translation: he,
+    },
+  };
+
   i18n
     .use(initReactI18next)
     .init({
-      resources: {
-        en: { translation: en },
-        he: { translation: he }
-      },
+      resources,
       lng: initialLanguage,
       fallbackLng: 'en',
+      debug: false,
       interpolation: {
-        escapeValue: false
+        escapeValue: false,
       },
-      react: {
-        useSuspense: false
-      }
     });
 
   return i18n;

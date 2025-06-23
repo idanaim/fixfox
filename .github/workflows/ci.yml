@@ -1,0 +1,184 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.changes.outputs.server }}
+      mobile: ${{ steps.changes.outputs.mobile }}
+      docs: ${{ steps.changes.outputs.docs }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Check for changes  
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - 'Dockerfile'
+            mobile:
+              - 'mobile-app/**'
+            docs:
+              - '*.md'
+              - 'docs/**'
+
+  server-ci:
+    name: Server CI
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    
+    strategy:
+      matrix:
+        node: ['20', '21']
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run linting
+        working-directory: ./server
+        run: npm run lint --if-present
+
+      - name: Run type checking
+        working-directory: ./server
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        working-directory: ./server
+        run: npm test --if-present
+
+      - name: Run build
+        working-directory: ./server
+        run: npm run build
+
+      - name: Test Docker build
+        if: matrix.node == '20'
+        run: |
+          echo "Testing Docker build..."
+          docker build -t fixfox-server:test .
+          docker run --rm fixfox-server:test node --version
+
+  mobile-ci:
+    name: Mobile CI
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - name: Setup Expo CLI
+        run: npm install -g @expo/cli
+
+      - name: Install dependencies
+        working-directory: ./mobile-app
+        run: npm ci
+
+      - name: Run Expo Doctor
+        working-directory: ./mobile-app
+        run: npx expo-doctor
+
+      - name: Type check
+        working-directory: ./mobile-app
+        run: npx tsc --noEmit --skipLibCheck
+
+      - name: Run linting
+        working-directory: ./mobile-app
+        run: npm run lint --if-present
+
+      - name: Run tests
+        working-directory: ./mobile-app
+        run: npm test --if-present
+
+      - name: Export web build
+        working-directory: ./mobile-app
+        run: |
+          echo "Testing web export..."
+          npx expo export --platform web --output-dir web-build
+          
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.server == 'true' || needs.changes.outputs.mobile == 'true'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run security audit - Server
+        if: needs.changes.outputs.server == 'true'
+        working-directory: ./server
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          
+      - name: Run security audit - Mobile
+        if: needs.changes.outputs.mobile == 'true'
+        working-directory: ./mobile-app
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [changes, server-ci, mobile-ci, security]
+    if: always()
+    
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## CI Results Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node Version**: ${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Server Changes**: ${{ needs.changes.outputs.server }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mobile Changes**: ${{ needs.changes.outputs.mobile }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Server CI**: ${{ needs.server-ci.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mobile CI**: ${{ needs.mobile-ci.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Audit**: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY 
