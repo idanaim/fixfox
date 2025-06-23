@@ -3,7 +3,7 @@ export class ServerApi {
   public headers = { 'Content-Type': 'application/json' };
   public baseUrl = 'http://localhost:3000/api/';
 
-  constructor(extraHeaders) {
+  constructor(extraHeaders: any) {
     this.headers = {
       ...extraHeaders,
       'Content-Type': 'application/json',

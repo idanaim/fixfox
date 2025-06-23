@@ -1,6 +1,6 @@
 // src/hooks/usePermissions.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchCall, postCall } from './server-api';
+import { ServerApi } from './server-api';
 import { useContext } from 'react';
 import { FixFoxProvidersContext } from '../store/fixfox-provider';
 
@@ -32,7 +32,7 @@ export const usePermissions = (userId: number) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['permissions', userId]);
+      queryClient.invalidateQueries({ queryKey: ['permissions', userId] });
     },
   });
 

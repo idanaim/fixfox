@@ -117,7 +117,7 @@ const UserForm = () => {
     if(user?.id){
       updateUser(data, {
         onSuccess: () => {
-          queryClient.invalidateQueries(['users', adminId]);
+          queryClient.invalidateQueries({ queryKey: ['users', adminId] });
           navigation.goBack();
           Alert.alert('Success', t('admin.userForm.successUpdate'));
         },
@@ -128,7 +128,7 @@ const UserForm = () => {
     } else {
       addNewUser(data, {
         onSuccess: () => {
-          queryClient.invalidateQueries(['users', adminId]);
+          queryClient.invalidateQueries({ queryKey: ['users', adminId] });
           Alert.alert('Success', t('admin.userForm.successAdd'));
           navigation.goBack();
         },

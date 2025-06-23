@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
-import { Ticket } from '../../../rest-man-server/src/entities/ticket.entity';
+
+// Define Ticket interface locally since the server entity is not available
+interface Ticket {
+  id?: number;
+  title: string;
+  description: string;
+  status: string;
+  businessId: number;
+  userId: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 
 const SaveTicketApi = async (body:Partial<Ticket>) => {
@@ -23,7 +34,7 @@ export default function UseSaveTicket() {
   return useMutation({
     mutationFn: (ticket:Partial<Ticket>)=>SaveTicketApi(ticket),
     onSuccess: () => {
-       queryClient.invalidateQueries('tickets');
+       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       alert('Ticket added successfully!');
       navigation.goBack();
     },

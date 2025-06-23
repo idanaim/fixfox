@@ -2,16 +2,24 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../hooks/useAuth';
+import useAuthStore from '../store/auth.store';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export const LoginScreen = () => {
-  const { signIn } = useAuth();
+  const { signIn } = useAuthStore();
   const { t } = useTranslation();
 
   const handleLogin = async () => {
     try {
-      await signIn();
+      // Mock login - replace with actual authentication logic
+      const mockToken = 'mock-jwt-token';
+      const mockUser = {
+        id: 1,
+        name: 'Test User',
+        email: 'test@example.com',
+        accountId: 'test-account-123',
+      };
+      await signIn(mockToken, mockUser, [], 'admin');
     } catch (error) {
       console.error('Login failed:', error);
     }  
