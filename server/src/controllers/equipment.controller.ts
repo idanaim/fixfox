@@ -45,7 +45,6 @@ export class EquipmentController {
     @Param('id') id: number,
     @Query('businessId') businessId: number
   ) {
-    debugger
     const equipment = await this.equipmentService.findById(id, businessId);
 
     if (!equipment) {
@@ -61,7 +60,6 @@ export class EquipmentController {
     @Body() updateEquipmentDto: Partial<Equipment>,
     @Query('businessId') businessId: number
   ) {
-    debugger
     // First check if equipment exists and belongs to the business
     const equipment = await this.equipmentService.findById(id, businessId);
 
@@ -77,7 +75,6 @@ export class EquipmentController {
     @Param('id') id: number,
     @Query('businessId') businessId: number
   ) {
-    debugger
     // First check if equipment exists and belongs to the business
     const equipment = await this.equipmentService.findById(id, businessId);
 
@@ -94,7 +91,6 @@ export class EquipmentController {
     @Query('q') query: string,
     @Query('businessId') businessId: number
   ) {
-    debugger
     if (!query) {
       return this.equipmentService.findAll(businessId);
     }

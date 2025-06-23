@@ -50,7 +50,6 @@ export class SolutionService {
       problem?.description
     );
 
-    // @ts-ignore
     const solution = this.solutionRepository.create({
       cause: aiResponse.rootCause,
       treatment: aiResponse.steps.join('\n'),

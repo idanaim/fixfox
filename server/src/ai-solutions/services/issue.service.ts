@@ -42,7 +42,7 @@ export class IssueService {
     );
 
     // Create issue
-    // @ts-ignore
+    // @ts-expect-error - TypeORM entity relationships require proper typing
     const issue = this.issueRepository.create({
       problem,
       equipment,

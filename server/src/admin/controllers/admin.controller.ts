@@ -10,7 +10,7 @@ export class AdminController {
   ) {}
 
   @Post('signup')
-  async signUp(@Body() data: any) {
+  async signUp(@Body() data: { admin: any; businesses: any[] }) {
     const { admin, businesses } = data;
 
     // Create Admin

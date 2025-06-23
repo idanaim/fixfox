@@ -21,7 +21,7 @@ export class ProblemService {
   ) {}
 
   async createProblem(createProblemDto: CreateProblemDto): Promise<Problem> {
-    // @ts-ignore
+    // @ts-expect-error - TypeORM entity relationships require proper typing
     const problem = this.problemRepository.create({
       description: createProblemDto.description,
       business: { id: createProblemDto.businessId },
@@ -31,7 +31,7 @@ export class ProblemService {
       }),
     });
 
-    // @ts-ignore
+    // @ts-expect-error - TypeORM entity relationships require proper typing
     return this.problemRepository.save(problem);
   }
 

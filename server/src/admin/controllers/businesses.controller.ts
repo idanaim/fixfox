@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { BusinessesService } from '../services/businesses.service';
 import { Business } from '../entities/business.entity';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('businesses')
 export class BusinessesController {

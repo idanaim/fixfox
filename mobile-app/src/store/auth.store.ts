@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { User } from '../interfaces/business';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../interfaces/user';
 
 interface AuthState {
   token: string | null;
@@ -19,52 +19,49 @@ interface AuthActions {
   checkAuth: () => Promise<void>;
 }
 
-const useAuthStore = create<AuthState & AuthActions>()(
-  persist(
-    (set, get) => ({
-      token: null,
-      user: null,
-      permissions: [],
-      role: null,
-      isLoading: false,
-      error: null,
+const useAuthStore = create<AuthState & AuthActions>()((set, get) => ({
+  token: null,
+  user: null,
+  permissions: [],
+  role: null,
+  isLoading: false,
+  error: null,
 
-      signIn: (token, user, permissions = [], role = null) => {
-        set({ token, user, permissions, role, error: null });
-      },
+  signIn: (token, user, permissions = [], role) => {
+    set({ token, user, permissions, role, error: null });
+    // Save to AsyncStorage
+    AsyncStorage.setItem('auth-token', token);
+    AsyncStorage.setItem('auth-user', JSON.stringify(user));
+    AsyncStorage.setItem('auth-permissions', JSON.stringify(permissions));
+    if (role) AsyncStorage.setItem('auth-role', role);
+  },
 
-      signOut: () => {
-        set({ token: null, user: null, permissions: [], role: null });
-      },
+  signOut: async () => {
+    set({ token: null, user: null, permissions: [], role: null });
+    // Clear AsyncStorage
+    await AsyncStorage.multiRemove(['auth-token', 'auth-user', 'auth-permissions', 'auth-role']);
+  },
 
-      setLoading: (loading) => set({ isLoading: loading }),
-      setError: (error) => set({ error }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  setError: (error) => set({ error }),
 
-      checkAuth: async () => {
-        try {
-          const { token } = get();
-          if (token) return;
-          const storage = localStorage.getItem('auth-storage');
-          if (storage) {
-            const state = JSON.parse(storage);
-            // Add token validation logic here if needed
-            set({ 
-              token: state.token, 
-              user: state.user, 
-              permissions: state.permissions || [], 
-              role: state.role || null 
-            });
-          }
-        } catch (error) {
-          console.error('Auth check failed:', error);
-        }
-      },
-    }),
-    {
-      name: 'auth-storage', // name of the item in the storage (must be unique)
-      getStorage: () => localStorage, // specify the storage to use
+  checkAuth: async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth-token');
+      const userStr = await AsyncStorage.getItem('auth-user');
+      const permissionsStr = await AsyncStorage.getItem('auth-permissions');
+      const role = await AsyncStorage.getItem('auth-role');
+      
+      if (token && userStr) {
+        const user = JSON.parse(userStr);
+        const permissions = permissionsStr ? JSON.parse(permissionsStr) : [];
+        set({ token, user, permissions, role });
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      set({ error: 'Failed to check authentication' });
     }
-  )
-);
+  },
+}));
 
 export default useAuthStore;

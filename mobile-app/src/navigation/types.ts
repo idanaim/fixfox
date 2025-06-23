@@ -1,3 +1,5 @@
+import { User } from '../interfaces/user';
+
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
@@ -15,4 +17,6 @@ export type RootStackParamList = {
     businessId: number;
     userId?: number;
   };
+  'user-form': { user: User; adminId?: string };
+  'business-form': { business: any };
 }; 
