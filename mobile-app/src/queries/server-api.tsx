@@ -1,7 +1,8 @@
+import { API_BASE_URL } from '../config';
 
 export class ServerApi {
   public headers = { 'Content-Type': 'application/json' };
-  public baseUrl = 'http://localhost:3000/api/';
+  public baseUrl = `${API_BASE_URL}/`;
 
   constructor(extraHeaders: any) {
     this.headers = {
