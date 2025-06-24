@@ -31,8 +31,8 @@ RUN npm ci --production && npm cache clean --force
 # Copy the built application from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy any additional files that might be needed
-COPY server/.env* ./
+# Copy any additional files that might be needed (optional)
+# COPY server/.env* ./
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
