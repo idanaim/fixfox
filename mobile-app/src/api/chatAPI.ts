@@ -2,8 +2,6 @@ import { api } from './api';
 import { User } from '../interfaces/business';
 import i18n from 'i18next';
 
-const API_BASE = 'http://localhost:3000/api';
-
 export interface ChatSession {
   id: number;
   status: string;

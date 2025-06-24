@@ -26,9 +26,21 @@ export class BusinessesService {
   }
 
   async findAll(): Promise<Business[]> {
-    return this.businessesRepository.find({
-      relations: ['account', 'admin', 'user'],
-    });
+    try {
+      console.log('🔍 BusinessesService.findAll() called');
+      console.log('📊 Repository:', this.businessesRepository);
+      
+      const businesses = await this.businessesRepository.find();
+      console.log('✅ Database query successful, found businesses:', businesses?.length || 0);
+      console.log('📋 Businesses data:', businesses);
+      
+      return businesses;
+    } catch (error) {
+      console.error('❌ Error in BusinessesService.findAll():', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      throw error;
+    }
   }
 
   async update(id: number, business: Partial<Business>): Promise<Business> {

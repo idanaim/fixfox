@@ -42,9 +42,24 @@ export class BusinessesController {
     return this.businessesService.update(id, body);
   }
 
-  @Get()
-  async findAll(): Promise<Business[]> {
-    return this.businessesService.findAll();
+  @Get('all')
+  async findAll() {
+    try {
+      console.log('🔍 BusinessesController.findAll() called');
+      const result = await this.businessesService.findAll();
+      console.log('✅ BusinessesService.findAll() returned:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Error in BusinessesController.findAll():', error);
+      console.error('Error stack:', error.stack);
+      throw error;
+    }
+  }
+
+  @Get('test')
+  async test() {
+    console.log('🧪 BusinessesController.test() called');
+    return { message: 'Test endpoint working', timestamp: new Date().toISOString() };
   }
 
   @Get(':accountId')

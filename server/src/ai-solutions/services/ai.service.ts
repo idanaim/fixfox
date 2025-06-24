@@ -54,15 +54,19 @@ interface EnhancedDiagnosisDto {
 
 @Injectable()
 export class AIService {
-  private openai: OpenAI;
+  private openai: OpenAI | null;
   private readonly logger = new Logger(AIService.name);
   private readonly apiKey: string;
   private readonly apiUrl = 'https://api.openai.com/v1/chat/completions';
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set in environment variables');
+    if (!apiKey || apiKey === 'sk-placeholder-replace-with-real-key') {
+      this.logger.warn('OPENAI_API_KEY is not set or is a placeholder. AI features will be disabled.');
+      this.apiKey = '';
+      // Create a mock OpenAI instance that won't be used
+      this.openai = null as any;
+      return;
     }
 
     this.apiKey = apiKey;
@@ -74,6 +78,32 @@ export class AIService {
   // Helper method to select model based on task type
   private selectModel(taskType: keyof typeof MODEL_CONFIG): string {
     return MODEL_CONFIG[taskType];
+  }
+
+  // Helper method to check if AI is available
+  private isAIAvailable(): boolean {
+    return this.openai !== null && this.apiKey !== '';
+  }
+
+  // Helper method for fallback responses when AI is not available
+  private getAIUnavailableResponse(type: 'equipment' | 'categories' | 'analysis' | 'solutions'): any {
+    switch (type) {
+      case 'equipment':
+        return '';
+      case 'categories':
+        return ['General Equipment Issue'];
+      case 'analysis':
+        return {
+          possibleCauses: ['AI analysis unavailable - contact technician'],
+          suggestedSolutions: ['Manual inspection required'],
+          requiresTechnician: true,
+          severity: 'medium' as const,
+        };
+      case 'solutions':
+        return ['AI solutions unavailable - contact support'];
+      default:
+        return null;
+    }
   }
 
   /**
@@ -96,6 +126,10 @@ export class AIService {
     problemDescription: string,
     equipmentType?: string
   ): Promise<string[]> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('categories');
+    }
+
     try {
       const prompt = equipmentType
         ? `Categorize this problem for a ${equipmentType}:\n"${problemDescription}"`
@@ -183,15 +217,19 @@ export class AIService {
       If no specific equipment is mentioned, extract the most general category that would fit.
     `;
 
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('equipment');
+    }
+
     try {
-      const response = await this.openai.chat.completions.create({
+      const response = await this.openai?.chat.completions.create({
         model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3, // Lower temperature for more deterministic results
         max_tokens: 50, // We only need a short response
       });
 
-      const equipmentType = response.choices[0]?.message?.content?.trim() || '';
+      const equipmentType = response?.choices[0]?.message?.content?.trim() || '';
 
       // Clean up the response by removing any punctuation or extra text
       return equipmentType
@@ -215,6 +253,10 @@ export class AIService {
     equipment?: Equipment,
     followUpQuestions: Record<string, string>[] = []
   ): Promise<string> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     try {
       const equipmentContext = equipment
         ? await this.getEquipmentContext(equipment, language)
@@ -265,7 +307,7 @@ export class AIService {
             `ENHANCED DESCRIPTION:`;
 
       /* ---------- model call ---------- */
-      const response = await this.openai.chat.completions.create({
+      const response = await this.openai?.chat.completions.create({
         model: this.selectModel('ENHANCEMENT'),
         messages: [
           { role: 'system', content: systemPrompt },
@@ -312,8 +354,12 @@ export class AIService {
       Format your response as a JSON array of numbers, e.g. [3, 1, 5]
     `;
 
+    if (!this.isAIAvailable()) {
+      return [];
+    }
+
     try {
-      const response = await this.openai.chat.completions.create({
+      const response = await this.openai?.chat.completions.create({
         model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
@@ -344,6 +390,10 @@ export class AIService {
     previousIssues: Issue[],
     language = 'en'
   ): Promise<AnalysisResult> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמנתח בעיות בציוד. תן ניתוח מפורט של הבעיה, כולל סיבות אפשריות, חומרה, והאם נדרש טכנאי.'
@@ -371,7 +421,7 @@ Problem Description: ${description}
 ${previousIssuesContext ? `Previous Issues:\n${previousIssuesContext}\n\n` : ''}
 Please analyze the problem and provide recommendations.`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('DIAGNOSIS'),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -392,6 +442,10 @@ Please analyze the problem and provide recommendations.`;
     equipment: { type: string; manufacturer: string; model: string },
     language = 'en'
   ): Promise<Diagnosis> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמאבחן בעיות בציוד. תן ניתוח מפורט של הבעיה, כולל סיבות אפשריות, פתרונות מוצעים, עלות משוערת, חלקים נדרשים, ורמת ביטחון באבחון.'
@@ -451,7 +505,7 @@ ${description}
 }`;
 
     try {
-      const response = await this.openai.chat.completions.create({
+      const response = await this.openai?.chat.completions.create({
         model: this.selectModel('DIAGNOSIS'),
         messages: [
           { role: 'system', content: systemPrompt },
@@ -499,6 +553,10 @@ ${description}
       problemDescription
     );
 
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     try {
       const response = await axios.post(
         this.apiUrl,
@@ -532,6 +590,10 @@ ${description}
     equipment: Equipment,
     language = 'en'
   ): Promise<string[] | string> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('solutions');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמספק פתרונות מפורטים לבעיות בציוד. תן פתרונות צעד אחר צעד.'
@@ -550,7 +612,7 @@ Analysis: ${analysis.summary}
 
 Please provide detailed step-by-step solutions.`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('DIAGNOSIS'),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -595,8 +657,12 @@ Please provide detailed step-by-step solutions.`;
       Just return the IDs, not the index numbers.
     `;
 
+    if (!this.isAIAvailable()) {
+      return [];
+    }
+
     try {
-      const response = await this.openai.chat.completions.create({
+      const response = await this.openai?.chat.completions.create({
         model: this.selectModel('CHAT'),
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },
@@ -639,6 +705,10 @@ Please provide detailed step-by-step solutions.`;
     equipment: Equipment,
     language = 'en'
   ): Promise<FollowUpQuestion[]> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמסייע לאבחן בעיות בציוד. שאל שאלות ממוקדות כדי להבין טוב יותר את הבעיה. עדיף שאלות עם אפשרויות בחירה.'
@@ -691,7 +761,7 @@ Return the result in JSON format only (no markdown) with the following structure
   ]
 }`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('FOLLOW_UP'),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -802,6 +872,10 @@ Return the result in JSON format only (no markdown) with the following structure
     severity?: string;
     context?: string;
   }> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('analysis');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמנתח תיאורי בעיות בציוד. חלץ מידע מובנה מהתיאור.'
@@ -832,7 +906,7 @@ Please extract the following structured data:
 
 Return the result in JSON format only (no markdown).`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('DIAGNOSIS'),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -871,6 +945,10 @@ Return the result in JSON format only (no markdown).`;
     equipment: Equipment,
     language = 'en'
   ): Promise<string> {
+    if (!this.isAIAvailable()) {
+      return this.getAIUnavailableResponse('equipment');
+    }
+
     const systemPrompt =
       language === 'he'
         ? 'אתה מומחה טכני שמספק מידע על ציוד. ספק מידע רלוונטי על הציוד.'
@@ -895,7 +973,7 @@ Please provide relevant information about the equipment, including:
 - Common issues
 - Maintenance tips`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('CHAT'),
       messages: [
         { role: 'system', content: systemPrompt },
@@ -1135,7 +1213,7 @@ Please analyze the collected information and provide:
 
 Provide a detailed but concise response that can serve as a summary before diagnosis.`;
 
-    const completion = await this.openai.chat.completions.create({
+    const completion = await this.openai?.chat.completions.create({
       model: this.selectModel('CHAT'),
       messages: [
         { role: 'system', content: systemPrompt },
