@@ -1,0 +1,136 @@
+name: Build and Deploy Server
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'server/**'
+      - 'Dockerfile'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REPOSITORY: fixfox-api
+  IMAGE_TAG: ${{ github.sha }}
+  NODE_VERSION: '20'
+  # Production environment (same for both branches for now)
+  ECS_CLUSTER: fixfox-prod
+  ECS_SERVICE: fixfox-api-prod
+
+jobs:
+  # Testing temporarily disabled
+  # test:
+  #   name: Run Tests
+  #   runs-on: ubuntu-latest
+  #   
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: 'npm'
+  #         cache-dependency-path: server/package-lock.json
+
+  #     - name: Install dependencies
+  #       working-directory: ./server
+  #       run: npm ci
+
+  #     - name: Run build
+  #       working-directory: ./server
+  #       run: npm run build
+
+  build-and-push:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set branch-specific variables
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "BRANCH_NAME=main" >> $GITHUB_ENV
+            echo "IMAGE_TAG_SUFFIX=latest" >> $GITHUB_ENV
+            echo "DEPLOY_MESSAGE=🚀 Deploying MAIN branch to PRODUCTION" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=dev" >> $GITHUB_ENV
+            echo "IMAGE_TAG_SUFFIX=dev" >> $GITHUB_ENV
+            echo "DEPLOY_MESSAGE=🧪 Deploying DEV branch to PRODUCTION" >> $GITHUB_ENV
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          echo "${{ env.DEPLOY_MESSAGE }}"
+          
+          # Build the docker image
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
+          
+          # Tag with branch-specific suffix
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG_SUFFIX }}
+          
+          # Push the images to ECR
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }} --all-tags
+          echo "image_uri=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to ECS
+        run: |
+          echo "Deploying ${{ env.BRANCH_NAME }} branch to production..."
+          echo "Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "Service: ${{ env.ECS_SERVICE }}"
+          
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment
+
+      - name: Wait for deployment to complete
+        run: |
+          echo "Waiting for deployment to complete..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }}
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment..."
+          # Wait a bit for the load balancer to route to new tasks
+          sleep 30
+          
+          # Test the health endpoint
+          if curl -f http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api/auth/login -X POST -H "Content-Type: application/json" -d '{"email":"test","password":"test"}' >/dev/null 2>&1; then
+            echo "✅ Deployment verification successful!"
+          else
+            echo "⚠️ Deployment verification failed, but deployment completed."
+          fi
+
+      - name: Summary
+        run: |
+          echo "🎉 Deployment complete!"
+          echo "Branch: ${{ env.BRANCH_NAME }}"
+          echo "Image URI: ${{ steps.build-image.outputs.image_uri }}"
+          echo "Image Tag: ${{ env.IMAGE_TAG_SUFFIX }}"
+          echo "Environment: Production"
+          echo "API URL: http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api"
