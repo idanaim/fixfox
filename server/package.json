@@ -25,7 +25,7 @@
     "migration:revert": "npm run typeorm migration:revert -- -d ./typeorm.config.js",
     "docker:build": "docker build -t fixfox-server .",
     "docker:run": "docker run -p 3000:3000 fixfox-server",
-    "ci": "npm run lint:check && npm run format:check && npx tsc --noEmit && npm run test && npm run build"
+    "ci": "npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.826.0",

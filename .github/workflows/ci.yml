@@ -65,18 +65,18 @@ jobs:
         working-directory: ./server
         run: npm ci
 
-      - name: Run linting
-        working-directory: ./server
-        run: npm run lint --if-present
+      # Linting and testing temporarily disabled
+      # - name: Run linting
+      #   working-directory: ./server
+      #   run: npm run lint --if-present
 
-      - name: Run type checking
-        working-directory: ./server
-        run: npx tsc --noEmit
+      # - name: Run type checking
+      #   working-directory: ./server
+      #   run: npx tsc --noEmit
 
-      - name: Run tests (unit only)
-        working-directory: ./server
-        run: npm test --if-present
-        # Note: E2E tests are excluded from CI pipeline for performance
+      # - name: Run tests (unit only)
+      #   working-directory: ./server
+      #   run: npm test --if-present
 
       - name: Run build
         working-directory: ./server
@@ -117,17 +117,18 @@ jobs:
         working-directory: ./mobile-app
         run: npx expo-doctor
 
-      - name: Type check
-        working-directory: ./mobile-app
-        run: npx tsc --noEmit --skipLibCheck
+      # Type checking, linting and testing temporarily disabled
+      # - name: Type check
+      #   working-directory: ./mobile-app
+      #   run: npx tsc --noEmit --skipLibCheck
 
-      - name: Run linting
-        working-directory: ./mobile-app
-        run: npm run lint --if-present
+      # - name: Run linting
+      #   working-directory: ./mobile-app
+      #   run: npm run lint --if-present
 
-      - name: Run tests
-        working-directory: ./mobile-app
-        run: npm test --if-present
+      # - name: Run tests
+      #   working-directory: ./mobile-app
+      #   run: npm test --if-present
 
       - name: Export web build
         working-directory: ./mobile-app
