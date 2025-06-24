@@ -1,8 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Permission } from './permission.entity';
 
 @Entity('roles')
-export class  Role {
+export class Role {
   @PrimaryGeneratedColumn('uuid')
   roleId: string;
 
@@ -17,12 +23,12 @@ export class  Role {
     name: 'role_permissions',
     joinColumn: {
       name: 'roleId',
-      referencedColumnName: 'roleId'
+      referencedColumnName: 'roleId',
     },
     inverseJoinColumn: {
       name: 'permissionId',
-      referencedColumnName: 'id'
-    }
+      referencedColumnName: 'id',
+    },
   })
   permissions: Permission[];
 }

@@ -1,4 +1,3 @@
-
 export interface Admin extends Document {
   name: string;
   email: string;

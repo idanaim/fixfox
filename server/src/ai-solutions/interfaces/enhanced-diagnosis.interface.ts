@@ -11,4 +11,4 @@ export interface EnhancedDiagnosisResult {
     partsNeeded: string[];
     diagnosisConfidence: number;
   };
-} 
+}

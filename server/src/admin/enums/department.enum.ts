@@ -3,6 +3,5 @@ export enum DepartmentType {
   FLOOR = 'floor',
   BAR = 'bar',
   MANAGEMENT = 'management',
-  MAINTENANCE = 'maintenance'
-} 
- 
+  MAINTENANCE = 'maintenance',
+}

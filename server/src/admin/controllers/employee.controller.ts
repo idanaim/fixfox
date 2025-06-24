@@ -5,7 +5,8 @@ import {
   Get,
   NotFoundException,
   Param,
-  Post, UseGuards
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import { EmployeesService } from '../services/employees.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
@@ -19,9 +20,14 @@ export class EmployeesController {
     return this.employeesService.findAllByBusiness(businessId);
   }
   @Post('associate')
-  async associateUsersWithBusiness(@Body() body: { businessId: number; userIds: number[] }) {
+  async associateUsersWithBusiness(
+    @Body() body: { businessId: number; userIds: number[] }
+  ) {
     try {
-      return await this.employeesService.associateUsersWithBusiness(body.businessId, body.userIds);
+      return await this.employeesService.associateUsersWithBusiness(
+        body.businessId,
+        body.userIds
+      );
     } catch (error) {
       throw new NotFoundException(error.message);
     }

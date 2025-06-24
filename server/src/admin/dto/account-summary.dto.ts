@@ -3,4 +3,4 @@ export class AccountSummaryDto {
   totalUsers: number;
   totalBusinesses: number;
   openIssuesCount: number;
-} 
+}

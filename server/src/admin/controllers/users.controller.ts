@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Param, Get, Put, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { BusinessesService } from '../services/businesses.service';
 import { User } from '../entities/user.entity';
@@ -12,11 +20,13 @@ import { UserPermissionsDto } from '../dto/user-permissions.dto';
 export class UserController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly businessesService: BusinessesService,
+    private readonly businessesService: BusinessesService
   ) {}
 
   @Get('all/:accountId')
-  async findAllUserByAdminId(@Param('accountId') accountId: string): Promise<User[]> {
+  async findAllUserByAdminId(
+    @Param('accountId') accountId: string
+  ): Promise<User[]> {
     return this.usersService.findAllByAdmin(accountId);
   }
 
@@ -44,7 +54,9 @@ export class UserController {
   }
 
   @Get(':userId/permissions')
-  async getUserPermissions(@Param('userId') userId: string): Promise<UserPermissionsDto> {
+  async getUserPermissions(
+    @Param('userId') userId: string
+  ): Promise<UserPermissionsDto> {
     return this.usersService.getUserPermissions(parseInt(userId, 10));
   }
 }

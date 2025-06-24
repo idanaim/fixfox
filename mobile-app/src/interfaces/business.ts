@@ -1,4 +1,5 @@
 export interface Business{
+  id?: number;
   name: string;
   address: string;
   mobile: string;

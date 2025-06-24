@@ -1,11 +1,20 @@
 // dtos.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
+  OneToMany,
+} from 'typeorm';
 import { Location } from './location.entity';
 import { Rating } from './rating.entity';
 
 export enum ServiceType {
   ON_SITE = 'onSite',
-  LAB = 'lab'
+  LAB = 'lab',
 }
 
 export enum Profession {
@@ -24,7 +33,7 @@ export enum Profession {
   FLOOR_EQUIPMENT_SPECIALIST = 'floor_equipment_specialist',
   BUILDING_MAINTENANCE_TECHNICIAN = 'building_maintenance_technician',
   KITCHEN_EXHAUST_SPECIALIST = 'kitchen_exhaust_specialist',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 @Entity('technician')
@@ -38,7 +47,7 @@ export class Technician {
   @Column({
     type: 'enum',
     enum: ServiceType,
-    default: ServiceType.ON_SITE
+    default: ServiceType.ON_SITE,
   })
   service_type: ServiceType;
 
@@ -56,23 +65,23 @@ export class Technician {
     name: 'technician_location',
     joinColumn: {
       name: 'technician_id',
-      referencedColumnName: 'technician_id'
+      referencedColumnName: 'technician_id',
     },
     inverseJoinColumn: {
       name: 'location_id',
-      referencedColumnName: 'location_id'
-    }
+      referencedColumnName: 'location_id',
+    },
   })
   locations: Location[];
 
   @Column({
     type: 'enum',
     enum: Profession,
-    array: true
+    array: true,
   })
   professions: Profession[];
 
-  @OneToMany(() => Rating, rating => rating.technician)
+  @OneToMany(() => Rating, (rating) => rating.technician)
   ratings: Rating[];
 
   @CreateDateColumn()

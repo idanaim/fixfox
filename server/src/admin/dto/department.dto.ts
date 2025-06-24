@@ -6,9 +6,8 @@ export class DepartmentDto {
 }
 
 export function getDepartments(): DepartmentDto[] {
-  return Object.values(DepartmentType).map(value => ({
+  return Object.values(DepartmentType).map((value) => ({
     value,
-    label: value.charAt(0).toUpperCase() + value.slice(1)
+    label: value.charAt(0).toUpperCase() + value.slice(1),
   }));
-} 
- 
+}

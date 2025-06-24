@@ -12,7 +12,11 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { SolutionService } from '../services/solution.service';
-import { CreateSolutionDto, UpdateSolutionDto, SolutionResponseDto } from '../dtos/solution.dto';
+import {
+  CreateSolutionDto,
+  UpdateSolutionDto,
+  SolutionResponseDto,
+} from '../dtos/solution.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { User } from '../../admin/entities/user.entity';
@@ -23,7 +27,7 @@ export class SolutionController {
 
   @Post()
   async create(
-    @Body() body: {   user: User,solution: CreateSolutionDto}
+    @Body() body: { user: User; solution: CreateSolutionDto }
   ): Promise<SolutionResponseDto> {
     // Set source based on the current user
 
@@ -49,7 +53,9 @@ export class SolutionController {
       ? await this.solutionService.findByProblem(problemId)
       : await this.solutionService.findAll();
 
-    return solutions.map(solution => this.solutionService.mapToResponseDto(solution));
+    return solutions.map((solution) =>
+      this.solutionService.mapToResponseDto(solution)
+    );
   }
 
   @Get(':id')
@@ -86,7 +92,10 @@ export class SolutionController {
   async generateForProblem(
     @Param('problemId') problemId: number
   ): Promise<SolutionResponseDto[]> {
-    const solutions = await this.solutionService.findOrCreateSolution(problemId);
-    return solutions.map(solution => this.solutionService.mapToResponseDto(solution));
+    const solutions =
+      await this.solutionService.findOrCreateSolution(problemId);
+    return solutions.map((solution) =>
+      this.solutionService.mapToResponseDto(solution)
+    );
   }
 }

@@ -14,9 +14,9 @@ export class GptService {
   private openai: OpenAI;
 
   constructor(private configService: ConfigService) {
-    this.apiKey = ''//this.configService.get<string>('OPENAI_API_KEY');
+    this.apiKey = ''; //this.configService.get<string>('OPENAI_API_KEY');
     this.openai = new OpenAI({
-      apiKey: this.configService.get<string>('OPENAI_API_KEY')
+      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
     });
   }
 
@@ -33,9 +33,9 @@ export class GptService {
       },
       {
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
       }
     );
     return response.data.choices[0].message.content.trim();
@@ -45,7 +45,10 @@ export class GptService {
     equipment: Equipment,
     problemDescription: string
   ) {
-    const prompt = this.buildTroubleshootingPrompt(equipment, problemDescription);
+    const prompt = this.buildTroubleshootingPrompt(
+      equipment,
+      problemDescription
+    );
 
     try {
       const response = await axios.post(
@@ -58,9 +61,9 @@ export class GptService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -71,7 +74,10 @@ export class GptService {
     }
   }
 
-  private buildTroubleshootingPrompt(equipment: Equipment, problem: string): string {
+  private buildTroubleshootingPrompt(
+    equipment: Equipment,
+    problem: string
+  ): string {
     return `Act as a professional ${equipment.type} technician with expertise in ${equipment.manufacturer} equipment.
 
 Problem Description: "${problem}"
@@ -118,8 +124,10 @@ Format response as JSON:
       `- Manufacturer: ${equipment.manufacturer}`,
       `- Model: ${equipment.model}`,
       equipment.location && `- Location: ${equipment.location}`,
-      equipment.purchaseDate && `- Purchase Date: ${equipment.purchaseDate.toISOString().split('T')[0]}`,
-      equipment.warrantyExpiration && `- Warranty Status: ${equipment.warrantyExpiration >= new Date() ? 'Active' : 'Expired'}`,
+      equipment.purchaseDate &&
+        `- Purchase Date: ${equipment.purchaseDate.toISOString().split('T')[0]}`,
+      equipment.warrantyExpiration &&
+        `- Warranty Status: ${equipment.warrantyExpiration >= new Date() ? 'Active' : 'Expired'}`,
       equipment.supplier && `- Supplier: ${equipment.supplier}`,
     ].filter(Boolean); // Remove empty lines
 
@@ -128,7 +136,7 @@ Format response as JSON:
 
   async enhanceProblemDescription(
     userDescription: string,
-    equipment: Equipment,
+    equipment: Equipment
   ): Promise<string> {
     try {
       const equipmentContext = this.getEquipmentContext(equipment);
@@ -153,7 +161,7 @@ Format response as JSON:
       Formatted Problem Report:
     `;
 
-      const response =await axios.post(
+      const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
           model: this.model,
@@ -163,9 +171,9 @@ Format response as JSON:
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
         }
       );
 
@@ -185,14 +193,14 @@ Format response as JSON:
         ? `Categorize this problem for a ${equipmentType}:\n"${problemDescription}"`
         : `Categorize this industrial equipment problem:\n"${problemDescription}"`;
 
-        const response = await axios.post(
-          'https://api.openai.com/v1/chat/completions',
-          {
-            model: this.model,
-            messages: [
-              {
-                role: 'system',
-                content: `You are an industrial equipment support specialist. Analyze problems and return 1-3 categories from this list:
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.model,
+          messages: [
+            {
+              role: 'system',
+              content: `You are an industrial equipment support specialist. Analyze problems and return 1-3 categories from this list:
           - Mechanical Failure
           - Electrical Issue
           - Software Bug
@@ -208,30 +216,30 @@ Format response as JSON:
           - Installation Problem
           - Environmental Factors
 
-          Return ONLY category names as a comma-separated list, no explanations.`
-              },
-              {
-                role: 'user',
-                content: prompt
-              }
-            ],
-            temperature: 0.7,
-            max_tokens: 1000,
+          Return ONLY category names as a comma-separated list, no explanations.`,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
           },
-          {
-            headers: {
-              'Authorization': `Bearer ${this.apiKey}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        }
+      );
 
-        return this.parseResponse(response.data.choices[0].message.content);
-      } catch (error) {
-        this.logger.error('GPT API Error:', error.response?.data);
-        throw new Error('Failed to generate troubleshooting guide');
-      }
+      return this.parseResponse(response.data.choices[0].message.content);
+    } catch (error) {
+      this.logger.error('GPT API Error:', error.response?.data);
+      throw new Error('Failed to generate troubleshooting guide');
     }
+  }
 
   private parseCategories(categoriesText?: string): string[] {
     if (!categoriesText) return ['Uncategorized'];
@@ -239,19 +247,22 @@ Format response as JSON:
     // Clean and split the response
     return categoriesText
       .split(',')
-      .map(cat => cat.trim().replace(/\.$/, '')) // Remove trailing periods
-      .filter(cat => cat.length > 0 && cat !== 'Uncategorized');
+      .map((cat) => cat.trim().replace(/\.$/, '')) // Remove trailing periods
+      .filter((cat) => cat.length > 0 && cat !== 'Uncategorized');
   }
 
-  async findSimilarProblems(description: string, problems: Problem[]): Promise<Problem[]> {
+  async findSimilarProblems(
+    description: string,
+    problems: Problem[]
+  ): Promise<Problem[]> {
     if (!problems || problems.length === 0) {
       return [];
     }
 
     // Format problems for the prompt
-    const problemsText = problems.map(
-      (p, index) => `${index + 1}. ${p.description}`
-    ).join('\n');
+    const problemsText = problems
+      .map((p, index) => `${index + 1}. ${p.description}`)
+      .join('\n');
 
     const prompt = `
       I have a list of equipment problems, and I need to find which ones are most similar to a new problem.
@@ -270,7 +281,7 @@ Format response as JSON:
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
@@ -282,9 +293,7 @@ Format response as JSON:
       const similarIndices = JSON.parse(content).indices || [];
 
       // Convert 1-based indices to 0-based and filter out any out-of-range indices
-      return similarIndices
-        .map(index => problems[index - 1])
-        .filter(Boolean);
+      return similarIndices.map((index) => problems[index - 1]).filter(Boolean);
     } catch (error) {
       console.error('Error finding similar problems with GPT:', error);
       return [];
@@ -331,7 +340,7 @@ Format response as JSON:
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' }
+        response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
@@ -348,7 +357,7 @@ Format response as JSON:
         suggestedSolutions: ['Contact a technician for in-person diagnosis'],
         estimatedCost: 'Unknown',
         partsNeeded: [],
-        diagnosisConfidence: 0
+        diagnosisConfidence: 0,
       };
     }
   }

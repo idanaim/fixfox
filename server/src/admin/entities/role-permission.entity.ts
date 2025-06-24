@@ -1,18 +1,18 @@
-import { Entity,PrimaryColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToOne, CreateDateColumn } from 'typeorm';
 
 @Entity('role_permissions')
 export class RolePermission {
-    @PrimaryColumn('uuid')
-    roleId: string;
+  @PrimaryColumn('uuid')
+  roleId: string;
 
-    @PrimaryColumn()
-    permissionId: number;
+  @PrimaryColumn()
+  permissionId: number;
 
-    @ManyToOne('Role', 'rolePermissions')
-    role: any;
+  @ManyToOne('Role', 'rolePermissions')
+  role: any;
 
-    @ManyToOne('Permission', 'rolePermissions')
-    permission: any;
-    @CreateDateColumn()
-    createdAt: Date;
+  @ManyToOne('Permission', 'rolePermissions')
+  permission: any;
+  @CreateDateColumn()
+  createdAt: Date;
 }

@@ -8,7 +8,7 @@ import { EquipmentStatus } from '../ai-solutions/enums/equipment-status.enum';
 export class EquipmentService {
   constructor(
     @InjectRepository(Equipment)
-    private equipmentRepository: Repository<Equipment>,
+    private equipmentRepository: Repository<Equipment>
   ) {}
 
   async create(equipmentData: Partial<Equipment>): Promise<Equipment> {
@@ -19,21 +19,22 @@ export class EquipmentService {
   async findAll(businessId: number): Promise<Equipment[]> {
     return this.equipmentRepository.find({
       where: { businessId },
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findById(id: number, businessId: number): Promise<Equipment> {
     return this.equipmentRepository.findOne({
-      where: { id, businessId }
+      where: { id, businessId },
     });
   }
 
-  async update(id: number, businessId: number, updateData: Partial<Equipment>): Promise<Equipment> {
-    await this.equipmentRepository.update(
-      { id, businessId },
-      updateData
-    );
+  async update(
+    id: number,
+    businessId: number,
+    updateData: Partial<Equipment>
+  ): Promise<Equipment> {
+    await this.equipmentRepository.update({ id, businessId }, updateData);
     return this.findById(id, businessId);
   }
 
@@ -45,25 +46,40 @@ export class EquipmentService {
     // Using ILIKE for case-insensitive search across multiple columns
     return this.equipmentRepository.find({
       where: [
-        { businessId, manufacturer: Raw(alias => `${alias} ILIKE '%${query}%'`) },
-        { businessId, model: Raw(alias => `${alias} ILIKE '%${query}%'`) },
-        { businessId, type: Raw(alias => `${alias} ILIKE '%${query}%'`) },
-        { businessId, category: Raw(alias => `${alias} ILIKE '%${query}%'`) },
-        { businessId, serialNumber: Raw(alias => `${alias} ILIKE '%${query}%'`) },
+        {
+          businessId,
+          manufacturer: Raw((alias) => `${alias} ILIKE '%${query}%'`),
+        },
+        { businessId, model: Raw((alias) => `${alias} ILIKE '%${query}%'`) },
+        { businessId, type: Raw((alias) => `${alias} ILIKE '%${query}%'`) },
+        { businessId, category: Raw((alias) => `${alias} ILIKE '%${query}%'`) },
+        {
+          businessId,
+          serialNumber: Raw((alias) => `${alias} ILIKE '%${query}%'`),
+        },
       ],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async searchByVector(businessId: number, searchTerm: string): Promise<Equipment[]> {
+  async searchByVector(
+    businessId: number,
+    searchTerm: string
+  ): Promise<Equipment[]> {
     // Using full-text search with tsvector for more advanced search capabilities
-    const queryBuilder = this.equipmentRepository.createQueryBuilder('equipment');
-    
+    const queryBuilder =
+      this.equipmentRepository.createQueryBuilder('equipment');
+
     queryBuilder
       .where('equipment.businessId = :businessId', { businessId })
-      .andWhere('equipment.searchvector @@ plainto_tsquery(:query)', { query: searchTerm })
-      .orderBy('ts_rank(equipment.searchvector, plainto_tsquery(:query))', 'DESC');
-    
+      .andWhere('equipment.searchvector @@ plainto_tsquery(:query)', {
+        query: searchTerm,
+      })
+      .orderBy(
+        'ts_rank(equipment.searchvector, plainto_tsquery(:query))',
+        'DESC'
+      );
+
     return queryBuilder.getMany();
   }
 
@@ -72,27 +88,37 @@ export class EquipmentService {
     return this.equipmentRepository.save(createdEquipments);
   }
 
-  async findByCategory(businessId: number, category: string): Promise<Equipment[]> {
+  async findByCategory(
+    businessId: number,
+    category: string
+  ): Promise<Equipment[]> {
     return this.equipmentRepository.find({
       where: { businessId, category },
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async findByStatus(businessId: number, status: EquipmentStatus): Promise<Equipment[]> {
+  async findByStatus(
+    businessId: number,
+    status: EquipmentStatus
+  ): Promise<Equipment[]> {
     return this.equipmentRepository.find({
       where: { businessId, status },
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findDueForMaintenance(businessId: number): Promise<Equipment[]> {
     const today = new Date();
-    const queryBuilder = this.equipmentRepository.createQueryBuilder('equipment');
-    
+    const queryBuilder =
+      this.equipmentRepository.createQueryBuilder('equipment');
+
     return queryBuilder
       .where('equipment.businessId = :businessId', { businessId })
-      .andWhere('equipment.lastMaintenanceDate + (equipment.maintenanceIntervalDays * INTERVAL \'1 day\') <= :today', { today })
+      .andWhere(
+        "equipment.lastMaintenanceDate + (equipment.maintenanceIntervalDays * INTERVAL '1 day') <= :today",
+        { today }
+      )
       .getMany();
   }
-} 
+}

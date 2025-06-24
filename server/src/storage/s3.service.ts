@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getS3Config, S3Config } from './s3.config';
 
@@ -27,8 +33,10 @@ export class S3Service {
     fileName?: string
   ): Promise<{ key: string; url: string }> {
     try {
-      const key = fileName ? `${folder}/${fileName}` : `${folder}/${Date.now()}-${file.originalname}`;
-      
+      const key = fileName
+        ? `${folder}/${fileName}`
+        : `${folder}/${Date.now()}-${file.originalname}`;
+
       const command = new PutObjectCommand({
         Bucket: this.config.bucketName,
         Key: key,
@@ -38,9 +46,9 @@ export class S3Service {
       });
 
       await this.s3Client.send(command);
-      
+
       const url = `https://${this.config.bucketName}.s3.${this.config.region}.amazonaws.com/${key}`;
-      
+
       this.logger.log(`File uploaded successfully: ${key}`);
       return { key, url };
     } catch (error) {
@@ -56,7 +64,9 @@ export class S3Service {
         Key: key,
       });
 
-      const url = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 }); // 1 hour
+      const url = await getSignedUrl(this.s3Client, command, {
+        expiresIn: 3600,
+      }); // 1 hour
       return url;
     } catch (error) {
       this.logger.error(`Failed to get file URL: ${error.message}`);
@@ -64,7 +74,10 @@ export class S3Service {
     }
   }
 
-  async getPresignedUploadUrl(key: string, contentType: string): Promise<string> {
+  async getPresignedUploadUrl(
+    key: string,
+    contentType: string
+  ): Promise<string> {
     try {
       const command = new PutObjectCommand({
         Bucket: this.config.bucketName,
@@ -72,7 +85,9 @@ export class S3Service {
         ContentType: contentType,
       });
 
-      const url = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 }); // 1 hour
+      const url = await getSignedUrl(this.s3Client, command, {
+        expiresIn: 3600,
+      }); // 1 hour
       return url;
     } catch (error) {
       this.logger.error(`Failed to get presigned upload URL: ${error.message}`);
@@ -112,4 +127,4 @@ export class S3Service {
       throw new Error(`Failed to check file existence: ${error.message}`);
     }
   }
-} 
+}

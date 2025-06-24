@@ -9,4 +9,4 @@ import { FileUploadController } from './file-upload.controller';
   providers: [S3Service],
   exports: [S3Service],
 })
-export class StorageModule {} 
+export class StorageModule {}

@@ -4,12 +4,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { Account } from './account.entity';
 import { UserBusiness } from './user-business.entity';
 import { DepartmentType } from '../enums/department.enum';
-
 
 @Entity()
 export class User {
@@ -47,7 +46,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: DepartmentType,
-    nullable: true
+    nullable: true,
   })
   department: DepartmentType;
 

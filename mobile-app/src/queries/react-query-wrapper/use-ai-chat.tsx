@@ -8,26 +8,31 @@ export const useChatContext = (adminId: number) => {
   return useQuery({
     queryKey: ['chatContext', adminId],
     queryFn: async () => {
-      const response = await serverApi.postCall('chat/context', { adminId });
-      return response.data;
+      try {
+        const response = await serverApi.postCall('chat/context', { adminId });
+        return response.data;
+      } catch (error: any) {
+        console.error('Error fetching chat context:', error);
+        throw error;
+      }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    onError: (error) => {
-      console.error('Error fetching chat context:', error);
-    },
   });
 };
 export const useGetChatResolve = () => {
   const { serverApi } = useContext(FixFoxProvidersContext);
   return useMutation({
     mutationFn: async (query: { adminId: number; problem: string }) => {
-      return serverApi.postCall('chat/resolve', {
-        adminId: query?.adminId,
-        problem: query.problem,
-      }).then((response) => response.data);
-    },
-    onError: (error) => {
-      console.error('Error fetching chat context:', error);
+      try {
+        const response = await serverApi.postCall('chat/resolve', {
+          adminId: query?.adminId,
+          problem: query.problem,
+        });
+        return response.data;
+      } catch (error: any) {
+        console.error('Error fetching chat context:', error);
+        throw error;
+      }
     },
   });
 };
@@ -67,16 +72,10 @@ export const useSendMessage = () => {
 
         return response.data.choices[0].message.content.trim();
       } catch (error) {
-        console.error(
-          'Error generating solution with GPT:',
-          error.response?.data || error.message
-        );
+        const errorMsg = (error as any)?.response?.data || (error as any)?.message || 'Unknown error';
+        console.error('Error generating solution with GPT:', errorMsg);
         throw new Error('Failed to generate solution. Please try again later.');
       }
-    },
-    onError: (error) => {
-      console.error('Error generating solution with GPT:', error.message);
-      throw new Error('Failed to generate solution. Please try again later.');
     },
   });
 };

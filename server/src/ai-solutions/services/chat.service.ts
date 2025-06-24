@@ -40,7 +40,7 @@ export class ChatService {
       metadata: {
         currentStep: 'initial',
         context: {},
-        language
+        language,
       },
     });
     return this.chatSessionRepository.save(session);
@@ -54,7 +54,7 @@ export class ChatService {
   ): Promise<ChatMessage> {
     const session = await this.chatSessionRepository.findOne({
       where: { id: sessionId },
-      select: ['metadata']
+      select: ['metadata'],
     });
 
     const language = session?.metadata?.language || 'en';
@@ -64,7 +64,7 @@ export class ChatService {
       type,
       metadata: {
         ...metadata,
-        language
+        language,
       },
     });
     return this.chatMessageRepository.save(message);
@@ -103,7 +103,7 @@ export class ChatService {
     sessionId: number,
     description: string,
     equipment: Equipment,
-    followUpQuestions:Record<string, string>[] = [],
+    followUpQuestions: Record<string, string>[] = [],
     language = 'en'
   ): Promise<{
     originalDescription: string;
@@ -129,24 +129,25 @@ export class ChatService {
       description,
       language,
       equipment,
-      followUpQuestions,
+      followUpQuestions
     );
 
     // Extract potential equipment types from the enhanced description
-    const equipmentType = await this.aiService.identifyEquipmentType(enhancedDescription);
+    const equipmentType =
+      await this.aiService.identifyEquipmentType(enhancedDescription);
     const potentialEquipmentTypes = equipmentType ? [equipmentType] : [];
 
     // Update session with the extracted equipment types
     await this.updateSessionStatus(sessionId, 'description_enhanced', {
       enhancedDescription,
-      potentialEquipmentTypes
+      potentialEquipmentTypes,
     });
 
     // Return both the original and enhanced descriptions along with potential equipment types
     return {
       originalDescription: description,
       enhancedDescription,
-      potentialEquipmentTypes
+      potentialEquipmentTypes,
     };
   }
 
@@ -155,7 +156,8 @@ export class ChatService {
     description: string
   ): Promise<Equipment[]> {
     // Use AI to extract equipment types from the description
-    const typeDescByAi = await this.aiService.identifyEquipmentType(description);
+    const typeDescByAi =
+      await this.aiService.identifyEquipmentType(description);
 
     // Create a more flexible search query that can match partial equipment names
     return this.equipmentRepository
@@ -163,9 +165,9 @@ export class ChatService {
       .where('equipment.businessId = :businessId', { businessId })
       .andWhere(
         '(LOWER(equipment.type) LIKE LOWER(:search) OR ' +
-        'LOWER(equipment.manufacturer) LIKE LOWER(:search) OR ' +
-        'LOWER(equipment.model) LIKE LOWER(:search) OR ' +
-        'LOWER(equipment.category) LIKE LOWER(:search))',
+          'LOWER(equipment.manufacturer) LIKE LOWER(:search) OR ' +
+          'LOWER(equipment.model) LIKE LOWER(:search) OR ' +
+          'LOWER(equipment.category) LIKE LOWER(:search))',
         { search: `%${typeDescByAi || description}%` }
       )
       .getMany();
@@ -196,7 +198,9 @@ export class ChatService {
     if (!currentProblem) {
       throw new Error('Failed to create problem');
     }
-    const extendedSolution = Object.assign({}, solution, {problemId: currentProblem.id});
+    const extendedSolution = Object.assign({}, solution, {
+      problemId: currentProblem.id,
+    });
     let newSolution = null;
     if (solution) {
       newSolution = await this.solutionService.create(
@@ -231,7 +235,12 @@ export class ChatService {
   async getSessionWithRelations(sessionId: number): Promise<ChatSession> {
     const session = await this.chatSessionRepository.findOne({
       where: { id: sessionId },
-      relations: ['issue', 'issue.equipment', 'issue.problem', 'issue.solution']
+      relations: [
+        'issue',
+        'issue.equipment',
+        'issue.problem',
+        'issue.solution',
+      ],
     });
 
     if (!session) {
@@ -248,9 +257,9 @@ export class ChatService {
     const messages = await this.chatMessageRepository.find({
       where: {
         session: { id: sessionId },
-        type: 'user'
+        type: 'user',
       },
-      order: { createdAt: 'ASC' }
+      order: { createdAt: 'ASC' },
     });
 
     return messages;
@@ -274,7 +283,7 @@ export class ChatService {
 
     // Get user messages to analyze
     const userMessages = await this.getUserMessages(sessionId);
-    const combinedText = userMessages.map(msg => msg.content).join('\n');
+    const combinedText = userMessages.map((msg) => msg.content).join('\n');
 
     // Get follow-up questions from the AI service
     const followUpQuestions = await this.aiService.generateFollowUpQuestions(
@@ -297,12 +306,12 @@ export class ChatService {
         equipment: { id: session.issue.equipment.id },
         problem: { description: combinedText },
         status: 'open',
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       // Update the session with the issue
       await this.chatSessionRepository.update(sessionId, {
-        issue: { id: issue.id }
+        issue: { id: issue.id },
       });
     }
 
@@ -323,7 +332,7 @@ export class ChatService {
         problems,
         followUpQuestions: [],
         confidence: enhancedDiagnosis.confidence,
-        isDiagnosisReady: true
+        isDiagnosisReady: true,
       };
     }
 
@@ -331,7 +340,7 @@ export class ChatService {
       problems,
       followUpQuestions,
       confidence: 'medium',
-      isDiagnosisReady: false
+      isDiagnosisReady: false,
     };
   }
 
@@ -348,14 +357,16 @@ export class ChatService {
       solutions.forEach((solution, index) => {
         message += `${index + 1}. ${solution}\n`;
       });
-      message += '\nהאם תרצה לנסות את הפתרונות האלה? אשמח להסביר כל שלב בפירוט.';
+      message +=
+        '\nהאם תרצה לנסות את הפתרונות האלה? אשמח להסביר כל שלב בפירוט.';
       return message;
     } else {
       let message = '📝 Here are the step-by-step solutions:\n\n';
       solutions.forEach((solution, index) => {
         message += `${index + 1}. ${solution}\n`;
       });
-      message += '\nWould you like to try these solutions? Let me know if you need any clarification on any step.';
+      message +=
+        '\nWould you like to try these solutions? Let me know if you need any clarification on any step.';
       return message;
     }
   }
@@ -369,7 +380,7 @@ export class ChatService {
     answer: string
   ): Promise<void> {
     const session = await this.chatSessionRepository.findOne({
-      where: { id: sessionId }
+      where: { id: sessionId },
     });
 
     if (!session) {
@@ -386,12 +397,12 @@ export class ChatService {
     metadata.followUpAnswers.push({
       questionType,
       answer,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Update the session metadata
     await this.chatSessionRepository.update(sessionId, {
-      metadata
+      metadata,
     });
   }
 
@@ -403,7 +414,7 @@ export class ChatService {
     question: any // Changed type to any to avoid type conflicts
   ): Promise<void> {
     const session = await this.chatSessionRepository.findOne({
-      where: { id: sessionId }
+      where: { id: sessionId },
     });
 
     if (!session) {
@@ -418,12 +429,12 @@ export class ChatService {
       question: question.question,
       type: question.type,
       options: question.options,
-      context: question.context
+      context: question.context,
     };
 
     // Update the session metadata
     await this.chatSessionRepository.update(sessionId, {
-      metadata
+      metadata,
     });
   }
 }

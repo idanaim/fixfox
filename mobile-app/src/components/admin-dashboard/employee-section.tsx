@@ -56,7 +56,6 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
     return name[0];
   };
 
-  // @ts-ignore
   const renderUserItem = ({ item }: { item: User }) => (
     <Surface style={styles.listItem}>
       <Avatar.Text
@@ -86,7 +85,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
           icon="pencil"
           iconColor={colors.success}
           size={20}
-          onPress={() => navigation.navigate('user-form', { user: item })}
+          onPress={() => (navigation as any).navigate('user-form', { user: item })}
           style={styles.actionButton}
         />
       </View>

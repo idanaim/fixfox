@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { UserBusiness } from './user-business.entity';
 import { Account } from './account.entity';
@@ -26,13 +33,13 @@ export class Business {
   @Column('uuid')
   accountId: string;
 
-  @ManyToOne(() => Account, account => account.businesses)
+  @ManyToOne(() => Account, (account) => account.businesses)
   @JoinColumn({ name: 'accountId' })
   account: Account;
 
-  @ManyToOne(() => User, user => user.businesses)
+  @ManyToOne(() => User, (user) => user.businesses)
   admin: User;
 
-  @OneToMany(() => UserBusiness, userBusiness => userBusiness.business)
+  @OneToMany(() => UserBusiness, (userBusiness) => userBusiness.business)
   employees: UserBusiness[];
 }

@@ -1,9 +1,0 @@
-{
-  "name": "rest-man-native",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/rest-man-native/src",
-  "projectType": "application",
-  "tags": [],
-  "// targets": "to see all targets run: nx show project rest-man-native --web",
-  "targets": {}
-}

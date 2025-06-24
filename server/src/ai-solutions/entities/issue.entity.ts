@@ -1,5 +1,13 @@
 // issue.entity.ts
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../admin/entities/user.entity';
 import { Problem } from './problem.entity';
 import { Equipment } from '../../entities/equipment.entity';
@@ -58,9 +66,9 @@ export class Issue {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   cost: number;
 
-  @OneToMany(() => ChatSession, session => session.issue)
+  @OneToMany(() => ChatSession, (session) => session.issue)
   chatSessions: ChatSession[];
 
-//   @Column({ type: 'jsonb', nullable: true })
-//   aiAnalysis: any;
+  //   @Column({ type: 'jsonb', nullable: true })
+  //   aiAnalysis: any;
 }

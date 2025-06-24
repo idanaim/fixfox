@@ -7,11 +7,9 @@ import { Location } from './location.entity';
 import { Rating } from './rating.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Technician, Location, Rating]),
-  ],
+  imports: [TypeOrmModule.forFeature([Technician, Location, Rating])],
   controllers: [TechnicianController],
   providers: [TechnicianService],
   exports: [TechnicianService],
 })
-export class TechnicianModule {} 
+export class TechnicianModule {}

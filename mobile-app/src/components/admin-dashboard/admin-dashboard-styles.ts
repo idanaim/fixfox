@@ -13,6 +13,7 @@ export const colors = {
   lightGray: '#F8F8F8', // Background gray
   border: '#DDDDDD', // Border color
   white: '#FFFFFF',
+  background: '#FFFFFF', // Add background color
 };
 
 // Typography scale
@@ -29,6 +30,11 @@ export const typography = {
   },
   h3: {
     fontSize: 16,
+    fontWeight: '600' as const,
+    letterSpacing: 0.15,
+  },
+  h6: {
+    fontSize: 14,
     fontWeight: '600' as const,
     letterSpacing: 0.15,
   },
@@ -302,6 +308,61 @@ const baseStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 150,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    padding: 24,
+    borderRadius: 8,
+    width: '90%',
+  },
+  modalTitle: {
+    ...typography.h3,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalButton: {
+    marginTop: 16,
+  },
+  cancelButton: {
+    backgroundColor: colors.medium,
+  },
+  cancelButtonText: {
+    color: colors.white,
+  },
+  // Business section styles
+  sectionCard: {
+    backgroundColor: colors.white,
+    margin: 16,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  businessHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.dark,
+  },
+  businessActions: {
+    flexDirection: 'row',
+  },
+  iconButton: {
+    marginLeft: 8,
+  },
+  label: {
+    ...typography.body2,
+    color: colors.dark,
+    marginBottom: 4,
   },
 });
 

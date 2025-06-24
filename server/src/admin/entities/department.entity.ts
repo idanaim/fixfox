@@ -1,11 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum DepartmentType {
   KITCHEN = 'kitchen',
   FLOOR = 'floor',
   BAR = 'bar',
   MANAGEMENT = 'management',
-  MAINTENANCE = 'maintenance'
+  MAINTENANCE = 'maintenance',
 }
 
 @Entity('departments')
@@ -16,7 +22,7 @@ export class Department {
   @Column({
     type: 'enum',
     enum: DepartmentType,
-    default: DepartmentType.KITCHEN
+    default: DepartmentType.KITCHEN,
   })
   department: DepartmentType;
 
@@ -25,4 +31,4 @@ export class Department {
 
   @UpdateDateColumn()
   updatedAt: Date;
-} 
+}

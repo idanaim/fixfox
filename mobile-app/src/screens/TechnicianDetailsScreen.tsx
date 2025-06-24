@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { api } from '../services/api';
+import { api } from '../api/api';
 import { useTechnicianById } from '../components/technician/queries/technicians-query';
 
 type TechnicianDetailsRouteProp = RouteProp<RootStackParamList, 'TechnicianDetails'>;

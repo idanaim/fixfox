@@ -4,7 +4,11 @@ import { Repository } from 'typeorm';
 import { Solution } from '../entities/solution.entity';
 import { Problem } from '../entities/problem.entity';
 import { AIService } from './ai.service';
-import { CreateSolutionDto, UpdateSolutionDto, SolutionResponseDto } from '../dtos/solution.dto';
+import {
+  CreateSolutionDto,
+  UpdateSolutionDto,
+  SolutionResponseDto,
+} from '../dtos/solution.dto';
 
 @Injectable()
 export class SolutionService {
@@ -22,7 +26,7 @@ export class SolutionService {
   async findOrCreateSolution(problemId: number): Promise<Solution[]> {
     const problem = await this.problemRepository.findOne({
       where: { id: problemId },
-      relations: ['equipment']
+      relations: ['equipment'],
     });
 
     if (problem) {
@@ -30,7 +34,9 @@ export class SolutionService {
       const existing = await this.solutionRepository
         .createQueryBuilder('solution')
         .innerJoin('solution.problem', 'problem')
-        .where('problem.equipmentId = :equipmentId', { equipmentId: problem?.equipment?.id })
+        .where('problem.equipmentId = :equipmentId', {
+          equipmentId: problem?.equipment?.id,
+        })
         .orderBy('solution.effectiveness', 'DESC')
         .getMany();
 
@@ -50,14 +56,13 @@ export class SolutionService {
       problem?.description
     );
 
-    // @ts-ignore
     const solution = this.solutionRepository.create({
       cause: aiResponse.rootCause,
       treatment: aiResponse.steps.join('\n'),
       resolvedBy: 'AI',
       source: `ai:${problem.equipment.business.id}`,
       effectiveness: 0,
-      problem: problem
+      problem: problem,
     });
 
     return [await this.solutionRepository.save(solution)];
@@ -66,14 +71,19 @@ export class SolutionService {
   /**
    * Create a new solution
    */
-  async create(createSolutionDto: CreateSolutionDto, userId?:number, businessId?: number): Promise<Solution> {
-
+  async create(
+    createSolutionDto: CreateSolutionDto,
+    userId?: number,
+    businessId?: number
+  ): Promise<Solution> {
     const problem = await this.problemRepository.findOne({
-      where: { id: createSolutionDto.problemId }
+      where: { id: createSolutionDto.problemId },
     });
 
     if (!problem) {
-      throw new NotFoundException(`Problem with ID ${createSolutionDto.problemId} not found`);
+      throw new NotFoundException(
+        `Problem with ID ${createSolutionDto.problemId} not found`
+      );
     }
 
     const solution = this.solutionRepository.create({
@@ -82,7 +92,7 @@ export class SolutionService {
       resolvedBy: `${userId}`,
       source: `ai:${businessId}`,
       effectiveness: 0,
-      problem: problem
+      problem: problem,
     });
 
     return this.solutionRepository.save(solution);
@@ -94,7 +104,7 @@ export class SolutionService {
   async findAll(): Promise<Solution[]> {
     return this.solutionRepository.find({
       relations: ['problem'],
-      order: { effectiveness: 'DESC', createdAt: 'DESC' }
+      order: { effectiveness: 'DESC', createdAt: 'DESC' },
     });
   }
 
@@ -105,7 +115,7 @@ export class SolutionService {
     return this.solutionRepository.find({
       where: { problem: { id: problemId } },
       relations: ['problem'],
-      order: { effectiveness: 'DESC', createdAt: 'DESC' }
+      order: { effectiveness: 'DESC', createdAt: 'DESC' },
     });
   }
 
@@ -115,7 +125,7 @@ export class SolutionService {
   async findOne(id: number): Promise<Solution> {
     const solution = await this.solutionRepository.findOne({
       where: { id },
-      relations: ['problem']
+      relations: ['problem'],
     });
 
     if (!solution) {
@@ -128,7 +138,10 @@ export class SolutionService {
   /**
    * Update a solution
    */
-  async update(id: number, updateSolutionDto: UpdateSolutionDto): Promise<Solution> {
+  async update(
+    id: number,
+    updateSolutionDto: UpdateSolutionDto
+  ): Promise<Solution> {
     const solution = await this.findOne(id);
 
     Object.assign(solution, updateSolutionDto);
@@ -147,7 +160,10 @@ export class SolutionService {
   /**
    * Record solution effectiveness
    */
-  async recordSolutionEffectiveness(solutionId: number, effective: boolean): Promise<void> {
+  async recordSolutionEffectiveness(
+    solutionId: number,
+    effective: boolean
+  ): Promise<void> {
     const solution = await this.findOne(solutionId);
 
     solution.effectiveness += effective ? 1 : -1;
@@ -167,17 +183,17 @@ export class SolutionService {
       if (solution.source.startsWith('ai:')) {
         sourceContext = {
           type: 'ai_generated' as const,
-          label: 'AI Solution'
+          label: 'AI Solution',
         };
       } else if (solution.source.startsWith('dtos:')) {
         sourceContext = {
           type: 'current_business' as const,
-          label: 'Current Business'
+          label: 'Current Business',
         };
       } else {
         sourceContext = {
           type: 'other_business' as const,
-          label: 'Other Business'
+          label: 'Other Business',
         };
       }
     }
@@ -193,7 +209,7 @@ export class SolutionService {
       source: solution.source,
       createdAt: solution.createdAt,
       problemId: solution.problem?.id,
-      sourceContext
+      sourceContext,
     };
   }
 }

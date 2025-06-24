@@ -50,7 +50,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  exports: [UsersService, BusinessesService, UserBusinessService, EmployeesService, RolesService, AccountsService],
+  exports: [
+    UsersService,
+    BusinessesService,
+    UserBusinessService,
+    EmployeesService,
+    RolesService,
+    AccountsService,
+  ],
   controllers: [
     UserController,
     BusinessesController,
@@ -60,6 +67,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     DepartmentController,
     AccountsController,
   ],
-  providers: [UsersService, BusinessesService, UserBusinessService, EmployeesService, RolesService, AccountsService],
+  providers: [
+    UsersService,
+    BusinessesService,
+    UserBusinessService,
+    EmployeesService,
+    RolesService,
+    AccountsService,
+  ],
 })
 export class AdminModule {}

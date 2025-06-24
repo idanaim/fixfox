@@ -22,13 +22,17 @@ export class FileUploadController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadEquipmentImage(
     @Param('equipmentId') equipmentId: string,
-    @UploadedFile() file: any,
+    @UploadedFile() file: any
   ) {
     this.validateFile(file, ALLOWED_FILE_TYPES.images);
-    
+
     const fileName = `${equipmentId}-${Date.now()}.${file.originalname.split('.').pop()}`;
-    const result = await this.s3Service.uploadFile(file, S3_FOLDERS.EQUIPMENT_IMAGES, fileName);
-    
+    const result = await this.s3Service.uploadFile(
+      file,
+      S3_FOLDERS.EQUIPMENT_IMAGES,
+      fileName
+    );
+
     return {
       message: 'Equipment image uploaded successfully',
       ...result,
@@ -39,13 +43,17 @@ export class FileUploadController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadUserAvatar(
     @Param('userId') userId: string,
-    @UploadedFile() file: any,
+    @UploadedFile() file: any
   ) {
     this.validateFile(file, ALLOWED_FILE_TYPES.images);
-    
+
     const fileName = `${userId}-avatar.${file.originalname.split('.').pop()}`;
-    const result = await this.s3Service.uploadFile(file, S3_FOLDERS.USER_AVATARS, fileName);
-    
+    const result = await this.s3Service.uploadFile(
+      file,
+      S3_FOLDERS.USER_AVATARS,
+      fileName
+    );
+
     return {
       message: 'User avatar uploaded successfully',
       ...result,
@@ -56,13 +64,17 @@ export class FileUploadController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadIssueAttachment(
     @Param('issueId') issueId: string,
-    @UploadedFile() file: any,
+    @UploadedFile() file: any
   ) {
     this.validateFile(file, ALLOWED_FILE_TYPES.all);
-    
+
     const fileName = `${issueId}-${Date.now()}-${file.originalname}`;
-    const result = await this.s3Service.uploadFile(file, S3_FOLDERS.ISSUE_ATTACHMENTS, fileName);
-    
+    const result = await this.s3Service.uploadFile(
+      file,
+      S3_FOLDERS.ISSUE_ATTACHMENTS,
+      fileName
+    );
+
     return {
       message: 'Issue attachment uploaded successfully',
       ...result,
@@ -73,13 +85,17 @@ export class FileUploadController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadEquipmentManual(
     @Param('equipmentId') equipmentId: string,
-    @UploadedFile() file: any,
+    @UploadedFile() file: any
   ) {
     this.validateFile(file, ALLOWED_FILE_TYPES.documents);
-    
+
     const fileName = `${equipmentId}-manual.${file.originalname.split('.').pop()}`;
-    const result = await this.s3Service.uploadFile(file, S3_FOLDERS.EQUIPMENT_MANUALS, fileName);
-    
+    const result = await this.s3Service.uploadFile(
+      file,
+      S3_FOLDERS.EQUIPMENT_MANUALS,
+      fileName
+    );
+
     return {
       message: 'Equipment manual uploaded successfully',
       ...result,
@@ -89,14 +105,14 @@ export class FileUploadController {
   @Get('presigned-url')
   async getPresignedUploadUrl(
     @Query('key') key: string,
-    @Query('contentType') contentType: string,
+    @Query('contentType') contentType: string
   ) {
     if (!key || !contentType) {
       throw new BadRequestException('Key and contentType are required');
     }
 
     const url = await this.s3Service.getPresignedUploadUrl(key, contentType);
-    
+
     return {
       uploadUrl: url,
       key,
@@ -111,7 +127,7 @@ export class FileUploadController {
     }
 
     const url = await this.s3Service.getFileUrl(key);
-    
+
     return {
       url,
       key,
@@ -126,7 +142,7 @@ export class FileUploadController {
     }
 
     await this.s3Service.deleteFile(key);
-    
+
     return {
       message: 'File deleted successfully',
       key,
@@ -139,11 +155,15 @@ export class FileUploadController {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      throw new BadRequestException(`File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+      throw new BadRequestException(
+        `File size exceeds maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+      );
     }
 
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(`File type ${file.mimetype} is not allowed. Allowed types: ${allowedTypes.join(', ')}`);
+      throw new BadRequestException(
+        `File type ${file.mimetype} is not allowed. Allowed types: ${allowedTypes.join(', ')}`
+      );
     }
   }
-} 
+}

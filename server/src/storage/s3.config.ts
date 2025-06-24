@@ -16,8 +16,20 @@ export const getS3Config = (configService: ConfigService): S3Config => ({
 
 export const ALLOWED_FILE_TYPES = {
   images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  documents: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  all: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  documents: [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
+  all: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
 };
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -26,5 +38,5 @@ export const S3_FOLDERS = {
   EQUIPMENT_IMAGES: 'equipment/images',
   USER_AVATARS: 'users/avatars',
   ISSUE_ATTACHMENTS: 'issues/attachments',
-  EQUIPMENT_MANUALS: 'equipment/manuals'
-}; 
+  EQUIPMENT_MANUALS: 'equipment/manuals',
+};

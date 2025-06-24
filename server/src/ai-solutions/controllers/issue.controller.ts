@@ -30,7 +30,9 @@ export class IssueController {
       language?: string;
     }
   ) {
-    return this.issueService.createIssueWithTechnicianAssignment(createIssueDto);
+    return this.issueService.createIssueWithTechnicianAssignment(
+      createIssueDto
+    );
   }
 
   @Post('resolved')
@@ -65,7 +67,7 @@ export class IssueController {
       limit: limit ? parseInt(limit.toString()) : undefined,
       status,
       equipmentId: equipmentId ? parseInt(equipmentId.toString()) : undefined,
-      userId: userId ? parseInt(userId.toString()) : undefined
+      userId: userId ? parseInt(userId.toString()) : undefined,
     });
   }
 
@@ -84,7 +86,7 @@ export class IssueController {
       page: page ? parseInt(page.toString()) : undefined,
       limit: limit ? parseInt(limit.toString()) : undefined,
       status,
-      businessId: businessId ? parseInt(businessId.toString()) : undefined
+      businessId: businessId ? parseInt(businessId.toString()) : undefined,
     });
   }
 
@@ -96,7 +98,10 @@ export class IssueController {
     @Param('id') id: number,
     @Query('businessId') businessId?: number
   ) {
-    return this.issueService.getIssueById(id, businessId ? parseInt(businessId.toString()) : undefined);
+    return this.issueService.getIssueById(
+      id,
+      businessId ? parseInt(businessId.toString()) : undefined
+    );
   }
 
   /**
@@ -146,11 +151,7 @@ export class IssueController {
     @Param('id') id: number,
     @Body() body: { cost: number; businessId?: number }
   ) {
-    return this.issueService.updateIssueCost(
-      id,
-      body.cost,
-      body.businessId
-    );
+    return this.issueService.updateIssueCost(id, body.cost, body.businessId);
   }
 
   /**
@@ -175,7 +176,13 @@ export class IssueController {
   @Put(':id/close')
   async closeIssue(
     @Param('id') id: number,
-    @Body() body: { cost?: number; treatment?: string; businessId?: number; userId?: number }
+    @Body()
+    body: {
+      cost?: number;
+      treatment?: string;
+      businessId?: number;
+      userId?: number;
+    }
   ) {
     return this.issueService.closeIssue(
       id,
@@ -192,7 +199,8 @@ export class IssueController {
   @Put(':id/update')
   async updateIssueComprehensive(
     @Param('id') id: number,
-    @Body() body: {
+    @Body()
+    body: {
       status?: string;
       cost?: number;
       treatment?: string;

@@ -14,7 +14,7 @@ export class EmployeesService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(Business)
-    private businessRepository: Repository<Business>,
+    private businessRepository: Repository<Business>
   ) {}
 
   async findAllByBusiness(businessId: number) {
@@ -25,7 +25,9 @@ export class EmployeesService {
   }
   async associateUsersWithBusiness(businessId: number, userIds: number[]) {
     // Check if the business exists
-    const business = await this.businessRepository.findOne({ where: { id: businessId } });
+    const business = await this.businessRepository.findOne({
+      where: { id: businessId },
+    });
     if (!business) {
       throw new NotFoundException(`Business with ID ${businessId} not found`);
     }

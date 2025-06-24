@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+  NotFoundException,
+} from '@nestjs/common';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -29,7 +38,8 @@ export class ChatController {
   @Post('sessions/:sessionId/messages')
   async addMessage(
     @Param('sessionId') sessionId: number,
-    @Body() body: { content: string; type: 'user' | 'system' | 'ai'; metadata?: any }
+    @Body()
+    body: { content: string; type: 'user' | 'system' | 'ai'; metadata?: any }
   ) {
     return this.chatService.addMessage(
       sessionId,
@@ -59,7 +69,13 @@ export class ChatController {
   @Post('sessions/:sessionId/enhance-description')
   async enhanceProblemDescription(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string, equipment: Equipment, language?: string,followUpQuestions?: Record<string, string>[] }
+    @Body()
+    body: {
+      description: string;
+      equipment: Equipment;
+      language?: string;
+      followUpQuestions?: Record<string, string>[];
+    }
   ) {
     return this.chatService.enhanceProblemDescription(
       sessionId,
@@ -84,7 +100,12 @@ export class ChatController {
   @Post('sessions/:sessionId/issues')
   async createIssue(
     @Param('sessionId') sessionId: number,
-    @Body() body: { equipmentId: number; problem: CreateProblemDto, solution?: CreateSolutionDto }
+    @Body()
+    body: {
+      equipmentId: number;
+      problem: CreateProblemDto;
+      solution?: CreateSolutionDto;
+    }
   ) {
     const issue = await this.chatService.createIssueFromSession(
       sessionId,
@@ -102,14 +123,14 @@ export class ChatController {
   @Post('sessions/:sessionId/followup-questions')
   async analyzeIssue(
     @Param('sessionId') sessionId: number,
-    @Body() body?: { language?: string, equipment:Equipment }
+    @Body() body?: { language?: string; equipment: Equipment }
   ) {
     const language = body?.language || 'en';
     try {
       // Get user messages to analyze
       const userMessages = await this.chatService.getUserMessages(sessionId);
       // Generate follow-up questions based on the description and previous answers
-      const combinedText = userMessages.map(msg => msg.content).join('\n');
+      const combinedText = userMessages.map((msg) => msg.content).join('\n');
       const followUpQuestions = await this.aiService.generateFollowUpQuestions(
         combinedText,
         body.equipment,
@@ -130,7 +151,7 @@ export class ChatController {
           followUpQuestions: [],
           confidence: 'high',
           summary: summary,
-          isDiagnosisReady: true
+          isDiagnosisReady: true,
         };
       }
       // Return only the first question to implement step-by-step questioning
@@ -138,7 +159,7 @@ export class ChatController {
         problems: [],
         followUpQuestions,
         confidence: 'medium',
-        isDiagnosisReady: false
+        isDiagnosisReady: false,
       };
     } catch (error) {
       console.error('Error analyzing issue:', error);
@@ -149,19 +170,24 @@ export class ChatController {
   @Post('sessions/:sessionId/diagnose')
   async diagnoseProblem(
     @Param('sessionId') sessionId: number,
-    @Body() body: { description: string; equipmentId: number; businessId: number; language?: string; skipSimilar?: boolean }
+    @Body()
+    body: {
+      description: string;
+      equipmentId: number;
+      businessId: number;
+      language?: string;
+      skipSimilar?: boolean;
+    }
   ) {
     // Add a message indicating we're diagnosing the problem
-    const diagnosingMessage = body.language === 'he'
-      ? 'מאבחן את הבעיה...'
-      : 'Diagnosing the problem...';
+    const diagnosingMessage =
+      body.language === 'he'
+        ? 'מאבחן את הבעיה...'
+        : 'Diagnosing the problem...';
 
-    await this.chatService.addMessage(
-      sessionId,
-      diagnosingMessage,
-      'system',
-      { language: body.language }
-    );
+    await this.chatService.addMessage(sessionId, diagnosingMessage, 'system', {
+      language: body.language,
+    });
 
     // Get diagnosis from problem service
     const diagnosis = await this.problemService.diagnoseProblem(
@@ -173,12 +199,9 @@ export class ChatController {
     );
 
     // Add the diagnosis result as a message
-    await this.chatService.addMessage(
-      sessionId,
-      diagnosis.message,
-      'system',
-      { language: body.language }
-    );
+    await this.chatService.addMessage(sessionId, diagnosis.message, 'system', {
+      language: body.language,
+    });
 
     return diagnosis;
   }
@@ -186,7 +209,8 @@ export class ChatController {
   @Post('sessions/:sessionId/enhanced-diagnosis')
   async enhancedDiagnosis(
     @Param('sessionId') sessionId: number,
-    @Body() data: {
+    @Body()
+    data: {
       description: string;
       equipmentId: number;
       businessId: number;
@@ -195,9 +219,10 @@ export class ChatController {
     }
   ) {
     const language = data.language || 'en';
-    const enhancedDiagnosisMessage = language === 'he'
-      ? `מבצע אבחון מתקדם עבור ציוד מספר ${data.equipmentId}...`
-      : `Performing enhanced diagnosis for equipment ID ${data.equipmentId}...`;
+    const enhancedDiagnosisMessage =
+      language === 'he'
+        ? `מבצע אבחון מתקדם עבור ציוד מספר ${data.equipmentId}...`
+        : `Performing enhanced diagnosis for equipment ID ${data.equipmentId}...`;
 
     // Record the enhanced diagnosis attempt
     await this.chatService.addMessage(
@@ -222,7 +247,7 @@ export class ChatController {
       'enhanced_diagnosis_complete',
       {
         enhancedDiagnosisResult: diagnosisResult,
-        language
+        language,
       }
     );
 

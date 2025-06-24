@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../admin/entities/user.entity';
 import { Business } from '../../admin/entities/business.entity';
 import { Issue } from './issue.entity';
@@ -23,7 +31,7 @@ export class ChatSession {
   @Column({ type: 'varchar', length: 50 })
   status: string; // 'active', 'resolved', 'pending_technician', 'assigned'
 
-  @OneToMany(() => ChatMessage, message => message.session)
+  @OneToMany(() => ChatMessage, (message) => message.session)
   messages: ChatMessage[];
 
   @ManyToOne(() => Issue, { nullable: true })
@@ -32,4 +40,4 @@ export class ChatSession {
 
   @Column({ type: 'jsonb', nullable: true })
   metadata: any; // For storing session-specific data like current step, equipment context, etc.
-} 
+}

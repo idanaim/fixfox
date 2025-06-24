@@ -52,7 +52,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<User | undefined> {
     return this.usersRepository.findOne({
-      where: { email }
+      where: { email },
     });
   }
 
@@ -71,9 +71,12 @@ export class UsersService {
     if (updateUserDto.password) user.password = updateUserDto.password;
     if (updateUserDto.mobile) user.mobile = updateUserDto.mobile;
     if (updateUserDto.role) user.role = updateUserDto.role;
-    if (updateUserDto.department !== undefined) user.department = updateUserDto.department;
-    if (updateUserDto.departments !== undefined) user.departments = updateUserDto.departments;
-    if (updateUserDto.positionTitle !== undefined) user.positionTitle = updateUserDto.positionTitle;
+    if (updateUserDto.department !== undefined)
+      user.department = updateUserDto.department;
+    if (updateUserDto.departments !== undefined)
+      user.departments = updateUserDto.departments;
+    if (updateUserDto.positionTitle !== undefined)
+      user.positionTitle = updateUserDto.positionTitle;
 
     await this.usersRepository.save(user);
     return this.usersRepository.findOne({

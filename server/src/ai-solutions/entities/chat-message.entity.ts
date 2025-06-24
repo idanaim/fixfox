@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ChatSession } from './chat-session.entity';
 
 @Entity()
@@ -21,4 +28,4 @@ export class ChatMessage {
 
   @Column({ type: 'jsonb', nullable: true })
   metadata: any; // For storing additional data like suggested solutions, equipment matches, etc.
-} 
+}

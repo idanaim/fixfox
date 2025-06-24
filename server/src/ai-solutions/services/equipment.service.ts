@@ -69,9 +69,8 @@ export class EquipmentService {
     if (exactMatches.length > 0) return exactMatches;
 
     // If no exact matches, use AI to suggest type
-    const suggestedType = await this.aiService.identifyEquipmentType(
-      userDescription
-    );
+    const suggestedType =
+      await this.aiService.identifyEquipmentType(userDescription);
 
     return this.equipmentRepository
       .createQueryBuilder('equipment')
