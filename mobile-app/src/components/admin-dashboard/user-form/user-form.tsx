@@ -46,10 +46,10 @@ const UserForm = () => {
   const queryClient = useQueryClient();
   const route = useRoute();
   const { user: admin } = authStore();
-  const { user, adminId } = route.params || {};
+  const { user, adminId } = (route.params as any) || {};
   const { updatePermissions, permissions } = usePermissions(user?.id);
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id);
-  const { mutate: addNewUser } = useAddUser(admin?.accountId);
+  const { mutate: addNewUser } = useAddUser(admin?.accountId || '');
   const [menuVisible, setMenuVisible] = useState(false);
   const [deptMenuVisible, setDeptMenuVisible] = useState(false);
   const { data: departments = [], isLoading: deptsLoading } = useDepartments();
@@ -71,13 +71,13 @@ const UserForm = () => {
 
   const selectedDepartments = watch('departments') || [];
 
-  const getDepartmentLabel = (deptValue) => {
+  const getDepartmentLabel = (deptValue: string) => {
     if (!departments || !deptValue) return '';
-    const dept = departments.find(d => d.value === deptValue);
+    const dept = departments.find((d: any) => d.value === deptValue);
     return dept ? dept.label : deptValue;
   };
 
-  const handleDeleteEmployee = (employeeId) => {
+  const handleDeleteEmployee = (employeeId: string | number) => {
     Alert.alert(
       t('admin.userForm.deleteTitle'),
       t('admin.userForm.deleteConfirm'),
@@ -88,10 +88,10 @@ const UserForm = () => {
     );
   };
 
-  const toggleDepartment = (deptValue) => {
+  const toggleDepartment = (deptValue: string) => {
     const currentDepts = [...(watch('departments') || [])];
     if (currentDepts.includes(deptValue)) {
-      setValue('departments', currentDepts.filter(d => d !== deptValue));
+      setValue('departments', currentDepts.filter((d: string) => d !== deptValue));
     } else {
       setValue('departments', [...currentDepts, deptValue]);
     }
@@ -113,7 +113,7 @@ const UserForm = () => {
     }
   }, [permissions, reset]);
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     if(user?.id){
       updateUser(data, {
         onSuccess: () => {
@@ -287,7 +287,7 @@ const UserForm = () => {
                   name="departments"
                   render={({ field: { value, onChange } }) => (
                     <View style={styles.departmentsContainer}>
-                      {selectedDepartments.map((dept) => (
+                      {selectedDepartments.map((dept: string) => (
                         <Chip
                           key={dept}
                           onClose={() => toggleDepartment(dept)}

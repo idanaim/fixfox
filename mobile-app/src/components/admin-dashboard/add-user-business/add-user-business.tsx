@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { Business } from '../../../interfaces/business';
+import { styles as globalStyles } from '../admin-dashboard-styles';
 
 {
   /* Edit Employee Modal */
@@ -18,16 +19,50 @@ interface BusinessSectionProps {
   businesses: Business[];
 }
 
+interface EmployeeForm {
+  name: string;
+  email: string;
+  role: string;
+  mobile: string;
+}
+
 export function AddUserBusiness({ businesses }: BusinessSectionProps) {
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [isAddEmployeeModalVisible, setAddEmployeeModalVisible] = useState(false);
+  const [employeeForm, setEmployeeForm] = useState<EmployeeForm>({
+    name: '',
+    email: '',
+    role: '',
+    mobile: '',
+  });
+
+  const handleAddEmployee = () => {
+    // TODO: Implement add employee logic
+    console.log('Adding employee:', employeeForm);
+    setAddEmployeeModalVisible(false);
+    // Reset form
+    setEmployeeForm({
+      name: '',
+      email: '',
+      role: '',
+      mobile: '',
+    });
+  };
+
+  const handleDeleteBusiness = (businessId: string | number) => {
+    // TODO: Implement delete business logic
+    console.log('Deleting business:', businessId);
+  };
+
   return (
     <View>
       {businesses?.map((business) => (
-        <View style={styles.sectionCard} key={business.id}>
-          <View style={styles.businessHeader}>
-            <Text style={styles.sectionTitle}>{business.name}</Text>
-            <View style={styles.businessActions}>
+        <View style={globalStyles.sectionCard} key={business.id}>
+          <View style={globalStyles.businessHeader}>
+            <Text style={globalStyles.sectionTitle}>{business.name}</Text>
+            <View style={globalStyles.businessActions}>
               <TouchableOpacity
-                style={styles.iconButton}
+                style={globalStyles.iconButton}
                 onPress={() => {
                   setSelectedBusiness(business);
                   setAddEmployeeModalVisible(true);
@@ -36,20 +71,19 @@ export function AddUserBusiness({ businesses }: BusinessSectionProps) {
                 <MaterialIcons name="person-add" size={24} color="green" />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => console.log('delete', item.id)} //deleteBusiness(business.id)}
+                style={globalStyles.iconButton}
+                onPress={() => handleDeleteBusiness(business.id || 0)}
               >
                 <MaterialIcons name="delete" size={24} color="red" />
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.label}>ID: {business.id}</Text>
-          <Text style={styles.label}>Phone: {business.mobile}</Text>
-          <Text style={styles.label}>Address: {business.address}</Text>
-          <Text style={styles.label}>Type: {business.type}</Text>
+          <Text style={globalStyles.label}>ID: {business.id || 'N/A'}</Text>
+          <Text style={globalStyles.label}>Phone: {business.mobile || 'N/A'}</Text>
+          <Text style={globalStyles.label}>Address: {business.address || 'N/A'}</Text>
+          <Text style={globalStyles.label}>Type: {business.type || 'N/A'}</Text>
         </View>
       ))}
-
 
       {/* Add Employee Modal */}
       <Modal
@@ -99,7 +133,6 @@ export function AddUserBusiness({ businesses }: BusinessSectionProps) {
           </View>
         </View>
       </Modal>
-
     </View>
   );
 }
