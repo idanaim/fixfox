@@ -3,7 +3,6 @@ const isDevelopment = __DEV__;
 const useLocalAPI = false; // Set to true to use local API, false for deployed API
 
 const LOCAL_API_URL = 'http://localhost:3000/api';
-// TODO: Replace this URL with your actual ECS load balancer URL
 // Run: ./scripts/get-api-url.sh prod to get your deployed URL
 const DEPLOYED_API_URL = 'http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api';
 

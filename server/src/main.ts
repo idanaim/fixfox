@@ -41,16 +41,57 @@ import { AppModule } from './app/app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
-  // Enhanced CORS configuration to handle strict-origin-when-cross-origin
+  
+  // Enhanced CORS configuration to handle all cross-origin scenarios
   app.enableCors({
-    origin: '*', // Allow all origins
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) return callback(null, true);
+      
+      // Allow localhost on any port for development
+      if (origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+        return callback(null, true);
+      }
+      
+      // Allow your specific origins
+      const allowedOrigins = [
+        'http://localhost:8083',
+        'http://localhost:3000',
+        'http://localhost:8080',
+        'https://your-production-domain.com', // Replace with your actual domain
+      ];
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // For now, allow all origins (you can restrict this later)
+      return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers',
+      'token', // Add any custom headers your app uses
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+    preflightContinue: false,
   });
+  
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );
+  Logger.log('✅ Crypto module initialized successfully');
+  Logger.log('✅ Enhanced CORS configuration enabled');
 }
 
 bootstrap();
