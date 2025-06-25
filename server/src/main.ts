@@ -47,12 +47,12 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, Postman, etc.)
       if (!origin) return callback(null, true);
-      
+
       // Allow localhost on any port for development
       if (origin.match(/^http:\/\/localhost:\d+$/)) {
         return callback(null, true);
       }
-      
+
       // Allow any origin for now (can be restricted later)
       return callback(null, true);
     },
@@ -65,7 +65,6 @@ async function bootstrap() {
       'Origin',
       'Access-Control-Request-Method',
       'Access-Control-Request-Headers',
-      'token',
       'x-requested-with',
       'cache-control',
       'pragma',
@@ -74,7 +73,6 @@ async function bootstrap() {
       'Access-Control-Allow-Origin',
       'Access-Control-Allow-Credentials',
       'Authorization',
-      'token',
     ],
     credentials: true,
     optionsSuccessStatus: 200, // Some legacy browsers choke on 204
