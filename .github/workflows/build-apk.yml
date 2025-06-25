@@ -1,0 +1,99 @@
+name: 📱 Build APK On-Demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_profile:
+        description: 'Build Profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+          - development
+      platform:
+        description: 'Platform'
+        required: true
+        default: 'android'
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+      build_message:
+        description: 'Build Message (optional)'
+        required: false
+        default: 'On-demand build'
+        type: string
+
+env:
+  NODE_VERSION: '20'
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+jobs:
+  build-apk:
+    name: 🔨 Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - name: 🌐 Setup Expo & EAS CLI
+        run: npm install -g @expo/cli eas-cli
+
+      - name: 📋 Install dependencies
+        working-directory: ./mobile-app
+        run: npm ci
+
+      - name: 🔐 Expo login
+        if: env.EXPO_TOKEN
+        working-directory: ./mobile-app
+        run: expo login --non-interactive
+
+      - name: 🏗️ Build APK
+        if: env.EXPO_TOKEN
+        working-directory: ./mobile-app
+        run: |
+          echo "🚀 Starting build..."
+          echo "Profile: ${{ inputs.build_profile }}"
+          echo "Platform: ${{ inputs.platform }}"
+          echo "Message: ${{ inputs.build_message }}"
+          
+          BUILD_MESSAGE="${{ inputs.build_message }} - CI/CD Build $(date +'%Y-%m-%d %H:%M')"
+          
+          eas build \
+            --platform ${{ inputs.platform }} \
+            --profile ${{ inputs.build_profile }} \
+            --non-interactive \
+            --message "$BUILD_MESSAGE"
+
+      - name: 📊 Build Summary
+        run: |
+          echo "## 📱 APK Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Profile**: ${{ inputs.build_profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform**: ${{ inputs.platform }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Message**: ${{ inputs.build_message }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Check build status**: [Expo Dashboard](https://expo.dev/accounts/idanaim82/projects/fixfox-mobile/builds)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ **Estimated completion**: ~15-20 minutes" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📧 Notify completion
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Build started successfully!"
+          else
+            echo "❌ Build failed to start"
+          fi 
