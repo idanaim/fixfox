@@ -42,33 +42,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
 
-  // Enhanced CORS configuration to handle all cross-origin scenarios
+  // Allow all origins for CORS (no restrictions)
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin) return callback(null, true);
-
-      // Allow localhost on any port for development
-      if (origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
-        return callback(null, true);
-      }
-
-      // Allow your specific origins
-      const allowedOrigins = [
-        'http://localhost:8083',
-        'http://localhost:3000',
-        'http://localhost:8080',
-        'http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api', // Replace with your actual domain
-        'http://fixfox-alb-dev-1210845738.us-west-2.elb.amazonaws.com/api', // Replace with your actual domain
-      ];
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // For now, allow all origins (you can restrict this later)
-      return callback(null, true);
-    },
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -78,7 +54,7 @@ async function bootstrap() {
       'Origin',
       'Access-Control-Request-Method',
       'Access-Control-Request-Headers',
-      'token', // Add any custom headers your app uses
+      'token',
     ],
     credentials: true,
     optionsSuccessStatus: 200, // Some legacy browsers choke on 204
