@@ -161,6 +161,23 @@ After successful build:
 - **Architecture**: Universal (works on all Android devices)
 - **Features**: Full FixFox functionality with production API
 
+## 📊 **Latest Build Status**
+
+### ✅ **Current Build (CORS Fixed):**
+- **Build ID**: `0ac8c37c-10f3-4979-9da0-728b97406285`
+- **Status**: 🚀 **In Progress**
+- **Features**: CORS issue resolved, production API working perfectly
+- **Commit**: `568ba25` (includes CORS fix)
+- **Message**: "CORS fix: Mobile app now works perfectly with production API"
+- **Monitor**: https://expo.dev/accounts/idanaim82/projects/fixfox-mobile/builds/0ac8c37c-10f3-4979-9da0-728b97406285
+
+### ✅ **Previous Build (Available for Download):**
+- **Build ID**: `bbaf2339-4317-442e-84ef-75165e1f0f8c`
+- **Status**: ✅ **Completed**
+- **Download**: https://expo.dev/artifacts/eas/pbdbScwxQ5Cp5Pe2E27Z5y.apk
+- **Started**: 6/25/2025, 8:41:52 AM
+- **Finished**: 6/25/2025, 9:00:01 AM
+
 ## 🔗 **Useful Links**
 
 - **Build Dashboard**: https://expo.dev/accounts/idanaim82/projects/fixfox-mobile/builds
