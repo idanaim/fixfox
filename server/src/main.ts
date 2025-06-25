@@ -41,30 +41,31 @@ import { AppModule } from './app/app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
-  
+
   // Enhanced CORS configuration to handle all cross-origin scenarios
   app.enableCors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) return callback(null, true);
-      
+
       // Allow localhost on any port for development
       if (origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
         return callback(null, true);
       }
-      
+
       // Allow your specific origins
       const allowedOrigins = [
         'http://localhost:8083',
         'http://localhost:3000',
         'http://localhost:8080',
-        'https://your-production-domain.com', // Replace with your actual domain
+        'http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api', // Replace with your actual domain
+        'http://fixfox-alb-dev-1210845738.us-west-2.elb.amazonaws.com/api', // Replace with your actual domain
       ];
-      
+
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
+
       // For now, allow all origins (you can restrict this later)
       return callback(null, true);
     },
@@ -83,7 +84,7 @@ async function bootstrap() {
     optionsSuccessStatus: 200, // Some legacy browsers choke on 204
     preflightContinue: false,
   });
-  
+
   app.setGlobalPrefix(globalPrefix);
   const port = process.env.PORT || 3000;
   await app.listen(port);
