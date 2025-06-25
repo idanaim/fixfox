@@ -52,7 +52,7 @@
                     headers: {
                         'Origin': window.location.origin,
                         'Access-Control-Request-Method': 'POST',
-                        'Access-Control-Request-Headers': 'Content-Type'
+                        'Access-Control-Request-Headers': 'Content-Type,token'
                     }
                 });
                 
@@ -77,8 +77,8 @@
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
-                        // Removed 'token': 'null' header since it's not in allowed headers yet
+                        'Content-Type': 'application/json',
+                        'token': 'null'  // Now testing with token header
                     },
                     credentials: 'include',
                     body: JSON.stringify({
