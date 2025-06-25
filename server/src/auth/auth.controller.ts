@@ -13,7 +13,7 @@ export class AuthController {
     return this.authService.login(req.body);
   }
 
-  // @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard) //todo add this back when we have JWT auth
   @Get('profile')
   async getProfile(@Request() req) {
     return this.authService.getProfile(req.user.sub);
