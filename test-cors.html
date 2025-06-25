@@ -77,8 +77,8 @@
                 const response = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'token': 'null'  // Now testing with token header
+                        'Content-Type': 'application/json'
+                        // Removed token header - using only headers that work with current server
                     },
                     credentials: 'include',
                     body: JSON.stringify({

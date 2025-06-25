@@ -1,14 +1,18 @@
 import { API_BASE_URL } from '../config';
 
 export class ServerApi {
-  public headers = { 'Content-Type': 'application/json' };
+  public headers: Record<string, string> = { 'Content-Type': 'application/json' };
   public baseUrl = `${API_BASE_URL}/`;
 
   constructor(extraHeaders: any) {
+    // Only add Authorization header if token exists
     this.headers = {
-      ...extraHeaders,
       'Content-Type': 'application/json',
     };
+    
+    if (extraHeaders?.token) {
+      this.headers['Authorization'] = `Bearer ${extraHeaders.token}`;
+    }
   }
 
    fetchCall= async(controller: string)=> {
