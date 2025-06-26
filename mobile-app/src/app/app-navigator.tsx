@@ -62,7 +62,7 @@ export const AppNavigator = () => {
               />
               <Stack.Screen
                 options={{ headerShown: false }}
-                name="Chat"
+                name="ChatScreen"
                 component={ChatScreen}
               />
             </>

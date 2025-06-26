@@ -1,6 +1,6 @@
 // Environment configuration
 const isDevelopment = __DEV__;
-const useLocalAPI = false; // Set to true to use local API, false for deployed API
+const useLocalAPI = true; // Set to true to use local API, false for deployed API
 
 const LOCAL_API_URL = 'http://localhost:3000/api';
 // Run: ./scripts/get-api-url.sh prod to get your deployed URL
