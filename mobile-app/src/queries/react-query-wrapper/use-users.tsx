@@ -12,6 +12,9 @@ export const useUsersByAdmin = (accountId?: string) => {
   });
 };
 
+// Note: useEmployeesByBusiness has been removed - we now use the dashboard store
+// and get employees directly from the selected business data
+
 export const useUserById = (userId?: number) => {
   const { serverApi } = useContext(FixFoxProvidersContext);
   return useQuery({

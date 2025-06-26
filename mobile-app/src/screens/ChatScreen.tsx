@@ -24,6 +24,8 @@ import { useChatLogic } from '../hooks/useChatLogic';
 import { useChatStore } from '../store/chat.store';
 import { colors, typography } from '../components/admin-dashboard/admin-dashboard-styles';
 import { chatApi } from '../api/chatAPI';
+import BottomNavigation from '../components/BottomNavigation';
+import useAuthStore from '../store/auth.store';
 
 interface RouteParams {
   businessId: number;
@@ -32,11 +34,11 @@ interface RouteParams {
 
 const ChatScreen: React.FC = () => {
   const route = useRoute();
-  const { businessId, userId } = route.params as RouteParams;
+  const { businessId } = route.params as RouteParams;
   const { businesses, selectedBusiness, setSelectedBusiness } = useBusinesses();
   const { session: { id: sessionId },    isFollowUpQuestions, setFollowUpQuestions} = useChatStore();
   const { t } = useTranslation();
-
+const { user } = useAuthStore();
   const {
     // State
     messages,
@@ -69,7 +71,7 @@ const ChatScreen: React.FC = () => {
     handleSolutionHelped
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
-    userId,
+    userId:user!.id,
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
@@ -265,6 +267,8 @@ const ChatScreen: React.FC = () => {
         onSend={handleSend}
         loading={loading}
       />
+
+      <BottomNavigation activeTab="chat" />
     </KeyboardAvoidingView>
   );
 };
