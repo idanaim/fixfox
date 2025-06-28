@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { ChatSession } from '../entities/chat-session.entity';
 import { ChatMessage } from '../entities/chat-message.entity';
 import { Issue } from '../entities/issue.entity';
 import { Equipment } from '../../entities/equipment.entity';
+import { User } from '../../admin/entities/user.entity';
+import { Business } from '../../admin/entities/business.entity';
 import { AIService } from './ai.service';
 import { Problem } from '../entities/problem.entity';
 import { ProblemService } from './problem.service';
@@ -23,6 +26,11 @@ export class ChatService {
     private equipmentRepository: Repository<Equipment>,
     @InjectRepository(Issue)
     private issueRepository: Repository<Issue>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
+    private jwtService: JwtService,
     private aiService: AIService,
     private problemService: ProblemService,
     private solutionService: SolutionService
@@ -33,6 +41,17 @@ export class ChatService {
     businessId: number,
     language = 'en'
   ): Promise<ChatSession> {
+    // First check if user and business exist
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
+    const business = await this.businessRepository.findOne({ where: { id: businessId } });
+    if (!business) {
+      throw new Error(`Business with ID ${businessId} not found`);
+    }
+
     const session = this.chatSessionRepository.create({
       user: { id: userId },
       business: { id: businessId },
@@ -418,7 +437,7 @@ export class ChatService {
     });
 
     if (!session) {
-      throw new Error(`Chat session with ID ${sessionId} not found`);
+      throw new Error('Session not found');
     }
 
     // Initialize metadata if needed
