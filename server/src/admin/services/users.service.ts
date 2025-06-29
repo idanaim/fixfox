@@ -42,6 +42,15 @@ export class UsersService {
     });
   }
 
+  async findByBusiness(businessId: number): Promise<User[]> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.businesses', 'userBusiness')
+      .leftJoinAndSelect('userBusiness.business', 'business')
+      .where('business.id = :businessId', { businessId })
+      .getMany();
+  }
+
   async assignBusiness(userId: number, businessId: number): Promise<void> {
     const userBusiness = this.userBusinessRepository.create({
       user: { id: userId },

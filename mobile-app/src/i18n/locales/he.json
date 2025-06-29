@@ -19,6 +19,16 @@
     "use_original": "השתמש במקורי",
     "use_enhanced": "השתמש במשופר"
   },
+  "dashboard": {
+    "selectBusiness": "בחר עסק",
+    "selectBusinessToViewStats": "בחר עסק כדי לצפות בסטטיסטיקות",
+    "loadingBusinessStats": "טוען סטטיסטיקות עסק...",
+    "errorLoadingStats": "שגיאה בטעינת סטטיסטיקות",
+    "businessUsers": "משתמשי העסק",
+    "openTickets": "כרטיסים פתוחים",
+    "activeTickets": "כרטיסים פעילים",
+    "closedTickets": "כרטיסים סגורים"
+  },
   "equipment": {
     "select_equipment": "בחירת ציוד",
     "equipment_form_title": "הוסף ציוד חדש",
@@ -62,18 +72,23 @@
     },
     "navigation": {
       "users": "משתמשים",
-      "businesses": "עסקים",
+      "appliances": "מכשירים",
       "tickets": "כרטיסים",
+      "chat": "צ'אט",
       "settings": "הגדרות"
     },
     "sections": {
       "userManagement": "ניהול משתמשים",
-      "businessManagement": "ניהול עסקים",
+      "applianceManagement": "ניהול מכשירים",
       "ticketManagement": "ניהול כרטיסים",
+      "chatManagement": "ניהול צ'אט",
       "systemSettings": "הגדרות מערכת"
     },
     "settings": {
       "comingSoon": "הגדרות בקרוב"
+    },
+    "chat": {
+      "comingSoon": "צ'אט בקרוב"
     },
     "userForm": {
       "title": "משתמש חדש",
@@ -130,6 +145,53 @@
       "addNewBusiness": "הוסף עסק חדש",
       "creating": "יוצר...",
       "createBusiness": "צור עסק"
+    }
+  },
+  "appliances": {
+    "applianceDetails": "פרטי מכשיר",
+    "location": "מיקום",
+    "status": "סטטוס",
+    "serialNumber": "מספר סידורי",
+    "selectBusinessFirst": "בחר עסק",
+    "selectBusinessToViewAppliances": "אנא בחר עסק כדי לצפות במכשירים שלו",
+    "loadingAppliances": "טוען מכשירים...",
+    "errorLoadingAppliances": "שגיאה בטעינת מכשירים",
+    "tryAgainLater": "אנא נסה שוב מאוחר יותר",
+    "noAppliances": "לא נמצאו מכשירים",
+    "addFirstAppliance": "הוסף את המכשיר הראשון שלך כדי להתחיל",
+    "status": {
+      "operational": "פעיל",
+      "maintenance_needed": "דרוש תחזוקה",
+      "under_repair": "בתיקון",
+      "retired": "הוצא משימוש"
+    },
+    "form": {
+      "addAppliance": "הוסף מכשיר",
+      "basicInfo": "מידע בסיסי",
+      "type": "סוג",
+      "typePlaceholder": "למשל, מזגן, מקרר",
+      "manufacturer": "יצרן",
+      "manufacturerPlaceholder": "למשל, LG, Samsung, Whirlpool",
+      "model": "דגם",
+      "modelPlaceholder": "למשל, LG-AC-2024",
+      "location": "מיקום",
+      "locationPlaceholder": "למשל, מטבח, משרד ראשי",
+      "serialNumber": "מספר סידורי",
+      "serialNumberPlaceholder": "למשל, LG123456789",
+      "categoryStatus": "קטגוריה וסטטוס",
+      "category": "קטגוריה",
+      "status": "סטטוס",
+      "supplier": "ספק",
+      "supplierPlaceholder": "למשל, Home Depot, Best Buy",
+      "purchasePrice": "מחיר רכישה",
+      "tags": "תגיות",
+      "tagsPlaceholder": "למשל, חסכוני באנרגיה, אחריות, חדש",
+      "validationError": "שגיאת אימות",
+      "requiredFieldsMessage": "אנא מלא את כל השדות הנדרשים",
+      "success": "הצלחה",
+      "applianceCreated": "המכשיר נוצר בהצלחה!",
+      "error": "שגיאה",
+      "unknownError": "אירעה שגיאה לא ידועה"
     }
   },
   "technician": {

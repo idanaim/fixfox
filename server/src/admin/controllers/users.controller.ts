@@ -30,6 +30,13 @@ export class UserController {
     return this.usersService.findAllByAdmin(accountId);
   }
 
+  @Get('business/:businessId')
+  async findUsersByBusiness(
+    @Param('businessId') businessId: string
+  ): Promise<User[]> {
+    return this.usersService.findByBusiness(parseInt(businessId, 10));
+  }
+
   @Post(':accountId')
   async create(@Param('accountId') accountId: string, @Body() data: User) {
     data.accountId = accountId;
