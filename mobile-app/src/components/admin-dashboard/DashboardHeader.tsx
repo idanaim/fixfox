@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity, Modal, FlatList, Alert } from 'react-native';
 import { Avatar, Appbar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,9 @@ import useAuthStore from '../../store/auth.store';
 import { useBusinesses } from '../../hooks/useBusinesses';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { Business } from '../../interfaces/business';
+import { useTestNotification } from '../../hooks/useNotifications';
+import NotificationBell from '../NotificationBell';
+import { PushNotificationManager } from '../PushNotificationManager';
 
 interface DashboardHeaderProps {
   title: string;
@@ -24,6 +27,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { user } = useAuthStore();
   const { businesses, selectedBusiness, setSelectedBusiness } = useBusinesses();
   const [isBusinessModalVisible, setIsBusinessModalVisible] = useState(false);
+  const testNotification = useTestNotification();
 
   const getUserInitials = () => {
     if (!user?.name) return 'U';
@@ -31,8 +35,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     if (names.length === 1) return names[0].charAt(0).toUpperCase();
     return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   };
-
-
 
   const toggleBusinessModal = () => {
     setIsBusinessModalVisible(!isBusinessModalVisible);
@@ -44,13 +46,34 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     setIsBusinessModalVisible(false);
   };
 
+  const handleTestNotification = async () => {
+    const businessId = selectedBusiness?.id || 1; // Default to business 1
+    const userId = 22; // Default to user 1 for testing
+
+    try {
+      await testNotification.mutateAsync({ businessId, userId });
+      Alert.alert(
+        '🔔 Test Notification Sent!',
+        'Check your notifications list to see the test notification.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'Failed to send test notification. Please try again.',
+        [{ text: 'OK' }]
+      );
+      console.error('Test notification error:', error);
+    }
+  };
+
   return (
     <>
       <Appbar.Header style={styles.header}>
         {showBackButton && (
           <Appbar.BackAction onPress={onBackPress} color={colors.white} />
         )}
-        
+
         <View style={styles.leftSection}>
           {/* User Avatar */}
           <TouchableOpacity style={styles.avatarContainer}>
@@ -96,6 +119,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <View style={styles.languageSwitcherContainer}>
             <LanguageSwitcher />
           </View>
+          <NotificationBell
+            businessId={selectedBusiness?.id}
+            iconColor={colors.white}
+            iconSize={24}
+          />
+          <Appbar.Action
+            icon="bell-ring"
+            color={colors.white}
+            onPress={handleTestNotification}
+          />
           <Appbar.Action
             icon="dots-vertical"
             color={colors.white}
@@ -150,6 +183,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Push Notification Manager */}
+      <PushNotificationManager userId={22} compact={true} showTestButton={true} />
+
+      {/* Test Notification Button */}
+      <TouchableOpacity style={styles.testButton} onPress={handleTestNotification}>
+        <Text style={styles.testButtonText}>🔔 Test In-App + Push Notification</Text>
+      </TouchableOpacity>
     </>
   );
 };
@@ -266,6 +307,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontWeight: '500',
   },
+  testButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  testButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
 
-export default DashboardHeader; 
+export default DashboardHeader;
