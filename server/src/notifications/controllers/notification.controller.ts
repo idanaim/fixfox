@@ -123,12 +123,12 @@ export class NotificationController {
       data: {
         issueId: 123,
         businessId: 1,
+        routeTo: 'IssueDetails',
+        routeParams: { issueId: 123 },
+        priority: 'high',
       },
       isRead: false,
-      priority: 'high',
       createdAt: new Date().toISOString(),
-      routeTo: 'IssueDetails',
-      routeParams: { issueId: 123 },
     };
 
     return {

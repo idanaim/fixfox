@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { getLocales } from 'react-native-localize';
+import * as Localization from 'expo-localization';
 
 import en from './locales/en.json';
 import he from './locales/he.json';
@@ -17,16 +17,12 @@ export const detectLanguage = (text: string): string => {
   return isHebrew(text) ? 'he' : 'en';
 };
 
-// Get device language (fallback for Expo Go)
+// Get device language using expo-localization
 const getDeviceLanguage = (): string => {
   try {
-    // Fallback to English when running in Expo Go
-    // In a development build, you would use:
-    // const deviceLocales = getLocales();
-    // const deviceLanguage = deviceLocales[0]?.languageCode;
-    // return deviceLanguage === 'he' ? 'he' : 'en';
-    
-    return 'en'; // Default to English for Expo Go
+    const deviceLocales = Localization.getLocales();
+    const deviceLanguage = deviceLocales[0]?.languageCode;
+    return deviceLanguage === 'he' ? 'he' : 'en';
   } catch (error) {
     console.error('Error getting device language:', error);
     return 'en';
