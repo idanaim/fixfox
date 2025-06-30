@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FixFox",
-    "slug": "fixfox",
+    "slug": "fixfox-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -50,13 +50,13 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "8648d893-3fae-4f61-8698-0a4508e01aa9"
       }
     },
-    "owner": "fixfox-team",
+    "owner": "idanaim82",
     "runtimeVersion": "1.0.0",
     "updates": {
-      "url": "https://u.expo.dev/your-project-id"
+      "url": "https://u.expo.dev/8648d893-3fae-4f61-8698-0a4508e01aa9"
     },
     "newArchEnabled": false
   }
