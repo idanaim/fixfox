@@ -159,11 +159,15 @@ rm user-data.sh
 # --- Create Deployment Package ---
 echo "📦 Creating deployment package..."
 mkdir -p deployment
-# Note: Use a template for the .env file in a real-world scenario
+# Create the .env file with the correct variables and credentials
 cat > deployment/.env <<EOF
 # --- Server Environment Variables ---
-DATABASE_URL=postgres://user:password@host/db
-JWT_SECRET=your-jwt-secret
+DATABASE_HOST=fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com
+DATABASE_PORT=5432
+DATABASE_USER=idanaim
+DATABASE_PASSWORD=In16051982
+DATABASE_NAME=fixfoxdb
+JWT_SECRET=your-strong-jwt-secret
 # Add other required environment variables
 EOF
 cp server/docker-compose.yml deployment/

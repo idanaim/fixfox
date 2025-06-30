@@ -1,4 +1,5 @@
 const { DataSource } = require('typeorm');
+require('dotenv').config(); // Load environment variables from .env file
 
 module.exports = new DataSource({
   type: 'postgres',
@@ -17,4 +18,4 @@ module.exports = new DataSource({
   cli: {
     migrationsDir: 'src/migrations'
   }
-}); 
+});
