@@ -44,7 +44,9 @@
             "./assets/notification-sound.wav"
           ]
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {
