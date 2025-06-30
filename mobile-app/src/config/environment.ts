@@ -59,7 +59,7 @@ export function getEnvironmentConfig(): EnvironmentConfig {
     apiEnv,
     useLocalAPI,
     localApiUrl: process.env.EXPO_PUBLIC_LOCAL_API_URL || 'http://localhost:3000/api',//for android studio: 'http://10.0.2.2:3000/api',
-    deployedApiUrl: process.env.EXPO_PUBLIC_DEPLOYED_API_URL || 'http://fixfox-alb-prod-1210845738.us-west-2.elb.amazonaws.com/api',
+    deployedApiUrl: process.env.EXPO_PUBLIC_DEPLOYED_API_URL || 'http://54.191.78.119:3000/api',
     debugApi: process.env.EXPO_PUBLIC_DEBUG_API === 'true' || __DEV__,
     isDevelopment: __DEV__
   };
