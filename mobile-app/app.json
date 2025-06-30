@@ -58,7 +58,6 @@
     "updates": {
       "url": "https://u.expo.dev/your-project-id"
     },
-    "sdkVersion": "51.0.0",
     "newArchEnabled": false
   }
 }
