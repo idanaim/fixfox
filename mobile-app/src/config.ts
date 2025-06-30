@@ -4,7 +4,7 @@ import { getEnvironmentConfig, getApiBaseUrl, logEnvironmentConfig } from './con
 const envConfig = getEnvironmentConfig();
 
 // Export the main API configuration
-export const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = 'http://54.191.78.119:3000/api'; //getApiBaseUrl();
 
 // Export individual URLs for backward compatibility
 export const LOCAL_API = envConfig.localApiUrl;
