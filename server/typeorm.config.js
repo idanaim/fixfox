@@ -3,19 +3,23 @@ require('dotenv').config(); // Load environment variables from .env file
 
 module.exports = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'fixfox_user',
-  password: '12345',
-  database: 'fixfox_db',
+  host: process.env.DATABASE_HOST,
+  port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
   entities: [
-    'src/**/*.entity.ts',
-    'src/admin/entities/*.entity.ts',
-    'src/ai-solutions/entities/*.entity.ts'
+    'dist/**/*.entity.js', // Use .js files in dist for production
+    'dist/admin/entities/*.entity.js',
+    'dist/ai-solutions/entities/*.entity.js'
   ],
   migrations: ['dist/migrations/*.js'],
   migrationsTableName: 'migrations',
   cli: {
     migrationsDir: 'src/migrations'
+  },
+  // Adding SSL configuration for RDS
+  ssl: {
+    rejectUnauthorized: false // Required for RDS, but consider a more secure setup for production
   }
 });
