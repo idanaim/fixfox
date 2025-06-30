@@ -325,6 +325,11 @@ export const IssueTicketList: React.FC<IssueTicketListProps> = ({
     refetchBusinessIssues,
   } = useIssueManagement(businessId, userId);
 
+  // Debug logging
+  console.log('IssueTicketList - businessId:', businessId);
+  console.log('IssueTicketList - businessIssues count:', businessIssues?.issues?.length);
+  console.log('IssueTicketList - issueStats:', issueStats);
+
   const filteredIssues = React.useMemo(() => {
     if (!businessIssues?.issues) return [];
 

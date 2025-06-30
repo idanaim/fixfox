@@ -13,7 +13,12 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findByEmail(email);
-    const valid = password === user.password; // await bcrypt.compare(password, user.password);
+    if (!user) {
+      return null;
+    }
+
+    // const valid = await bcrypt.compare(password, user.password);
+    const valid = password === user.password;
     if (user && valid) {
       return user;
     }
@@ -21,7 +26,7 @@ export class AuthService {
   }
 
   async login(user: User) {
-    const payload = { email: user.email, password: user.password };
+    const payload = { sub: user.id, email: user.email, name: user.name };
     const foundUser = await this.validateUser(user.email, user.password);
     if (!foundUser) {
       return { message: 'Invalid credentials' };

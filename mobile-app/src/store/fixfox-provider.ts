@@ -7,4 +7,5 @@ interface ProvidersInterface {
 
 const FixFoxProvidersContext = createContext<ProvidersInterface>({} as ProvidersInterface);
 
-export { ProvidersInterface, FixFoxProvidersContext };
+export type { ProvidersInterface };
+export { FixFoxProvidersContext };

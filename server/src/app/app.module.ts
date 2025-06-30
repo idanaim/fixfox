@@ -8,6 +8,7 @@ import { ChatModule } from '../ai-solutions/chat.module';
 import { EquipmentModule } from './equipment.module';
 import { TechnicianModule } from '../technician/technician.module';
 import { StorageModule } from '../storage/storage.module';
+import { NotificationModule } from '../notifications/notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -45,6 +46,7 @@ import { AppService } from './app.service';
     AdminModule,
     EquipmentModule,
     StorageModule,
+    NotificationModule,
     ConfigModule,
   ],
   exports: [],

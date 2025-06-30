@@ -19,6 +19,16 @@
     "use_original": "Use Original",
     "use_enhanced": "Use Enhanced"
   },
+  "dashboard": {
+    "selectBusiness": "Select Business",
+    "selectBusinessToViewStats": "Select a business to view statistics",
+    "loadingBusinessStats": "Loading business statistics...",
+    "errorLoadingStats": "Error loading statistics",
+    "businessUsers": "Business Users",
+    "openTickets": "Open Tickets",
+    "activeTickets": "Active Tickets",
+    "closedTickets": "Closed Tickets"
+  },
   "equipment": {
     "select_equipment": "Equipment Selection",
     "equipment_form_title": "Add New Equipment",
@@ -62,18 +72,23 @@
     },
     "navigation": {
       "users": "Users",
-      "businesses": "Businesses",
+      "appliances": "Appliances",
       "tickets": "Tickets",
+      "chat": "Chat",
       "settings": "Settings"
     },
     "sections": {
       "userManagement": "User Management",
-      "businessManagement": "Business Management",
+      "applianceManagement": "Appliance Management",
       "ticketManagement": "Ticket Management",
+      "chatManagement": "Chat Management",
       "systemSettings": "System Settings"
     },
     "settings": {
       "comingSoon": "Settings Coming Soon"
+    },
+    "chat": {
+      "comingSoon": "Chat Coming Soon"
     },
     "userForm": {
       "title": "New User",
@@ -130,6 +145,53 @@
       "addNewBusiness": "Add New Business",
       "creating": "Creating...",
       "createBusiness": "Create Business"
+    }
+  },
+  "appliances": {
+    "applianceDetails": "Appliance Details",
+    "location": "Location",
+    "status": "Status",
+    "serialNumber": "Serial Number",
+    "selectBusinessFirst": "Select a Business",
+    "selectBusinessToViewAppliances": "Please select a business to view its appliances",
+    "loadingAppliances": "Loading appliances...",
+    "errorLoadingAppliances": "Error Loading Appliances",
+    "tryAgainLater": "Please try again later",
+    "noAppliances": "No Appliances Found",
+    "addFirstAppliance": "Add your first appliance to get started",
+    "status": {
+      "operational": "Operational",
+      "maintenance_needed": "Maintenance Needed",
+      "under_repair": "Under Repair",
+      "retired": "Retired"
+    },
+    "form": {
+      "addAppliance": "Add Appliance",
+      "basicInfo": "Basic Information",
+      "type": "Type",
+      "typePlaceholder": "e.g., Air Conditioner, Refrigerator",
+      "manufacturer": "Manufacturer",
+      "manufacturerPlaceholder": "e.g., LG, Samsung, Whirlpool",
+      "model": "Model",
+      "modelPlaceholder": "e.g., LG-AC-2024",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Kitchen, Main Office",
+      "serialNumber": "Serial Number",
+      "serialNumberPlaceholder": "e.g., LG123456789",
+      "categoryStatus": "Category & Status",
+      "category": "Category",
+      "status": "Status",
+      "supplier": "Supplier",
+      "supplierPlaceholder": "e.g., Home Depot, Best Buy",
+      "purchasePrice": "Purchase Price",
+      "tags": "Tags",
+      "tagsPlaceholder": "e.g., energy-efficient, warranty, new",
+      "validationError": "Validation Error",
+      "requiredFieldsMessage": "Please fill in all required fields",
+      "success": "Success",
+      "applianceCreated": "Appliance created successfully!",
+      "error": "Error",
+      "unknownError": "Unknown error occurred"
     }
   },
   "technician": {

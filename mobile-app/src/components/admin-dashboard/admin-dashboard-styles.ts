@@ -72,7 +72,7 @@ const spacing = {
 };
 
 // Shadows
-const shadows = {
+export const shadows = {
   small: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -189,10 +189,43 @@ const baseStyles = StyleSheet.create({
     color: colors.medium,
     marginTop: 4,
   },
+  // Bottom tab navigation styles
+  bottomTabNavigation: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    paddingVertical: 8,
+    paddingBottom: 12, // Extra padding for safe area
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    ...shadows.small,
+  },
+  bottomNavButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+  },
+  activeBottomNavButton: {
+    backgroundColor: 'rgba(74, 21, 75, 0.1)',
+    borderRadius: 8,
+  },
+  bottomNavButtonLabel: {
+    ...typography.caption,
+    color: colors.medium,
+    marginTop: 2,
+    fontSize: 10,
+    textAlign: 'center',
+  },
+  activeBottomNavButtonLabel: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
   contentContainer: {
     flex: 1,
     backgroundColor: colors.white,
     margin: 16,
+    marginBottom: 8, // Reduced bottom margin for bottom nav
     borderRadius: 8,
     overflow: 'hidden',
     elevation: 2,
@@ -308,6 +341,16 @@ const baseStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 150,
+  },
+  loadingText: {
+    marginTop: 12,
+    ...typography.body2,
+    color: colors.medium,
+  },
+  businessHeaderText: {
+    ...typography.h3,
+    color: colors.dark,
+    marginLeft: 8,
   },
   // Modal styles
   modalContainer: {

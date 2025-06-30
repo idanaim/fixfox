@@ -1,12 +1,11 @@
 {
   "expo": {
-    "name": "FixFox Mobile",
-    "slug": "fixfox-mobile",
+    "name": "FixFox",
+    "slug": "fixfox",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -17,27 +16,48 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.idanaim.fixfox"
+      "bundleIdentifier": "com.fixfox.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.idanaim.fixfox"
+      "package": "com.fixfox.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-splash-screen",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/notification-sound.wav"
+          ]
+        }
+      ],
+      "expo-localization",
       "expo-secure-store"
     ],
     "extra": {
       "eas": {
-        "projectId": "8648d893-3fae-4f61-8698-0a4508e01aa9"
+        "projectId": "your-project-id"
       }
-    }
+    },
+    "owner": "fixfox-team",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "newArchEnabled": false
   }
 }

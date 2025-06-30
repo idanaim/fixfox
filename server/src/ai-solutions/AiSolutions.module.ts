@@ -14,11 +14,13 @@ import { Business } from '../admin/entities/business.entity';
 import { ProblemController } from './controllers/problem.controller';
 import { ChatModule } from './chat.module';
 import { SolutionController } from './controllers/solution.controller';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
     AdminModule,
     ChatModule,
+    NotificationModule,
     TypeOrmModule.forFeature([Solution, Problem, Equipment, Issue, Business]),
   ],
   controllers: [IssueController, ProblemController, SolutionController],

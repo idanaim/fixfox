@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import axios from 'axios';
-import { Agent } from 'http';
+// import { Agent } from 'http';
 import { Problem } from '../entities/problem.entity';
 import { Issue } from '../entities/issue.entity';
 import { Equipment } from '../../entities/equipment.entity';
@@ -709,54 +709,172 @@ Please provide detailed step-by-step solutions.`;
       return this.getAIUnavailableResponse('analysis');
     }
 
-    const systemPrompt =
-      language === 'he'
-        ? 'אתה מומחה טכני שמסייע לאבחן בעיות בציוד. שאל שאלות ממוקדות כדי להבין טוב יותר את הבעיה. עדיף שאלות עם אפשרויות בחירה.'
-        : 'You are a technical expert helping diagnose equipment problems. Ask focused questions to better understand the issue. Prefer multiple-choice questions when possible.';
+    const systemPrompt = language === 'he'
+      ? `אתה מומחה טכני שמטרתו לאסוף מידע מדויק על תסמינים בלבד - ללא אבחון או הסקת מסקנות.
 
-    const prompt =
-      language === 'he'
-        ? `ציוד: ${equipment.manufacturer} ${equipment.model}
-תיאור הבעיה: ${description}
+חוקי יסוד חובה:
+1. אל תאבחן, אל תסיק מסקנות, אל תציע פתרונות - רק תאסוף עובדות
+2. בנה רצף לוגי של שאלות שמובילות זו מזו
+3. כל שאלה צריכה להיות ספציפית לסוג המכשיר ${equipment.type}
+4. אם תשובה מובילה לכיוון מסוים - המשך לחקור באותו כיוון לעומק
+5. שאל שאלות ברורות עם אפשרויות בחירה מוגדרות
+6. אל תניח דברים - כל פרט צריך להישאל במפורש
 
-אנא צור רשימה של שאלות מעקב שיעזרו להבין טוב יותר את הבעיה. כל שאלה צריכה להיות מסוג אחד מהבאים:
-- timing: מתי הבעיה התחילה
-- symptom: תסמינים נוספים
-- context: הקשר או נסיבות
-- severity: חומרת הבעיה
+חשוב מאוד: כל שאלה חייבת לכלול אפשרויות בחירה ספציפיות לסוג המכשיר ${equipment.type}.
+דוגמאות לאפשרויות ספציפיות:
+- מקרר: "מקפיא עליון", "מקפיא תחתון", "מקפיא צדדי", "מקרר ראשי", "דלתות", "מגירות"
+- תנור: "אלמנט עליון", "אלמנט תחתון", "גריל", "מאוורר הסעה", "דלת תנור", "חיישן טמפרטורה"
+- מכונת כביסה: "תוף", "מגירת אבקה", "מסנן", "צינור ניקוז", "דלת", "משאבת מים"
+- מדיח כלים: "סל עליון", "סל תחתון", "זרועות ריסוס", "פילטר", "משאבת ניקוז"
 
-הקפד שמרבית השאלות יהיו שאלות ברירה (עם אפשרויות), לא שאלות פתוחות.
-לדוגמה, במקום "מתי התחילה הבעיה?" תן אפשרויות כמו "היום", "בשבוע האחרון", "לפני מספר שבועות", "לפני מספר חודשים".
+דוגמאות לרצפי שאלות נכונים:
+- מקרר: "איזה חלק לא מקרר?" → אם "מקפיא" → "איזה סוג מקפיא יש לך?" → אם "מקפיא תחתון" → "האם החלק התחתון (מקפיא) עדיין קר?"
+- תנור: "איזה סוג חימום לא עובד?" → אם "חימום תחתון" → "האם אתה רואה את האלמנט התחתון?" → אם "כן" → "האם הוא נהיה אדום כשהתנור דלוק?"
 
-החזר את התוצאה בפורמט JSON בלבד (ללא markdown) עם המבנה הבא:
+עקרון חשוב: כל שאלה צריכה להוביל לשאלת המשך אפשרית שמעמיקה את הבנת התסמין.`
+      : `You are a technical expert whose sole purpose is to collect accurate symptom information - NO diagnosis or conclusions.
+
+Mandatory core rules:
+1. Never diagnose, never conclude, never suggest solutions - only collect facts
+2. Build logical question sequences that lead from one to the next
+3. Each question must be specific to ${equipment.type} appliances
+4. If an answer leads in a direction - continue exploring that direction in depth
+5. Ask clear questions with defined multiple-choice options
+6. Don't assume anything - every detail must be explicitly asked
+
+CRITICAL: Every question MUST include options specific to ${equipment.type} appliances.
+Examples of equipment-specific options:
+- Refrigerator: "Top freezer", "Bottom freezer", "Side-by-side freezer", "Main refrigerator", "Doors", "Drawers"
+- Oven: "Top heating element", "Bottom heating element", "Broiler", "Convection fan", "Oven door", "Temperature sensor"
+- Washing machine: "Drum", "Detergent drawer", "Filter", "Drain hose", "Door", "Water pump"
+- Dishwasher: "Top rack", "Bottom rack", "Spray arms", "Filter", "Drain pump"
+
+Examples of correct question sequences:
+- Refrigerator: "Which part of the refrigerator isn't cooling properly?" → if "freezer" → "What type of freezer does your refrigerator have?" (top/bottom/side-by-side)
+- Oven: "Which type of heating in the oven isn't working?" (top/bottom/broiler/convection)
+- Washing machine: "Where exactly do you see the water problem?" (not filling/not draining/leaking)
+
+Important principles:
+- Each question leads logically to the next question
+- Don't jump to a new topic before finishing exploring the current topic
+- Use precise technical terminology for ${equipment.type}
+- Provide clear, defined multiple-choice options specific to the equipment type
+- Every option list must include real parts/functions of ${equipment.type}
+- Always add "Other" or "Not sure" as the last option
+
+Return JSON in this exact structure (no Markdown):
 {
   "questions": [
     {
-      "question": "שאלה",
-      "type": "timing|symptom|context|severity",
-      "options": ["אפשרות 1", "אפשרות 2"]
+      "question": "Clear and specific question",
+      "type": "timing|symptom|context|severity|location|function",
+      "options": ["Equipment-specific option 1", "Equipment-specific option 2", "Equipment-specific option 3", "Other"],
+      "context": "Explanation of why this question matters",
+      "followUpLogic": "Explanation of how this question leads to the next"
+    }
+  ]
+}`;
+
+    const prompt = language === 'he'
+      ? `סוג מכשיר: ${equipment.type}
+יצרן ודגם: ${equipment.manufacturer} ${equipment.model}
+תיאור ראשוני: "${description}"
+
+משימה: בנה רצף של 3-5 שאלות המתחילות מהתיאור הראשוני ומתפתחות לוגית.
+
+כללים לבניית רצף שאלות:
+1. שאלה ראשונה: הכי רלוונטית לתיאור הראשוני
+2. שאלות המשך: בהתבסס על תשובות אפשריות לשאלה הקודמת
+3. כל שאלה צריכה להיות ספציפית למבנה ופונקציות של ${equipment.type}
+4. אל תקפוץ בין נושאים - חקור נושא אחד לעומק
+
+דוגמאות מפורטות לרצפי שאלות:
+
+מקרר עם בעיית קירור:
+1. "איזה חלק של המקרר לא עובד כמו שצריך?"
+2. אם התשובה "מקפיא" → "איזה סוג מקפיא יש במקרר שלך?" (עליון/תחתון/צדדי)
+3. אם התשובה "מקפיא תחתון" → "האם החלק התחתון עדיין קר או שהוא התחמם לגמרי?"
+4. אם התשובה "התחמם לגמרי" → "האם אתה שומע את המקרר עובד (זמזום/רעש)?"
+
+תנור עם בעיית חימום:
+1. "איזה סוג חימום בתנור לא עובד?" (עליון/תחתון/גריל/הסעה)
+2. אם התשובה "חימום תחתון" → "האם אתה יכול לראות את האלמנט התחתון בתחתית התנור?"
+3. אם התשובה "כן, אני רואה אותו" → "כשאתה מדליק את התנור, האם האלמנט התחתון נהיה אדום?"
+4. אם התשובה "לא נהיה אדום" → "האם האלמנט נראה שלם או שיש בו סדקים/שבירות?"
+
+מכונת כביסה עם בעיית מים:
+1. "איפה בדיוק אתה רואה את בעיית המים?" (לא נכנסים/לא יוצאים/דולפים)
+2. אם התשובה "לא יוצאים" → "האם המים נשארים בתוף בסוף התוכנית?"
+3. אם התשובה "כן, נשארים" → "איזה גובה מים נשאר בתוף?" (מעט/חצי/כמעט מלא)
+4. אם התשובה "כמעט מלא" → "האם המכונה מנסה לנקז (שומעים רעש שאיבה)?"
+
+עקרונות חשובים:
+- כל שאלה מובילה לשאלה הבאה בצורה לוגית
+- אל תקפוץ לנושא חדש לפני שסיימת לחקור את הנושא הנוכחי
+- השתמש במינוח טכני מדויק ל${equipment.type}
+- תן אפשרויות בחירה ברורות ומוגדרות שספציפיות ל${equipment.type}
+- כל רשימת אפשרויות חייבת לכלול חלקים/פונקציות אמיתיים של ${equipment.type}
+- הוסף תמיד "אחר" או "לא בטוח" כאפשרות אחרונה
+
+החזר JSON במבנה הבא (ללא Markdown):
+{
+  "questions": [
+    {
+      "question": "שאלה ברורה וספציפית",
+      "type": "timing|symptom|context|severity|location|function",
+      "options": ["אפשרות 1", "אפשרות 2", "אפשרות 3", "אחר"],
+      "context": "הסבר למה השאלה חשובה",
+      "followUpLogic": "הסבר איך השאלה הזו מובילה לשאלה הבאה"
     }
   ]
 }`
-        : `Equipment: ${equipment.manufacturer} ${equipment.model}
-Problem Description: ${description}
+      : `Appliance Type: ${equipment.type}
+Manufacturer and Model: ${equipment.manufacturer} ${equipment.model}
+Initial Description: "${description}"
 
-Please create a list of follow-up questions that will help better understand the issue. Each question should be of one of the following types:
-- timing: when the problem started
-- symptom: additional symptoms
-- context: circumstances or context
-- severity: severity of the issue
+Task: Build a sequence of 3-5 questions that start from the initial description and develop logically.
 
-Make sure that most questions are multiple-choice (with options), not open-ended questions.
-For example, instead of "When did the problem start?" provide options like "Today", "Within the past week", "Several weeks ago", "Several months ago".
+Rules for building question sequences:
+1. First question: Most relevant to the initial description
+2. Follow-up questions: Based on possible answers to the previous question
+3. Each question must be specific to the structure and functions of ${equipment.type}
+4. Don't jump between topics - explore one topic in depth
 
-Return the result in JSON format only (no markdown) with the following structure:
+Detailed examples of question sequences:
+
+Refrigerator with cooling issue:
+1. "Which part of the refrigerator isn't cooling properly?"
+2. If answer is "freezer" → "What type of freezer does your refrigerator have?" (top/bottom/side-by-side)
+3. If answer is "bottom freezer" → "Is the bottom part still cold or has it warmed up completely?"
+4. If answer is "warmed up completely" → "Can you hear the refrigerator running (humming/noise)?"
+
+Oven with heating issue:
+1. "Which type of heating in the oven isn't working?" (top/bottom/broiler/convection)
+2. If answer is "bottom heating" → "Can you see the bottom heating element at the bottom of the oven?"
+3. If answer is "yes, I can see it" → "When you turn on the oven, does the bottom element turn red?"
+4. If answer is "doesn't turn red" → "Does the element look intact or are there any cracks/breaks?"
+
+Washing machine with water issue:
+1. "Where exactly do you see the water problem?" (not filling/not draining/leaking)
+2. If answer is "not draining" → "Does water remain in the drum at the end of the cycle?"
+3. If answer is "yes, it remains" → "How much water remains in the drum?" (little/half/almost full)
+4. If answer is "almost full" → "Does the machine try to drain (do you hear pumping noise)?"
+
+Important principles:
+- Each question leads logically to the next question
+- Don't jump to a new topic before finishing exploring the current topic
+- Use precise technical terminology for ${equipment.type}
+- Provide clear, defined multiple-choice options
+
+Return JSON in this exact structure (no Markdown):
 {
   "questions": [
     {
-      "question": "Question",
-      "type": "timing|symptom|context|severity",
-      "options": ["Option 1", "Option 2"]
+      "question": "Clear and specific question",
+      "type": "timing|symptom|context|severity|location|function",
+      "options": ["Option 1", "Option 2", "Option 3", "Other"],
+      "context": "Explanation of why this question matters",
+      "followUpLogic": "Explanation of how this question leads to the next"
     }
   ]
 }`;
@@ -767,7 +885,8 @@ Return the result in JSON format only (no markdown) with the following structure
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
+      temperature: 0.2, // Even lower temperature for more logical, consistent sequences
+      max_completion_tokens: 2000, // Increased for more detailed question sequences
     });
 
     const response = completion.choices[0].message.content;
@@ -776,32 +895,143 @@ Return the result in JSON format only (no markdown) with the following structure
       const cleanedResponse = this.cleanAIResponse(response);
       const parsedResponse = JSON.parse(cleanedResponse);
 
-      // Ensure all questions have options when possible
-      return parsedResponse.questions.map((question) => {
-        // If no options are provided, add some generic ones based on the question type
+      // Validate and enhance the questions
+      return parsedResponse.questions.map((question, index) => {
+        // Ensure all questions have meaningful options
         if (!question.options || question.options.length === 0) {
-          if (question.type === 'timing') {
-            question.options = [
-              language === 'he' ? 'היום' : 'Today',
-              language === 'he' ? 'בשבוע האחרון' : 'Within the past week',
-              language === 'he' ? 'לפני מספר שבועות' : 'Several weeks ago',
-              language === 'he' ? 'לפני מספר חודשים' : 'Several months ago',
-            ];
-          } else if (question.type === 'severity') {
-            question.options = [
-              language === 'he' ? 'קלה' : 'Minor',
-              language === 'he' ? 'בינונית' : 'Moderate',
-              language === 'he' ? 'חמורה' : 'Severe',
-            ];
-          }
+          question.options = this.generateDefaultOptions(question.type, equipment.type, language);
+        }
+
+        // Ensure question has a type
+        if (!question.type) {
+          question.type = this.inferQuestionType(question.question, language);
+        }
+
+        // Add sequence information if missing
+        if (!question.context) {
+          question.context = language === 'he'
+            ? `שאלה ${index + 1} מתוך רצף השאלות`
+            : `Question ${index + 1} in the sequence`;
         }
 
         return question;
       });
     } catch (error) {
       console.error('Error parsing follow-up questions:', error);
-      return [];
+
+      // Return a fallback sequence specific to the equipment type
+      return this.generateFallbackQuestionSequence(equipment, description, language);
     }
+  }
+
+  /**
+   * Generates a fallback question sequence when AI parsing fails
+   */
+  private generateFallbackQuestionSequence(
+    equipment: Equipment,
+    description: string,
+    language = 'en'
+  ): FollowUpQuestion[] {
+    const type = equipment.type.toLowerCase();
+
+    if (type.includes('refrigerator') || type.includes('fridge')) {
+      return language === 'he' ? [
+        {
+          question: "איזה חלק של המקרר לא עובד כמו שצריך?",
+          type: "location",
+          options: ["מקפיא", "מקרר", "שני החלקים", "דלתות", "לא בטוח"],
+          context: "זיהוי החלק הבעייתי יעזור לנו להבין את הבעיה"
+        },
+        {
+          question: "מתי הבעיה התחילה?",
+          type: "timing",
+          options: ["היום", "אתמול", "השבוע", "החודש", "לא זוכר"],
+          context: "תזמון הבעיה יכול לעזור לזהות את הגורם"
+        }
+      ] : [
+        {
+          question: "Which part of the refrigerator isn't working properly?",
+          type: "location",
+          options: ["Freezer", "Refrigerator", "Both sections", "Doors", "Not sure"],
+          context: "Identifying the problematic part helps us understand the issue"
+        },
+        {
+          question: "When did the problem start?",
+          type: "timing",
+          options: ["Today", "Yesterday", "This week", "This month", "Not sure"],
+          context: "Timing of the problem can help identify the cause"
+        }
+      ];
+    }
+
+    // Default fallback for any equipment
+    return [{
+      question: language === 'he'
+        ? `מתי הבעיה ב${equipment.type} התחילה?`
+        : `When did the problem with the ${equipment.type} start?`,
+      type: 'timing',
+      options: language === 'he'
+        ? ['היום', 'אתמול', 'השבוע', 'החודש', 'לא זוכר']
+        : ['Today', 'Yesterday', 'This week', 'This month', 'Not sure'],
+      context: language === 'he'
+        ? 'הבנת התזמון עוזרת לזהות גורמים אפשריים'
+        : 'Understanding timing helps identify possible causes'
+    }];
+  }
+
+  /**
+   * Generates basic fallback options for question types (AI should generate equipment-specific options)
+   */
+  private generateDefaultOptions(questionType: string, equipmentType: string, language = 'en'): string[] {
+    const options = {
+      timing: language === 'he'
+        ? ['היום', 'אתמול', 'השבוع', 'החודש', 'לא זוכר']
+        : ['Today', 'Yesterday', 'This week', 'This month', 'Not sure'],
+      severity: language === 'he'
+        ? ['קלה - המכשיר עובד חלקית', 'בינונית - בעיה ניכרת', 'חמורה - המכשיר לא עובד', 'לא בטוח']
+        : ['Minor - device partially working', 'Moderate - noticeable issue', 'Severe - device not working', 'Not sure'],
+      location: language === 'he'
+        ? ['חלק עליון', 'חלק תחתון', 'צד שמאל', 'צד ימין', 'לא בטוח']
+        : ['Top part', 'Bottom part', 'Left side', 'Right side', 'Not sure'],
+      function: language === 'he'
+        ? ['פונקציה בסיסית', 'פונקציות מתקדמות', 'כל הפונקציות', 'לא בטוח']
+        : ['Basic function', 'Advanced functions', 'All functions', 'Not sure'],
+      context: language === 'he'
+        ? ['בשימוש רגיל', 'אחרי ניקוי', 'אחרי הזזה', 'אחרי תיקון', 'אחר']
+        : ['During normal use', 'After cleaning', 'After moving', 'After repair', 'Other'],
+      symptom: language === 'he'
+        ? ['רעש חריג', 'ריח חריג', 'חימום/קירור לא תקין', 'דליפה', 'אחר']
+        : ['Unusual noise', 'Strange smell', 'Heating/cooling issue', 'Leaking', 'Other']
+    };
+
+    return options[questionType] || (language === 'he' ? ['כן', 'לא', 'לא בטוח'] : ['Yes', 'No', 'Not sure']);
+  }
+
+
+
+
+
+  /**
+   * Infers question type from the question text
+   */
+  private inferQuestionType(question: string, language = 'en'): string {
+    const q = question.toLowerCase();
+
+    if (language === 'he') {
+      if (q.includes('מתי') || q.includes('זמן')) return 'timing';
+      if (q.includes('איפה') || q.includes('איזה חלק')) return 'location';
+      if (q.includes('איך') || q.includes('מה קורה')) return 'symptom';
+      if (q.includes('כמה') || q.includes('חמור')) return 'severity';
+      if (q.includes('פונקציה') || q.includes('עובד')) return 'function';
+    } else {
+      if (q.includes('when') || q.includes('time')) return 'timing';
+      if (q.includes('where') || q.includes('which part')) return 'location';
+      if (q.includes('how') || q.includes('what happens')) return 'symptom';
+      if (q.includes('how much') || q.includes('severe')) return 'severity';
+      if (q.includes('function') || q.includes('working')) return 'function';
+    }
+
+    return 'context';
   }
 
   /**
@@ -1198,7 +1428,7 @@ ${combinedDescription}
 4. מה כבר נוסה
 5. חומרת הבעיה (נמוכה, בינונית, גבוהה)
 
-תן תשובה מפורטת אך תמציתית שיכולה לשמש כסיכום לפני אבחון.`
+תן תשובה מפורטת אך תמציתית שיכולה לשמש סיכום לפני אבחון.`
         : `Equipment: ${equipment.manufacturer} ${equipment.model}
 Type: ${equipment.type}
 Information collected from user:

@@ -9,29 +9,44 @@ import { useUsersByAdmin } from '../../queries/react-query-wrapper/use-users';
 import { colors, styles } from './admin-dashboard-styles';
 import { User } from '../../interfaces/business';
 import { useNavigation } from '@react-navigation/native';
-import { useGetBusinesses } from '../../queries/react-query-wrapper/use-get-business';
 import useAuthStore from '../../store/auth.store';
 import { useRoles } from '../../queries/react-query-wrapper/use-roles';
 import { useDepartments } from '../../queries/react-query-wrapper/use-departments';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Avatar, IconButton, Surface } from 'react-native-paper';
+import { useDashboardStore } from '../../store/dashboard.store';
 
 /**
- * Displays a list of employees associated with the current admin's account, including their roles, departments, and contact information.
+ * Displays a list of employees for the currently selected business from the dashboard store.
+ * If no business is selected, shows all users in the account.
  *
- * Shows loading and error states, and provides navigation to edit user details. If no employees are found, displays an empty state message.
- *
- * @param businessId - Optional business ID to filter employees by business.
+ * Shows loading and error states, and provides navigation to edit user details. If no employees are found, displays an empty state messages.
  */
-export function EmployeeSection({ businessId }: { businessId?: number }) {
+export function EmployeeSection() {
   const { user } = useAuthStore();
+  const { selectedBusiness } = useDashboardStore();
+
+  // Get all account users as fallback when no business is selected
   const {
-    data: employees,
-    isLoading,
-    error,
-  } = useUsersByAdmin(user?.accountId);
+    data: allAccountUsers,
+    isLoading: allUsersLoading,
+    error: allUsersError,
+  } = useUsersByAdmin(!selectedBusiness ? user?.accountId : undefined);
+
+  // Always use selected business employees if a business is selected
+  const businessEmployees = selectedBusiness?.employees?.map((emp: any) => emp.user) || [];
+
+  // Determine which data to use: selected business employees or all account users
+  const employees = selectedBusiness ? businessEmployees : allAccountUsers;
+  const isLoading = selectedBusiness ? false : allUsersLoading; // Business data comes from store
+  const error = selectedBusiness ? null : allUsersError; // Business data comes from store
+
+  // Debug logging
+  console.log('EmployeeSection - selectedBusiness:', selectedBusiness?.name, selectedBusiness?.id);
+  console.log('EmployeeSection - businessEmployees raw:', selectedBusiness?.employees);
+  console.log('EmployeeSection - employees count:', employees?.length);
+  console.log('EmployeeSection - employees:', employees?.map((e: any) => e.name));
   const navigation = useNavigation();
-  const { data: businesses } = useGetBusinesses(user?.accountId);
   const { data: roles, isLoading: rolesLoading } = useRoles();
   const { data: departments, isLoading: deptsLoading } = useDepartments();
 
@@ -57,7 +72,7 @@ export function EmployeeSection({ businessId }: { businessId?: number }) {
   };
 
   const renderUserItem = ({ item }: { item: User }) => (
-    <Surface style={styles.listItem}>
+    <Surface style={styles.listItem} key={item.id}>
       <Avatar.Text
         size={40}
         label={getAvatarLabel(item.name)}
