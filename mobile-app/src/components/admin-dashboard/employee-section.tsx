@@ -20,7 +20,7 @@ import { useDashboardStore } from '../../store/dashboard.store';
  * Displays a list of employees for the currently selected business from the dashboard store.
  * If no business is selected, shows all users in the account.
  *
- * Shows loading and error states, and provides navigation to edit user details. If no employees are found, displays an empty state message.
+ * Shows loading and error states, and provides navigation to edit user details. If no employees are found, displays an empty state messages.
  */
 export function EmployeeSection() {
   const { user } = useAuthStore();
