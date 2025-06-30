@@ -16,6 +16,7 @@ import { IssueDetailsScreen } from '../screens/IssueDetailsScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
+const TypedStack = Stack as any;
 
 export const AppNavigator = () => {
   const { token, user, isLoading } = useAuthStore();
@@ -25,42 +26,42 @@ export const AppNavigator = () => {
   return (
     <FixFoxProvidersContext.Provider value={{ serverApi, user }}>
       <NavigationContainer>
-        <Stack.Navigator>
+        <TypedStack.Navigator>
           {token ? (
             <>
-              <Stack.Screen
+              <TypedStack.Screen
                 options={{ headerShown: false }}
                 name="Dashboard"
                 component={adminDashboard}
                 initialParams={{ businessId: 6, userId: user?.id }}
               />
-              <Stack.Screen name="edit-business" component={BusinessForm} />
-              <Stack.Screen
+              <TypedStack.Screen name="edit-business" component={BusinessForm} />
+              <TypedStack.Screen
                 name="user-form"
                 component={UserForm}
                 options={{ title: 'Create User', headerShown: false }}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 options={{ headerShown: false }}
                 name="Technicians"
                 component={TechniciansScreen}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 options={{ headerShown: false }}
                 name="TechnicianDetails"
                 component={TechnicianDetailsScreen}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 name="IssueDetails"
                 component={IssueDetailsScreen}
                 options={{ headerShown: false }}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 name="Onboarding"
                 component={OnboardingScreen}
                 options={{ headerShown: false }}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 options={{ headerShown: false }}
                 name="ChatScreen"
                 component={ChatScreen}
@@ -68,19 +69,19 @@ export const AppNavigator = () => {
             </>
           ) : (
             <>
-              <Stack.Screen
+              <TypedStack.Screen
                 name="Login"
                 component={LoginScreen}
                 options={{ headerShown: false }}
               />
-              <Stack.Screen
+              <TypedStack.Screen
                 name="Onboarding"
                 component={OnboardingScreen}
                 options={{ headerShown: false }}
               />
             </>
           )}
-        </Stack.Navigator>
+        </TypedStack.Navigator>
       </NavigationContainer>
     </FixFoxProvidersContext.Provider>
   );
