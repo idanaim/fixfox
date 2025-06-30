@@ -3,8 +3,6 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "nx build rest-man-server",
-    "ui-native": "nx serve rest-man-native",
     "serve": "nx serve rest-man-server",
     "start": "node dist/apps/rest-man-server/main.js",
     "typeorm": "typeorm-ts-node-commonjs",
@@ -29,7 +27,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "@react-native-async-storage/async-storage": "^2.1.1",
     "@react-native-community/progress-bar-android": "^1.0.5",
-    "@react-native-google-signin/google-signin": "^13.1.0",
+    "@react-native-google-signin/google-signin": "^13.3.1",
     "@react-native-picker/picker": "^2.10.2",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.2.0",

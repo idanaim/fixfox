@@ -8,6 +8,7 @@ import { EquipmentService } from './equipment.service';
 import { SolutionService } from './solution.service';
 import { Business } from '../../admin/entities/business.entity';
 import { Solution } from '../entities/solution.entity';
+import { NotificationService } from '../../notifications/services/notification.service';
 
 @Injectable()
 export class IssueService {
@@ -20,7 +21,8 @@ export class IssueService {
     private solutionRepository: Repository<Solution>,
     private problemService: ProblemService,
     private equipmentService: EquipmentService,
-    private solutionService: SolutionService
+    private solutionService: SolutionService,
+    private notificationService: NotificationService,
   ) {}
 
   async createIssue(createIssueDto: {
@@ -118,6 +120,18 @@ export class IssueService {
     });
 
     const savedIssue = await this.issueRepository.save(issue);
+
+    // Send notification to assigned technician
+    try {
+      await this.notificationService.createIssueAssignmentNotification(
+        savedIssue.id,
+        business.defaultTechnicianId,
+        createIssueDto.userId
+      );
+    } catch (error) {
+      console.error('Failed to send assignment notification:', error);
+      // Don't fail the issue creation if notification fails
+    }
 
     return {
       issue: savedIssue,
@@ -375,7 +389,21 @@ export class IssueService {
     issue.assignedTo = { id: technicianId } as any;
     issue.status = 'assigned';
 
-    return this.issueRepository.save(issue);
+    const savedIssue = await this.issueRepository.save(issue);
+
+    // Send notification to assigned technician
+    try {
+      await this.notificationService.createIssueAssignmentNotification(
+        issueId,
+        technicianId,
+        0 // System assignment - no specific user
+      );
+    } catch (error) {
+      console.error('Failed to send assignment notification:', error);
+      // Don't fail the assignment if notification fails
+    }
+
+    return savedIssue;
   }
 
   /**

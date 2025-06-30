@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, KeyboardAvoidingView, Platform, ScrollView, StatusBar, Dimensions } from 'react-native';
 import { Button, TextInput, Text, Surface } from 'react-native-paper';
-import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+// import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../queries/use-auth';
@@ -28,10 +28,10 @@ interface LoginCredentials {
 }
 
 // Initialize Google Sign-In
-GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID', // From Google Cloud Console
-  offlineAccess: true,
-});
+// GoogleSignin.configure({
+//   webClientId: 'YOUR_WEB_CLIENT_ID', // From Google Cloud Console
+//   offlineAccess: true,
+// });
 
 const { height } = Dimensions.get('window');
 
@@ -162,7 +162,8 @@ const LoginScreen = () => {
               {t('common.login')}
             </Button>
 
-            <View style={styles.dividerContainer}>
+            {/* Temporarily commented out Google Sign-in */}
+            {/* <View style={styles.dividerContainer}>
               <View style={styles.divider} />
               <Text style={styles.dividerText}>OR</Text>
               <View style={styles.divider} />
@@ -178,7 +179,7 @@ const LoginScreen = () => {
               >
                 Sign in with Google
               </Button>
-            </View>
+            </View> */}
           </View>
 
           <View style={styles.footer}>
