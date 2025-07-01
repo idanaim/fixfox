@@ -11,8 +11,8 @@ import { Equipment } from '../../entities/equipment.entity';
 const MODEL_CONFIG = {
   DIAGNOSIS: 'gpt-4-0125-preview', // For complex diagnosis and analysis
   CHAT: 'gpt-3.5-turbo', // For general chat and simple queries
-  FOLLOW_UP: 'gpt-3.5-turbo', // For follow-up questions
-  ENHANCEMENT: 'gpt-4-0125-preview', // For description enhancement
+  FOLLOW_UP: 'gpt-4-0125-preview', // For follow-up questions
+  ENHANCEMENT: 'gpt-3.5-turbo', // For description enhancement
 } as const;
 
 // Interface for problem analysis results

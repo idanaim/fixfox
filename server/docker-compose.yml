@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: fixfox-api-dev
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/fixfox-api:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    # --- IMPORTANT ---
+    # You must create a .env file in the server/ directory on the EC2 instance
+    # with the following variables. Use 'nano .env' to create and edit the file.
+    #
+    # # --- Database Configuration ---
+    # DATABASE_HOST=fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com
+    # DATABASE_PORT=5432
+    # DATABASE_USER=idanaim
+    # DATABASE_PASSWORD=In16051982
+    # DATABASE_NAME=fixfoxdb
+    #
+    # # --- Authentication ---
+    # JWT_SECRET=your-strong-jwt-secret
+    #
+    # # --- OpenAI API (Optional) ---
+    # OPENAI_API_KEY=
+    env_file:
+      - .env
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3" 
