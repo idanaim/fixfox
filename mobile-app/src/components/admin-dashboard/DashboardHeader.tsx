@@ -3,11 +3,10 @@ import { View, Text, StyleSheet, Platform, TouchableOpacity, Modal, FlatList, Al
 import { Avatar, Appbar } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { colors, typography } from './admin-dashboard-styles';
+import { colors } from './admin-dashboard-styles';
 import useAuthStore from '../../store/auth.store';
 import { useBusinesses } from '../../hooks/useBusinesses';
 import LanguageSwitcher from '../LanguageSwitcher';
-import { Business } from '../../interfaces/business';
 import { useTestNotification } from '../../hooks/useNotifications';
 import NotificationBell from '../NotificationBell';
 import { PushNotificationManager } from '../PushNotificationManager';
@@ -48,7 +47,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   const handleTestNotification = async () => {
     const businessId = selectedBusiness?.id || 1; // Default to business 1
-    const userId = 22; // Default to user 1 for testing
+    const userId = 1; // Default to user 1 for testing
 
     try {
       await testNotification.mutateAsync({ businessId, userId });

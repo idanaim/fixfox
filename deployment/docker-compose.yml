@@ -28,7 +28,8 @@ services:
       - .env
     restart: always
     logging:
-      driver: "json-file"
+      driver: "awslogs"
       options:
-        max-size: "10m"
-        max-file: "3" 
+        awslogs-group: "/ecs/fixfox-api-dev" # Re-using a similar log group name
+        awslogs-region: "${AWS_REGION}"
+        awslogs-stream-prefix: "ec2-dev" 

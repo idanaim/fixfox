@@ -38,6 +38,25 @@ TAG_NAME="${PROJECT_NAME}-instance-${ENVIRONMENT}"
 echo "🚀 Starting FixFox Development EC2 Deployment"
 echo "Region: $REGION"
 echo "ECR Repository: $ECR_REPO_URL"
+echo "Environment: CI/CD = ${CI:-false}, GitHub Actions = ${GITHUB_ACTIONS:-false}"
+echo ""
+
+# Retrieve secrets from environment variables (set these locally or in CI/CD)
+echo "🔐 Using environment variables for secrets..."
+OPENAI_API_KEY=${OPENAI_API_KEY:-""}
+JWT_SECRET=${JWT_SECRET:-"$(openssl rand -base64 32)"}
+
+# Use environment variables for database credentials if available
+DATABASE_HOST=${DATABASE_HOST:-"fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com"}
+DATABASE_PORT=${DATABASE_PORT:-"5432"}
+DATABASE_USER=${DATABASE_USER:-"idanaim"}
+DATABASE_PASSWORD=${DATABASE_PASSWORD:-"In16051982"}
+DATABASE_NAME=${DATABASE_NAME:-"fixfoxdb"}
+
+echo "✅ Secrets configured:"
+echo "  - OpenAI API Key: $([ -n "$OPENAI_API_KEY" ] && echo "✅ Set" || echo "❌ Not set")"
+echo "  - JWT Secret: $([ -n "$JWT_SECRET" ] && echo "✅ Set" || echo "❌ Not set")"
+echo "  - Database Host: $DATABASE_HOST"
 echo ""
 
 # --- IAM Role and Instance Profile for ECR Access ---
@@ -67,10 +86,15 @@ aws iam create-instance-profile \
   --instance-profile-name "$INSTANCE_PROFILE_NAME" \
   2>/dev/null || echo "Instance Profile '$INSTANCE_PROFILE_NAME' already exists."
 
-# Add the role to the instance profile
-aws iam add-role-to-instance-profile \
-  --instance-profile-name "$INSTANCE_PROFILE_NAME" \
-  --role-name "$INSTANCE_ROLE_NAME"
+# Add the role to the instance profile only if it's not already attached
+if ! aws iam get-instance-profile --instance-profile-name "$INSTANCE_PROFILE_NAME" --query "InstanceProfile.Roles[?RoleName=='$INSTANCE_ROLE_NAME']" --output text | grep -q "$INSTANCE_ROLE_NAME"; then
+  aws iam add-role-to-instance-profile \
+    --instance-profile-name "$INSTANCE_PROFILE_NAME" \
+    --role-name "$INSTANCE_ROLE_NAME"
+  echo "✅ Role '$INSTANCE_ROLE_NAME' attached to profile '$INSTANCE_PROFILE_NAME'."
+else
+  echo "✅ Role '$INSTANCE_ROLE_NAME' is already attached to profile '$INSTANCE_PROFILE_NAME'."
+fi
 
 echo "✅ IAM setup complete."
 echo ""
@@ -113,7 +137,7 @@ echo ""
 # --- Build and Push Docker Image ---
 echo "📦 Building and pushing Docker image to ECR..."
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
-docker build -t $ECR_REPO_NAME:$IMAGE_TAG -f server/Dockerfile .
+docker build -t $ECR_REPO_NAME:$IMAGE_TAG -f Dockerfile .
 docker tag $ECR_REPO_NAME:$IMAGE_TAG $ECR_REPO_URL:$IMAGE_TAG
 docker push $ECR_REPO_URL:$IMAGE_TAG
 echo "✅ Docker image pushed."
@@ -159,15 +183,21 @@ rm user-data.sh
 # --- Create Deployment Package ---
 echo "📦 Creating deployment package..."
 mkdir -p deployment
+
 # Create the .env file with the correct variables and credentials
 cat > deployment/.env <<EOF
+# --- Docker-Compose Variables ---
+AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
+AWS_REGION=$REGION
+
 # --- Server Environment Variables ---
-DATABASE_HOST=fixfoxdb.cb8aywmkgppq.us-west-2.rds.amazonaws.com
-DATABASE_PORT=5432
-DATABASE_USER=idanaim
-DATABASE_PASSWORD=In16051982
-DATABASE_NAME=fixfoxdb
-JWT_SECRET=your-strong-jwt-secret
+DATABASE_HOST=$DATABASE_HOST
+DATABASE_PORT=$DATABASE_PORT
+DATABASE_USER=$DATABASE_USER
+DATABASE_PASSWORD=$DATABASE_PASSWORD
+DATABASE_NAME=$DATABASE_NAME
+JWT_SECRET=$JWT_SECRET
+OPENAI_API_KEY=$OPENAI_API_KEY
 # Add other required environment variables
 EOF
 cp server/docker-compose.yml deployment/
@@ -184,8 +214,34 @@ while ! ssh -i $SSH_KEY_PATH -o "StrictHostKeyChecking=no" -o "ConnectionAttempt
 done
 # Copy deployment files
 scp -i $SSH_KEY_PATH -o "StrictHostKeyChecking=no" -r deployment/* ec2-user@$PUBLIC_IP:~/
+# Explicitly copy the .env file to ensure it gets there
+scp -i $SSH_KEY_PATH -o "StrictHostKeyChecking=no" deployment/.env ec2-user@$PUBLIC_IP:~/.env
 # SSH and run docker-compose
 ssh -i $SSH_KEY_PATH -o "StrictHostKeyChecking=no" ec2-user@$PUBLIC_IP <<EOF
+  echo "Checking if .env file exists:"
+  ls -la ~/.env
+  echo "Contents of .env file:"
+  cat ~/.env
+  
+  # Create a secrets file template if it doesn't exist
+  if [ ! -f ~/.env.secrets ]; then
+    echo "Creating secrets template file..."
+    cat > ~/.env.secrets << 'SECRETS_EOF'
+# FixFox Secrets - Update these values manually
+# To update: ssh into the server and edit this file with: nano ~/.env.secrets
+export OPENAI_API_KEY="your-openai-key-here"
+export JWT_SECRET="your-jwt-secret-here"
+SECRETS_EOF
+    echo "📝 Created ~/.env.secrets template. SSH into the server to update it:"
+    echo "   ssh -i $SSH_KEY_PATH ec2-user@$PUBLIC_IP"
+    echo "   nano ~/.env.secrets"
+  fi
+  
+  # Source secrets if they exist
+  if [ -f ~/.env.secrets ]; then
+    source ~/.env.secrets
+  fi
+  
   aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REPO_URL
   docker pull $ECR_REPO_URL:$IMAGE_TAG
   docker-compose up -d
