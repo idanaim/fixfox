@@ -7,6 +7,7 @@ import {
   Put,
   UseGuards,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -53,7 +54,6 @@ export class ChatController {
   async getSessionMessages(@Param('sessionId') sessionId: number) {
     return this.chatService.getSessionMessages(sessionId);
   }
-
   @Put('sessions/:sessionId/status')
   async updateSessionStatus(
     @Param('sessionId') sessionId: number,
@@ -252,5 +252,263 @@ export class ChatController {
     );
 
     return diagnosisResult;
+  }
+
+  // New endpoints for the 12-step flow
+  @Get('sessions/:sessionId/open-issues')
+  async getOpenIssues(
+    @Param('sessionId') sessionId: number,
+    @Query('equipmentId') equipmentId: number,
+    @Query('businessId') businessId: number,
+    @Query('language') language?: string
+  ) {
+    try {
+      const openIssues = await this.chatService.getOpenIssuesByEquipment(
+        equipmentId,
+        businessId
+      );
+
+      // Add a message to the chat about the open issues
+      const message = language === 'he'
+        ? `נמצאו ${openIssues.length} תקלות פתוחות לציוד זה`
+        : `Found ${openIssues.length} open issues for this equipment`;
+
+      await this.chatService.addMessage(sessionId, message, 'system', {
+        language,
+        openIssues
+      });
+
+      return openIssues;
+    } catch (error) {
+      console.error('Error getting open issues:', error);
+      throw error;
+    }
+  }
+
+  @Post('sessions/:sessionId/similar-issues')
+  async checkSimilarIssues(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      description: string;
+      equipmentId: number;
+      businessId: number;
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const similarIssues = await this.chatService.findSimilarIssuesInBusiness(
+        body.description,
+        body.equipmentId,
+        body.businessId
+      );
+
+      // Log the check
+      await this.chatService.addMessage(
+        sessionId,
+        language === 'he' 
+          ? 'בודק בעיות דומות בעסק שלך...'
+          : 'Checking for similar issues in your business...',
+        'system',
+        { language, step: 'checking_similar_issues' }
+      );
+
+      return similarIssues;
+    } catch (error) {
+      console.error('Error checking similar issues:', error);
+      return [];
+    }
+  }
+
+  @Post('sessions/:sessionId/matching-problems')
+  async getMatchingProblems(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      description: string;
+      equipmentId: number;
+      businessId: number;
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const matchingProblems = await this.chatService.findMatchingProblemsFromOtherBusinesses(
+        body.description,
+        body.equipmentId,
+        body.businessId
+      );
+
+      // Log the search
+      await this.chatService.addMessage(
+        sessionId,
+        language === 'he' 
+          ? 'מחפש פתרונות מעסקים אחרים...'
+          : 'Searching for solutions from other businesses...',
+        'system',
+        { language, step: 'matching_solutions' }
+      );
+
+      return matchingProblems;
+    } catch (error) {
+      console.error('Error getting matching problems:', error);
+      return [];
+    }
+  }
+
+  @Post('sessions/:sessionId/solution-success')
+  async saveSolutionSuccess(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      solutionText: string;
+      equipmentId: number;
+      businessId: number;
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const result = await this.chatService.recordSolutionSuccess(
+        sessionId,
+        body.solutionText,
+        body.equipmentId,
+        body.businessId
+      );
+
+      // Log the success
+      await this.chatService.addMessage(
+        sessionId,
+        language === 'he' 
+          ? 'הפתרון עבד! שומר את הפתרון לעתיד...'
+          : 'Solution worked! Saving solution for future use...',
+        'system',
+        { language, step: 'solution_feedback' }
+      );
+
+      return result;
+    } catch (error) {
+      console.error('Error saving solution success:', error);
+      throw error;
+    }
+  }
+
+  @Post('sessions/:sessionId/new-problem-solution')
+  async createNewProblemSolution(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      problemData: {
+        description: string;
+        equipmentId: number;
+        businessId: number;
+        userId: number;
+      };
+      solutionData: {
+        treatment: string;
+        effectiveness: number;
+        resolvedBy: string;
+      };
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const result = await this.chatService.createNewProblemWithSolution(
+        sessionId,
+        body.problemData,
+        body.solutionData
+      );
+
+      // Log the creation
+      await this.chatService.addMessage(
+        sessionId,
+        language === 'he' 
+          ? 'יצר בעיה חדשה ופתרון במאגר הידע'
+          : 'Created new problem and solution in knowledge base',
+        'system',
+        { language, step: 'ai_solution_testing' }
+      );
+
+      return result;
+    } catch (error) {
+      console.error('Error creating new problem solution:', error);
+      throw error;
+    }
+  }
+
+  @Post('sessions/:sessionId/enhanced-description')
+  async createEnhancedDescription(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      description: string;
+      equipment: any;
+      triedSolutions: string[];
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const enhancedDescription = await this.chatService.generateEnhancedDescriptionForTechnician(
+        body.description,
+        body.equipment,
+        body.triedSolutions,
+        language
+      );
+
+      return { enhancedDescription };
+    } catch (error) {
+      console.error('Error creating enhanced description:', error);
+      throw error;
+    }
+  }
+
+  @Post('sessions/:sessionId/assign-technician')
+  async assignToTechnician(
+    @Param('sessionId') sessionId: number,
+    @Body()
+    body: {
+      equipmentId: number;
+      businessId: number;
+      description: string;
+      triedSolutions: string[];
+      priority: string;
+      language?: string;
+    }
+  ) {
+    const language = body.language || 'en';
+    
+    try {
+      const assignment = await this.chatService.assignIssueToTechnician(
+        sessionId,
+        body.equipmentId,
+        body.businessId,
+        body.description,
+        body.triedSolutions,
+        body.priority
+      );
+
+      // Log the assignment
+      await this.chatService.addMessage(
+        sessionId,
+        language === 'he' 
+          ? 'הבעיה הועברה לטכנאי עם תיאור מפורט'
+          : 'Issue assigned to technician with detailed description',
+        'system',
+        { language, step: 'technician_assignment' }
+      );
+
+      return assignment;
+    } catch (error) {
+      console.error('Error assigning to technician:', error);
+      throw error;
+    }
   }
 }

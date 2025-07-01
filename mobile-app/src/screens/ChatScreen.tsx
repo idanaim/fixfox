@@ -19,6 +19,9 @@ import SolutionSuggestion from '../components/chat/SolutionSuggestion';
 import ProblemDiagnosisDisplay from '../components/chat/ProblemDiagnosisDisplay';
 import EnhancedDescriptionApproval from '../components/chat/EnhancedDescriptionApproval';
 import FollowUpQuestionsContainer from '../components/chat/FollowUpQuestionsContainer';
+import FlowStepIndicator from '../components/chat/FlowStepIndicator';
+import OpenIssuesDisplay from '../components/chat/OpenIssuesDisplay';
+import ConfirmationDialog from '../components/chat/ConfirmationDialog';
 import { useBusinesses } from '../hooks/useBusinesses';
 import { useChatLogic } from '../hooks/useChatLogic';
 import { useChatStore } from '../store/chat.store';
@@ -41,6 +44,8 @@ const ChatScreen: React.FC = () => {
 const { user } = useAuthStore();
   const {
     // State
+    currentStep,
+    flowHistory,
     messages,
     input,
     loading,
@@ -52,6 +57,7 @@ const { user } = useAuthStore();
     originalDescription,
     showEnhancedDescriptionApproval,
     isLoadingAI,
+    openIssues,
 
     setInput,
     handleSend,
@@ -68,13 +74,29 @@ const { user } = useAuthStore();
     handleImproveDescription,
     handleAssignToTechnician,
     handleGetAISolutions,
-    handleSolutionHelped
+    handleSolutionHelped,
+    handleSelectOpenIssue,
+    handleContinueWithNewIssue,
+    handleUserConfirmation
   } = useChatLogic({
     sessionId: sessionId ? Number(sessionId) : null,
     userId:user!.id,
     businessId,
     selectedBusinessId: selectedBusiness?.id || null,
   });
+
+  // Function to render confirmation buttons for system messages
+  const renderMessageActions = (message: ChatMessage) => {
+    if (message.sender === 'system' && message.metadata?.type === 'confirmation') {
+      return (
+        <ConfirmationDialog
+          onConfirm={() => handleUserConfirmation(message.metadata.action, true)}
+          onCancel={() => handleUserConfirmation(message.metadata.action, false)}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <KeyboardAvoidingView
@@ -88,8 +110,27 @@ const { user } = useAuthStore();
         selectedBusiness={selectedBusiness}
         onSelectBusiness={setSelectedBusiness}
       />
+      
+      {/* Flow Step Indicator */}
+      <FlowStepIndicator currentStep={currentStep} flowHistory={flowHistory} />
+      
       <View style={styles.chatContainer}>
-        <ChatMessages messages={messages} />
+        <ChatMessages 
+          messages={messages} 
+          renderMessageActions={renderMessageActions}
+        />
+
+        {/* Open Issues Display */}
+        {currentStep === 'checking_open_issues' && openIssues && openIssues.length > 0 && (
+          <View style={styles.componentContainer}>
+            <Divider style={styles.divider} />
+            <OpenIssuesDisplay
+              issues={openIssues}
+              onSelectIssue={handleSelectOpenIssue}
+              onContinue={handleContinueWithNewIssue}
+            />
+          </View>
+        )}
 
         {/* Appliance Selector */}
         {applianceOptions && (

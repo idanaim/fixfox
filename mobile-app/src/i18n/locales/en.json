@@ -2,9 +2,9 @@
   "common": {
     "solve_equipment_issue": "Solve Equipment Issue",
     "maintenance_assistant": "Maintenance Assistant",
-    "solutions_your_business": "Solutions Used in Your Business:",
-    "solutions_other_businesses": "Solutions Used by Other Businesses:",
-    "ai_generated_solutions": "AI-Generated Solutions:",
+    "solutions_your_business": "Solutions from Your Business",
+    "solutions_other_businesses": "Solutions from Other Businesses",
+    "ai_generated_solutions": "AI Generated Solutions:",
     "submit": "Submit",
     "cancel": "Cancel",
     "send": "Send",
@@ -17,7 +17,12 @@
     "email": "Email",
     "password": "Password",
     "use_original": "Use Original",
-    "use_enhanced": "Use Enhanced"
+    "use_enhanced": "Use Enhanced",
+    "continue_anyway": "Continue with New Issue",
+    "confirm": "Yes, Continue",
+    "solutions_your_business": "Solutions from Your Business",
+    "solutions_other_businesses": "Solutions from Other Businesses",
+    "ai_generated_solutions": "AI Generated Solutions"
   },
   "dashboard": {
     "selectBusiness": "Select Business",
@@ -60,7 +65,15 @@
     "no_similar_problems": "No similar problems found.",
     "using_enhanced_description": "Using enhanced description: \"{{description}}\"",
     "using_original_description": "Using original description for diagnosis.",
-    "additional_info_prompt": "Thank you for the additional information. Is there anything else you'd like to add?"
+    "additional_info_prompt": "Thank you for the additional information. Is there anything else you'd like to add?",
+    "open_issues_found": "Open Issues Found",
+    "open_issues_description": "We found some open issues for this equipment. Would you like to view one of these existing issues or continue with a new one?",
+    "selecting_existing_issue": "Viewing existing issue #{{issueId}}",
+    "continuing_with_new_issue": "Continuing with a new issue",
+    "confirm_continue_new_issue": "Would you like to proceed with creating a new issue? This will help us gather more information about your specific problem.",
+    "starting_follow_up": "Great! Let's gather some more information about your issue.",
+    "cancelled_new_issue": "Okay, you can select an existing issue or try again when ready.",
+    "follow_up_summary": "Summary of follow-up questions: {{summary}}"
   },
   "admin": {
     "dashboard": {
@@ -378,5 +391,9 @@
       "message": "There was an error setting up your account. Please try again.",
       "buttonText": "Try Again"
     }
+  },
+  "errors": {
+    "selecting_issue": "There was an error selecting the existing issue. Please try again.",
+    "continuing_with_new_issue": "There was an error continuing with the new issue. Please try again."
   }
 }

@@ -10,13 +10,15 @@ export interface ChatSession {
 }
 
 export interface ChatMessage {
-  id: number;
+  id?: number;
   content: string;
-  type: 'user' | 'system' | 'assistant';
-  createdAt: string;
+  sender: 'user' | 'system' | 'assistant';
   metadata?: {
-    userId?: number;
-    [key: string]: any;
+    type?: string;
+    action?: string;
+    language?: string;
+    step?: string;
+    openIssues?: any[];
   };
 }
 
@@ -134,14 +136,20 @@ export const chatApi = {
   addMessage: async (
     sessionId: number,
     content: string,
-    type: 'user' | 'system' | 'ai',
-    metadata?: any
+    sender: 'user' | 'system' | 'assistant',
+    metadata?: {
+      type?: string;
+      action?: string;
+      language?: string;
+      step?: string;
+      openIssues?: any[];
+    }
   ): Promise<ChatMessage> => {
     try {
       const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/messages`, {
         content,
-        type,
+        type : sender,
         language,
         metadata: {
           ...metadata,
@@ -551,17 +559,20 @@ export const chatApi = {
   enhanceProblemDescription: async (
     sessionId: number,
     description: string,
-    equipment?: Equipment,
-    followUpQuestions: FollowUpQuestion[] = []
-  ): Promise<{ originalDescription: string; enhancedDescription: string }> => {
+    equipment: Equipment,
+    followUpQuestions: any[] = []
+  ): Promise<DescriptionEnhancementResult> => {
     try {
       const language = getCurrentLanguage();
-      const response = await api.post(`/chat/sessions/${sessionId}/enhance-description`, {
-        description,
-        equipment,
-        followUpQuestions,
-        language
-      });
+      const response = await api.post(
+        `/chat/sessions/${sessionId}/enhance-description`,
+        {
+          description,
+          equipment,
+          followUpQuestions,
+          language,
+        }
+      );
       return response.data;
     } catch (error) {
       console.error('Error enhancing problem description:', error);
@@ -613,6 +624,184 @@ export const chatApi = {
       return { success: true };
     } catch (error) {
       console.error('Error recording solution effectiveness:', error);
+      throw error;
+    }
+  },
+
+  // New methods for the 12-step flow
+  getOpenIssues: async (
+    sessionId: number,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any[]> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.get(`/chat/sessions/${sessionId}/open-issues`, {
+        params: {
+          equipmentId,
+          businessId,
+          language
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting open issues:', error);
+      throw error;
+    }
+  },
+
+  checkSimilarIssues: async (
+    sessionId: number,
+    description: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any[]> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/similar-issues`, {
+        description,
+        equipmentId,
+        businessId,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error checking similar issues:', error);
+      throw error;
+    }
+  },
+
+  getMatchingProblems: async (
+    sessionId: number,
+    description: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<Problem[]> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/matching-problems`, {
+        description,
+        equipmentId,
+        businessId,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error getting matching problems:', error);
+      throw error;
+    }
+  },
+
+  saveSolutionSuccess: async (
+    sessionId: number,
+    solutionText: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/solution-success`, {
+        solutionText,
+        equipmentId,
+        businessId,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error saving solution success:', error);
+      throw error;
+    }
+  },
+
+  createNewProblemSolution: async (
+    sessionId: number,
+    problemData: {
+      description: string;
+      equipmentId: number;
+      businessId: number;
+      userId: number;
+    },
+    solutionData: {
+      treatment: string;
+      effectiveness: number;
+      resolvedBy: string;
+    }
+  ): Promise<any> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/new-problem-solution`, {
+        problemData,
+        solutionData,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating new problem solution:', error);
+      throw error;
+    }
+  },
+
+  createEnhancedDescription: async (
+    sessionId: number,
+    description: string,
+    equipment: Equipment,
+    triedSolutions: string[]
+  ): Promise<string> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/enhanced-description`, {
+        description,
+        equipment,
+        triedSolutions,
+        language
+      });
+      return response.data.enhancedDescription;
+    } catch (error) {
+      console.error('Error creating enhanced description:', error);
+      throw error;
+    }
+  },
+
+  assignToTechnician: async (
+    sessionId: number,
+    assignmentData: {
+      equipmentId: number;
+      businessId: number;
+      description: string;
+      triedSolutions: string[];
+      priority: string;
+    }
+  ): Promise<any> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/assign-technician`, {
+        ...assignmentData,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error assigning to technician:', error);
+      throw error;
+    }
+  },
+
+  enhanceDescription: async (
+    sessionId: number,
+    description: string,
+    equipment: Equipment,
+    followUpQuestions: any[]
+  ): Promise<DescriptionEnhancementResult> => {
+    try {
+      const language = getCurrentLanguage();
+      const response = await api.post(`/chat/sessions/${sessionId}/enhance-description`, {
+        description,
+        equipment,
+        followUpQuestions,
+        language
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error enhancing description:', error);
       throw error;
     }
   },

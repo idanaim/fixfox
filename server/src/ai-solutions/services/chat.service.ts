@@ -432,28 +432,260 @@ export class ChatService {
     sessionId: number,
     question: any // Changed type to any to avoid type conflicts
   ): Promise<void> {
-    const session = await this.chatSessionRepository.findOne({
-      where: { id: sessionId },
+    await this.updateSessionStatus(sessionId, 'follow_up_question_set', {
+      currentFollowUpQuestion: question,
     });
+  }
 
-    if (!session) {
-      throw new Error('Session not found');
+  // New methods for the 12-step flow
+  async getOpenIssuesByEquipment(
+    equipmentId: number,
+    businessId: number
+  ): Promise<any[]> {
+    try {
+      // Find all open issues for this equipment in this business
+      const openIssues = await this.issueRepository.find({
+        where: {
+          equipment: { id: equipmentId },
+          business: { id: businessId },
+          status: 'open'
+        },
+        relations: ['problem', 'solution', 'equipment'],
+        order: { createdAt: 'DESC' }
+      });
+
+      return openIssues.map(issue => ({
+        id: issue.id,
+        problem: issue.problem,
+        solution: issue.solution,
+        equipment: issue.equipment,
+        status: issue.status,
+        createdAt: issue.createdAt,
+        openedBy: issue.openedBy
+      }));
+    } catch (error) {
+      console.error('Error getting open issues:', error);
+      throw error;
     }
+  }
 
-    // Initialize metadata if needed
-    const metadata = session.metadata || {};
+  async findSimilarIssuesInBusiness(
+    description: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any[]> {
+    try {
+      // Get all issues for the same equipment in the business
+      const businessIssues = await this.issueRepository
+        .createQueryBuilder('issue')
+        .leftJoinAndSelect('issue.problem', 'problem')
+        .leftJoinAndSelect('issue.equipment', 'equipment')
+        .leftJoinAndSelect('issue.solution', 'solution')
+        .where('issue.equipmentId = :equipmentId', { equipmentId })
+        .andWhere('issue.businessId = :businessId', { businessId })
+        .andWhere('issue.solution IS NOT NULL') // Only issues with solutions
+        .orderBy('issue.createdAt', 'DESC')
+        .getMany();
 
-    // Set the current follow-up question (storing it as a plain object)
-    metadata.currentFollowUpQuestion = {
-      question: question.question,
-      type: question.type,
-      options: question.options,
-      context: question.context,
-    };
+      if (businessIssues.length === 0) {
+        return [];
+      }
 
-    // Update the session metadata
-    await this.chatSessionRepository.update(sessionId, {
-      metadata,
-    });
+      // Use AI to find similar issues
+      const issueDescriptions = businessIssues.map((issue) => ({
+        id: issue.id,
+        description: issue.problem?.description || '',
+      }));
+
+      const similarIssueIds = await this.aiService.findSimilarIssues(
+        description,
+        issueDescriptions,
+        5 // maxResults
+      );
+
+      // Return similar issues with solutions
+      const similarIssues = businessIssues.filter((issue) =>
+        similarIssueIds.includes(issue.id)
+      );
+
+      return similarIssues;
+    } catch (error) {
+      console.error('Error finding similar issues in business:', error);
+      return [];
+    }
+  }
+
+  async findMatchingProblemsFromOtherBusinesses(
+    description: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any[]> {
+    try {
+      // Get equipment details to find similar equipment types
+      const equipment = await this.equipmentRepository.findOne({
+        where: { id: equipmentId },
+      });
+
+      if (!equipment) {
+        return [];
+      }
+
+      // Find problems from other businesses with similar equipment
+      // Use the public method instead of private one
+      const problems = await this.problemService.findSimilarProblems(
+        description,
+        equipmentId,
+        businessId
+      );
+
+      return problems;
+    } catch (error) {
+      console.error('Error finding matching problems from other businesses:', error);
+      return [];
+    }
+  }
+
+  async recordSolutionSuccess(
+    sessionId: number,
+    solutionText: string,
+    equipmentId: number,
+    businessId: number
+  ): Promise<any> {
+    try {
+      // Get session details
+      const session = await this.getSessionWithRelations(sessionId);
+      if (!session) {
+        throw new Error('Session not found');
+      }
+
+      // Create a new issue with the successful solution
+      const issue = this.issueRepository.create({
+        business: { id: businessId },
+        equipment: { id: equipmentId },
+        openedBy: session.user,
+        status: 'resolved',
+        cost: 0,
+      });
+
+      const savedIssue = await this.issueRepository.save(issue);
+
+      // Update session status
+      await this.updateSessionStatus(sessionId, 'solution_successful', {
+        issueId: savedIssue.id,
+        solutionText: solutionText,
+      });
+
+      return savedIssue;
+    } catch (error) {
+      console.error('Error recording solution success:', error);
+      throw error;
+    }
+  }
+
+  async createNewProblemWithSolution(
+    sessionId: number,
+    problemData: {
+      description: string;
+      equipmentId: number;
+      businessId: number;
+      userId: number;
+    },
+    solutionData: {
+      treatment: string;
+      effectiveness: number;
+      resolvedBy: string;
+    }
+  ): Promise<any> {
+    try {
+      // Create the problem
+      const problem = await this.problemService.createProblem({
+        description: problemData.description,
+        equipmentId: problemData.equipmentId,
+        businessId: problemData.businessId,
+        userId: problemData.userId,
+      });
+
+      // Create the solution
+      const solution = await this.solutionService.create({
+        problemId: problem.id,
+        treatment: solutionData.treatment,
+        resolvedBy: solutionData.resolvedBy,
+        source: 'ai_generated',
+      });
+
+      // Update session status
+      await this.updateSessionStatus(sessionId, 'ai_solution_successful', {
+        problemId: problem.id,
+        solutionId: solution.id,
+      });
+
+      return {
+        problem: problem,
+        solution: solution,
+      };
+    } catch (error) {
+      console.error('Error creating new problem with solution:', error);
+      throw error;
+    }
+  }
+
+  async generateEnhancedDescriptionForTechnician(
+    description: string,
+    equipment: any,
+    triedSolutions: string[],
+    language = 'en'
+  ): Promise<string> {
+    try {
+      // Create enhanced description with tried solutions
+      const triedSolutionsText = triedSolutions.length > 0 
+        ? `\n\nTried solutions:\n${triedSolutions.map(s => `- ${s}`).join('\n')}`
+        : '';
+      
+      const enhancedDescription = `Equipment: ${equipment.manufacturer} ${equipment.model}\n\nIssue Description:\n${description}${triedSolutionsText}\n\nRequires technician attention.`;
+
+      return enhancedDescription;
+    } catch (error) {
+      console.error('Error generating enhanced description for technician:', error);
+      // Return original description if AI fails
+      return description;
+    }
+  }
+
+  async assignIssueToTechnician(
+    sessionId: number,
+    equipmentId: number,
+    businessId: number,
+    description: string,
+    triedSolutions: string[],
+    priority: string
+  ): Promise<any> {
+    try {
+      // Get session details
+      const session = await this.getSessionWithRelations(sessionId);
+      if (!session) {
+        throw new Error('Session not found');
+      }
+
+      // Update session status to indicate assignment
+      await this.updateSessionStatus(sessionId, 'assigned_to_technician', {
+        equipmentId: equipmentId,
+        businessId: businessId,
+        description: description,
+        triedSolutions: triedSolutions,
+        priority: priority,
+      });
+
+      return {
+        status: 'assigned_to_technician',
+        equipmentId: equipmentId,
+        businessId: businessId,
+        description: description,
+        triedSolutions: triedSolutions,
+        priority: priority,
+      };
+    } catch (error) {
+      console.error('Error assigning issue to technician:', error);
+      throw error;
+    }
   }
 }

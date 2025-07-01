@@ -2,11 +2,11 @@
   "common": {
     "solve_equipment_issue": "פתור בעיית ציוד",
     "maintenance_assistant": "עוזר תחזוקה",
-    "solutions_your_business": "פתרונות בשימוש בעסק שלך:",
-    "solutions_other_businesses": "פתרונות בשימוש בעסקים אחרים:",
-    "ai_generated_solutions": "פתרונות שנוצרו על ידי בינה מלאכותית:",
+    "solutions_your_business": "פתרונות מהעסק שלך",
+    "solutions_other_businesses": "פתרונות מעסקים אחרים",
+    "ai_generated_solutions": "פתרונות מבוססי בינה מלאכותית",
     "submit": "שלח",
-    "cancel": "ביטול",
+    "cancel": "לא, חזור",
     "send": "שלח",
     "add_new": "הוסף חדש",
     "approve": "אשר",
@@ -17,7 +17,9 @@
     "email": "דואר אלקטרוני",
     "password": "סיסמה",
     "use_original": "השתמש במקורי",
-    "use_enhanced": "השתמש במשופר"
+    "use_enhanced": "השתמש במשופר",
+    "continue_anyway": "המשך עם תקלה חדשה",
+    "confirm": "כן, המשך"
   },
   "dashboard": {
     "selectBusiness": "בחר עסק",
@@ -60,7 +62,15 @@
     "no_similar_problems": "לא נמצאו בעיות דומות.",
     "using_enhanced_description": "משתמש בתיאור משופר: \"{{description}}\"",
     "using_original_description": "משתמש בתיאור המקורי לאבחון.",
-    "additional_info_prompt": "תודה על המידע הנוסף. האם יש משהו נוסף שתרצה להוסיף?"
+    "additional_info_prompt": "תודה על המידע הנוסף. האם יש משהו נוסף שתרצה להוסיף?",
+    "open_issues_found": "נמצאו תקלות פתוחות",
+    "open_issues_description": "מצאנו מספר תקלות פתוחות לציוד זה. האם תרצה לצפות באחת מהתקלות הקיימות או להמשיך עם תקלה חדשה?",
+    "selecting_existing_issue": "צופה בתקלה קיימת מספר {{issueId}}",
+    "continuing_with_new_issue": "ממשיך עם תקלה חדשה",
+    "confirm_continue_new_issue": "האם תרצה להמשיך ביצירת תקלה חדשה? זה יעזור לנו לאסוף מידע נוסף על הבעיה הספציפית שלך.",
+    "starting_follow_up": "מצוין! בוא נאסוף עוד מידע על התקלה שלך.",
+    "cancelled_new_issue": "בסדר, אתה יכול לבחור תקלה קיימת או לנסות שוב כשתהיה מוכן.",
+    "follow_up_summary": "סיכום שאלות המשך: {{summary}}"
   },
   "admin": {
     "dashboard": {
@@ -363,5 +373,9 @@
       "title": "שגיאה",
       "message": "יצירת החשבון נכשלה. אנא נסה שוב."
     }
+  },
+  "errors": {
+    "selecting_issue": "אירעה שגיאה בבחירת התקלה הקיימת. אנא נסה שוב.",
+    "continuing_with_new_issue": "אירעה שגיאה בהמשך לתקלה חדשה. אנא נסה שוב."
   }
 }
