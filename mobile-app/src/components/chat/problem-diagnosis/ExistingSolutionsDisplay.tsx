@@ -14,7 +14,7 @@ interface ExistingSolutionsDisplayProps {
   onImproveDescription?: () => void;
   onAssignToTechnician?: () => void;
   onGetAISolutions?: () => void;
-  onSolutionHelped?: (solutionId: number, problemDescription: string) => void;
+  onSolutionHelped?: (solutionText: string) => void;
   showAssignTechnician?: boolean;
   isLoadingAI?: boolean;
 }
@@ -149,7 +149,7 @@ const ExistingSolutionsDisplay: React.FC<ExistingSolutionsDisplayProps> = ({
                 <View style={styles.buttonContainer}>
                   <Button
                     mode="outlined"
-                    onPress={() => onSolutionHelped(item.solutions![0].id, item.description)}
+                    onPress={() => onSolutionHelped(item.solutions![0].treatment)}
                     style={styles.helpedButton}
                     contentStyle={styles.helpedButtonContent}
                     labelStyle={styles.helpedButtonLabel}

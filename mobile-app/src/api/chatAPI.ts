@@ -12,13 +12,17 @@ export interface ChatSession {
 export interface ChatMessage {
   id?: number;
   content: string;
-  sender: 'user' | 'system' | 'assistant';
+  type: 'user' | 'system' | 'assistant';
+  createdAt?: string;
   metadata?: {
     type?: string;
     action?: string;
     language?: string;
     step?: string;
     openIssues?: any[];
+    options?: Equipment[];
+    solutions?: Solution[];
+    followupQuestions?: any[];
   };
 }
 
@@ -136,20 +140,23 @@ export const chatApi = {
   addMessage: async (
     sessionId: number,
     content: string,
-    sender: 'user' | 'system' | 'assistant',
+    type: 'user' | 'system' | 'assistant',
     metadata?: {
       type?: string;
       action?: string;
       language?: string;
       step?: string;
       openIssues?: any[];
+      options?: Equipment[];
+      solutions?: Solution[];
+      followupQuestions?: any[];
     }
   ): Promise<ChatMessage> => {
     try {
       const language = getCurrentLanguage();
       const response = await api.post(`/chat/sessions/${sessionId}/messages`, {
         content,
-        type : sender,
+        type,
         language,
         metadata: {
           ...metadata,
@@ -802,6 +809,40 @@ export const chatApi = {
       return response.data;
     } catch (error) {
       console.error('Error enhancing description:', error);
+      throw error;
+    }
+  },
+
+  findSolutionsForSymptom: async (
+    sessionId: number,
+    description: string,
+    equipment: Equipment,
+  ): Promise<Problem[]> => {
+    try {
+      const response = await api.post(
+        `/chat/sessions/${sessionId}/symptom-check`,
+        { description, equipment }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error finding solutions for symptom:', error);
+      throw error;
+    }
+  },
+
+  checkSymptoms: async (
+    sessionId: number,
+    description: string,
+    equipment: Equipment
+  ): Promise<Problem[]> => {
+    try {
+      const response = await api.post(`/chat/sessions/${sessionId}/symptom-check`, {
+        description,
+        equipment,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error checking symptoms:', error);
       throw error;
     }
   },

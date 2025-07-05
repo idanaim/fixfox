@@ -22,7 +22,26 @@
     "confirm": "Yes, Continue",
     "solutions_your_business": "Solutions from Your Business",
     "solutions_other_businesses": "Solutions from Other Businesses",
-    "ai_generated_solutions": "AI Generated Solutions"
+    "ai_generated_solutions": "AI Generated Solutions",
+    "solution_helped": "This solution helped",
+    "solution_not_helped": "This solution didn't help"
+  },
+  "flow": {
+    "step1": "Initial Description",
+    "step2a": "Appliance Recognition",
+    "step2b": "Appliance Selection",
+    "step3": "Checking Open Issues",
+    "step4": "Follow-up Questions",
+    "step5": "Checking Similar Issues",
+    "step6": "Matching Solutions",
+    "step7": "Solution Presentation",
+    "step8": "Solution Testing",
+    "step9": "Solution Feedback",
+    "step10": "AI Solution Generation",
+    "step11": "AI Solution Testing",
+    "step12": "Technician Assignment",
+    "completed": "Completed",
+    "step_progress": "Step {{current}} of {{total}}"
   },
   "dashboard": {
     "selectBusiness": "Select Business",
@@ -46,7 +65,10 @@
     "unknown_category": "Equipment",
     "active": "Active",
     "add_new_equipment": "Add New Equipment",
-    "no_matching": "We couldn't find a matching appliance. Please provide more details below."
+    "no_matching": "We couldn't find a matching appliance. Please provide more details below.",
+    "searching": "Searching equipment...",
+    "selected": "Selected: {{name}}",
+    "created": "Created new equipment: {{name}}"
   },
   "chat": {
     "session_started": "What can I help with?",
@@ -67,13 +89,30 @@
     "using_original_description": "Using original description for diagnosis.",
     "additional_info_prompt": "Thank you for the additional information. Is there anything else you'd like to add?",
     "open_issues_found": "Open Issues Found",
+    "found_open_issues": "Found {{count}} open issues for this equipment",
     "open_issues_description": "We found some open issues for this equipment. Would you like to view one of these existing issues or continue with a new one?",
     "selecting_existing_issue": "Viewing existing issue #{{issueId}}",
     "continuing_with_new_issue": "Continuing with a new issue",
     "confirm_continue_new_issue": "Would you like to proceed with creating a new issue? This will help us gather more information about your specific problem.",
-    "starting_follow_up": "Great! Let's gather some more information about your issue.",
-    "cancelled_new_issue": "Okay, you can select an existing issue or try again when ready.",
-    "follow_up_summary": "Summary of follow-up questions: {{summary}}"
+    "starting_follow_up": "Great, let's proceed. I have a few more questions for you.",
+    "cancelled_new_issue": "Action cancelled. You can select an existing issue from the list.",
+    "session_ended_goodbye": "No problem. Feel free to start a new chat if you need help in the future. Goodbye!",
+    "navigating_to_issue": "Navigating to issue #{{issueId}}...",
+    "follow_up_summary": "Based on your answers, here is a summary: {{summary}}",
+    "found_matching_solutions_from_symptoms": "Based on your description, I found some solutions that have worked for similar symptoms:",
+    "found_similar_problems_other_businesses": "Found similar problems from other businesses:",
+    "solution_suggestion": "Here's a solution that might help:",
+    "solution_feedback_request": "Did this solution help resolve your issue?",
+    "trying_solution": "Trying solution: \"{{solution}}\"",
+    "solution_worked": "Great! The solution worked.",
+    "solution_not_worked": "The solution didn't work. Let's try something else.",
+    "checking_symptoms": "Checking for similar symptoms...",
+    "found_solutions": "I found {{count}} potential solution(s) that might help.",
+    "loading_questions": "Loading questions...",
+    "processing_answers": "Processing your answers...",
+    "description_approved": "Description approved and ready for diagnosis.",
+    "ai_solutions_generated": "AI solutions have been generated.",
+    "generating_ai_solutions": "Generating AI solutions..."
   },
   "admin": {
     "dashboard": {
@@ -394,6 +433,8 @@
   },
   "errors": {
     "selecting_issue": "There was an error selecting the existing issue. Please try again.",
-    "continuing_with_new_issue": "There was an error continuing with the new issue. Please try again."
+    "continuing_with_new_issue": "There was an error continuing with the new issue. Please try again.",
+    "appliance_recognition": "Sorry, I couldn't find matching equipment. Please try describing your equipment differently.",
+    "selecting_issue": "Error selecting issue. Please try again."
   }
 }

@@ -6,13 +6,16 @@ import axios from 'axios';
 import { Problem } from '../entities/problem.entity';
 import { Issue } from '../entities/issue.entity';
 import { Equipment } from '../../entities/equipment.entity';
+import { Symptom } from '../entities/symptom.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 // Model configuration
 const MODEL_CONFIG = {
   DIAGNOSIS: 'gpt-4-0125-preview', // For complex diagnosis and analysis
   CHAT: 'gpt-3.5-turbo', // For general chat and simple queries
   FOLLOW_UP: 'gpt-4-0125-preview', // For follow-up questions
-  ENHANCEMENT: 'gpt-3.5-turbo', // For description enhancement
+  ENHANCEMENT: 'gpt-4-0125-preview', // For description enhancement - using GPT-4 for better instruction following
 } as const;
 
 // Interface for problem analysis results
@@ -59,7 +62,10 @@ export class AIService {
   private readonly apiKey: string;
   private readonly apiUrl = 'https://api.openai.com/v1/chat/completions';
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(Symptom) private symptomRepository: Repository<Symptom>,
+  ) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (!apiKey || apiKey === 'sk-placeholder-replace-with-real-key') {
       this.logger.warn('OPENAI_API_KEY is not set or is a placeholder. AI features will be disabled.');
@@ -270,21 +276,31 @@ export class AIService {
       const systemPrompt =
         language === 'he'
           ? `אתה מומחה טכני שמשפר תיאורי תקלות.\n` +
-            `כלל ברזל: מותר להשתמש רק במידע שמופיע ב"תיאור המקורי" ` +
-            `או ב-equipmentContext או ב-followUpQuestionsContext. אסור להמציא עובדות חדשות.\n` +
-            `שלב במידת האפשר פרטים מ-equipmentContext ו-followUpQuestionsContext, ושמור על אורך ≤150 תווים.`
+            `כללי ברזל חשובים:\n` +
+            `1. אסור בשום אופן להציע פתרונות או דרכי טיפול.\n` +
+            `2. מותר להשתמש רק במידע שמופיע ב"תיאור המקורי", ב-equipmentContext, או ב-followUpQuestionsContext.\n` +
+            `3. אסור להמציא עובדות חדשות או להסיק מסקנות.\n` +
+            `4. התפקיד שלך הוא רק לשפר את הניסוח ולהוסיף פרטים רלוונטיים מה-context.\n` +
+            `5. שמור על אורך ≤150 תווים.\n` +
+            `\nהתוצאה צריכה להיות תיאור ברור ותמציתי של הבעיה, ללא פתרונות.`
           : `You are a technical expert refining problem descriptions.\n` +
-            `Rule: you may use ONLY facts found in the ORIGINAL DESCRIPTION, ` +
-            `equipmentContext, or followUpQuestionsContext—nothing else.\n` +
-            `Include details from both contexts when available, keep length ≤150 chars.`;
+            `Critical Rules:\n` +
+            `1. DO NOT suggest solutions or treatments under any circumstances.\n` +
+            `2. Use ONLY facts found in the ORIGINAL DESCRIPTION, equipmentContext, or followUpQuestionsContext.\n` +
+            `3. DO NOT infer new facts or draw conclusions.\n` +
+            `4. Your ONLY role is to improve wording and add relevant context details.\n` +
+            `5. Keep length ≤150 chars.\n` +
+            `\nOutput should be a clear, concise problem description WITHOUT solutions.`;
 
       /* ---------- user prompt ---------- */
       const userPrompt =
         language === 'he'
           ? `שפר את התיאור הבא (עד 150 תווים).\n` +
-            `1. אל תוסיף מותג/דגם/מיקום/תסמין שלא קיים במקור, ב-equipmentContext, או ב-followUpQuestionsContext.\n` +
-            `2. אם יש equipmentContext או followUpQuestionsContext – שלב אותם בתיאור.\n` +
-            `3. השתמש במונחים טכניים מדויקים ותבנה ניסוח ברור ותמציתי.\n\n` +
+            `זכור:\n` +
+            `1. אסור להציע פתרונות!\n` +
+            `2. אל תוסיף מותג/דגם/מיקום/תסמין שלא קיים במקור, ב-equipmentContext, או ב-followUpQuestionsContext.\n` +
+            `3. אם יש equipmentContext או followUpQuestionsContext – שלב אותם בתיאור.\n` +
+            `4. השתמש במונחים טכניים מדויקים ותבנה ניסוח ברור ותמציתי.\n\n` +
             `תיאור מקורי:\n"${userDescription}"\n\n` +
             (equipmentContext
               ? `equipmentContext:\n${equipmentContext}\n\n`
@@ -292,11 +308,13 @@ export class AIService {
             (followUpQuestionsContext
               ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n`
               : '') +
-            `תיאור משופר:`
+            `תיאור משופר (ללא פתרונות!):`
           : `Enhance the text below (≤150 chars).\n` +
-            `1. Do NOT add brand/model/location/symptom not found in original, equipmentContext, or followUpQuestionsContext.\n` +
-            `2. If contexts are provided—incorporate their info.\n` +
-            `3. Use precise technical wording; keep it concise & clear.\n\n` +
+            `Remember:\n` +
+            `1. DO NOT suggest solutions!\n` +
+            `2. DO NOT add brand/model/location/symptom not found in original, equipmentContext, or followUpQuestionsContext.\n` +
+            `3. If contexts are provided—incorporate their info.\n` +
+            `4. Use precise technical wording; keep it concise & clear.\n\n` +
             `ORIGINAL DESCRIPTION:\n"${userDescription}"\n\n` +
             (equipmentContext
               ? `equipmentContext:\n${equipmentContext}\n\n`
@@ -304,7 +322,7 @@ export class AIService {
             (followUpQuestionsContext
               ? `followUpQuestionsContext:\n${followUpQuestionsContext}\n\n`
               : '') +
-            `ENHANCED DESCRIPTION:`;
+            `ENHANCED DESCRIPTION (NO SOLUTIONS!):`;
 
       /* ---------- model call ---------- */
       const response = await this.openai?.chat.completions.create({
@@ -332,7 +350,7 @@ export class AIService {
     description: string,
     problems: Problem[]
   ): Promise<Problem[]> {
-    if (!problems || problems.length === 0) {
+    if (!this.isAIAvailable() || problems.length === 0) {
       return [];
     }
 
@@ -353,10 +371,6 @@ export class AIService {
       Only return problems that are genuinely similar to the new problem.
       Format your response as a JSON array of numbers, e.g. [3, 1, 5]
     `;
-
-    if (!this.isAIAvailable()) {
-      return [];
-    }
 
     try {
       const response = await this.openai?.chat.completions.create({
@@ -379,6 +393,47 @@ export class AIService {
       this.logger.error('Error finding similar problems with GPT:', error);
       return [];
     }
+  }
+
+  /**
+   * Finds relevant problems by semantically matching a description against the symptoms table.
+   * @param description The enhanced problem description from the user.
+   * @param equipment The equipment associated with the problem.
+   * @returns A promise that resolves to a list of matching Problem entities, complete with their solutions.
+   */
+  async findProblemsBySymptom(
+    description: string,
+    equipment: Equipment,
+  ): Promise<Problem[]> {
+    // 1. Fetch all symptoms relevant to the equipment type
+    const relevantSymptoms = await this.symptomRepository.find({
+      where: { equipmentType: equipment.type },
+      relations: ['problems', 'problems.solutions'], // Pre-load problems and their solutions
+    });
+    if (relevantSymptoms.length === 0) {
+      this.logger.log('No relevant symptoms found in the database for this equipment type.');
+      return [];
+    }
+
+    // 2. Use AI to find the best symptom matches
+    const symptomDescriptions = relevantSymptoms.map(s => ({ id: s.id, description: s.description }));
+    const matchedSymptomIds = await this.findSimilarIssues(description, symptomDescriptions, 3); // Reuse existing embedding logic
+
+    // 3. Collect the unique problems from the matched symptoms
+    const problemMap = new Map<number, Problem>();
+    matchedSymptomIds.forEach(symptomId => {
+      const matchedSymptom = relevantSymptoms.find(s => s.id === symptomId);
+      if (matchedSymptom && matchedSymptom.problems) {
+        matchedSymptom.problems.forEach(problem => {
+          if (!problemMap.has(problem.id) && problem.solutions && problem.solutions.length > 0) {
+            problemMap.set(problem.id, problem);
+          }
+        });
+      }
+    });
+
+    this.logger.log(`Found ${problemMap.size} unique problems with solutions from matched symptoms.`);
+    return Array.from(problemMap.values());
   }
 
   /**
@@ -1007,10 +1062,6 @@ Return JSON in this exact structure (no Markdown):
     return options[questionType] || (language === 'he' ? ['כן', 'לא', 'לא בטוח'] : ['Yes', 'No', 'Not sure']);
   }
 
-
-
-
-
   /**
    * Infers question type from the question text
    */
@@ -1287,28 +1338,6 @@ Please provide relevant information about the equipment, including:
       .map((cat) => cat.trim().replace(/\.$/, '')) // Remove trailing periods
       .filter((cat) => cat.length > 0 && cat !== 'Uncategorized');
   }
-
-  // private getEquipmentContext(equipment: Equipment): string {
-  //   const contextLines = [
-  //     `- Type: ${equipment.type}`,
-  //     `- Manufacturer: ${equipment.manufacturer}`,
-  //     `- Model: ${equipment.model}`,
-  //     equipment.location && `- Location: ${equipment.location}`,
-  //     equipment.purchaseDate &&
-  //       `- Purchase Date: ${
-  //         new Date(equipment.purchaseDate).toISOString().split('T')[0]
-  //       }`,
-  //     equipment.warrantyExpiration &&
-  //       `- Warranty Status: ${
-  //         new Date(equipment.warrantyExpiration) >= new Date()
-  //           ? 'Active'
-  //           : 'Expired'
-  //       }`,
-  //     equipment.supplier && `- Supplier: ${equipment.supplier}`,
-  //   ].filter(Boolean); // Remove empty lines
-  //
-  //   return `Equipment Details:\n${contextLines.join('\n')}`;
-  // }
 
   private buildTroubleshootingPrompt(
     equipment: Equipment,

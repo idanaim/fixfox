@@ -11,9 +11,10 @@ interface ChatInputProps {
   onChange: (value: string) => void;
   onSend: () => void;
   loading: boolean;
+  disabled?: boolean;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ inputValue, onChange, onSend, loading }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ inputValue, onChange, onSend, loading, disabled }) => {
   const { t } = useTranslation();
   // Use language detection hook to auto-switch language based on input
   const { isHebrew } = useLanguageDetection({
@@ -35,16 +36,17 @@ const ChatInput: React.FC<ChatInputProps> = ({ inputValue, onChange, onSend, loa
           placeholderTextColor={colors.medium}
           multiline
           textAlign={isHebrew ? 'right' : 'left'}
+          editable={!disabled}
         />
         <TouchableOpacity
-          style={[styles.sendButton, !inputValue.trim() && styles.sendButtonDisabled]}
+          style={[styles.sendButton, (!inputValue.trim() || disabled) && styles.sendButtonDisabled]}
           onPress={onSend}
-          disabled={!inputValue.trim() || loading}
+          disabled={!inputValue.trim() || loading || disabled}
         >
           <Icon
             name="send"
             size={20}
-            color={!inputValue.trim() || loading ? colors.medium : colors.primary}
+            color={!inputValue.trim() || loading || disabled ? colors.medium : colors.primary}
           />
         </TouchableOpacity>
       </View>

@@ -44,11 +44,13 @@ const FollowUpQuestionsContainer: React.FC<FollowUpQuestionsContainerProps> = ({
   useEffect(() => {
     if (summary && !hasTriggeredImprovement.current) {
       console.log('Summary ready:', summary);
-      onReadyForDiagnosis(summary , isReadyForDiagnosis);
-      onImproveDescription(answers);
-      hasTriggeredImprovement.current = true;
+      onReadyForDiagnosis(summary, isReadyForDiagnosis);
+      if (isReadyForDiagnosis) {
+        onImproveDescription(answers);
+        hasTriggeredImprovement.current = true;
+      }
     }
-  }, [summary, onReadyForDiagnosis, answers, onImproveDescription]);
+  }, [summary, onReadyForDiagnosis, answers, onImproveDescription, isReadyForDiagnosis]);
 
   // Handle answer selection
   const handleAnswer = (answer: string, questionType?: string) => {
@@ -74,7 +76,7 @@ const FollowUpQuestionsContainer: React.FC<FollowUpQuestionsContainerProps> = ({
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading questions...</Text>
+        <Text style={styles.loadingText}>{t('chat.loading_questions')}</Text>
       </View>
     );
   }
@@ -109,7 +111,7 @@ const FollowUpQuestionsContainer: React.FC<FollowUpQuestionsContainerProps> = ({
       {isSubmitting && (
         <View style={styles.submittingContainer}>
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.submittingText}>Processing your answers...</Text>
+          <Text style={styles.submittingText}>{t('chat.processing_answers', { defaultValue: 'Processing your answers...' })}</Text>
         </View>
       )}
 

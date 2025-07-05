@@ -8,6 +8,7 @@ import {
   UseGuards,
   NotFoundException,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -17,6 +18,7 @@ import { CreateProblemDto } from '../dtos/create-problem.dto';
 import { ProblemService } from '../services/problem.service';
 import { Equipment } from '../../entities/equipment.entity';
 import { AIService } from '../services/ai.service';
+import { CreateEquipmentDto } from '../dtos/create-equipment.dto';
 
 @Controller('chat')
 // @UseGuards(JwtAuthGuard)
@@ -40,7 +42,7 @@ export class ChatController {
   async addMessage(
     @Param('sessionId') sessionId: number,
     @Body()
-    body: { content: string; type: 'user' | 'system' | 'ai'; metadata?: any }
+    body: { content: string; type: 'user' | 'system' ; metadata?: any }
   ) {
     return this.chatService.addMessage(
       sessionId,
@@ -69,21 +71,28 @@ export class ChatController {
   @Post('sessions/:sessionId/enhance-description')
   async enhanceProblemDescription(
     @Param('sessionId') sessionId: number,
-    @Body()
-    body: {
-      description: string;
-      equipment: Equipment;
-      language?: string;
-      followUpQuestions?: Record<string, string>[];
-    }
+    @Body('description') description: string,
+    @Body('equipment') equipment: Equipment,
+    @Body('followUpQuestions') followUpQuestions: Record<string, string>[] = [],
+    @Body('language') language?: string,
   ) {
     return this.chatService.enhanceProblemDescription(
       sessionId,
-      body.description,
-      body.equipment,
-      body.followUpQuestions,
-      body.language
+      description,
+      equipment,
+      followUpQuestions,
+      language
     );
+  }
+
+  @Post('sessions/:sessionId/symptom-check')
+  async findSolutionsForSymptom(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Body('description') description: string,
+    @Body('equipment') equipment: Equipment,
+  ) {
+    // We can add logic here to save the symptom if needed
+    return this.chatService.findSolutionsForSymptom(description, equipment);
   }
 
   @Post('sessions/:sessionId/equipment-search')

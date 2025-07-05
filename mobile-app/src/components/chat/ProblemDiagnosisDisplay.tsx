@@ -15,7 +15,7 @@ interface ProblemDiagnosisDisplayProps {
   onRequestMoreInfo?: () => void;
   onAssignToTechnician?: () => void;
   handleGetAISolutions?: () => void;
-  onSolutionHelped?: (solutionId: number, problemDescription: string) => void;
+  onSolutionHelped?: (solutionText: string) => void;
   isLoadingAI?: boolean;
 }
 
@@ -33,8 +33,8 @@ const ProblemDiagnosisDisplay: React.FC<ProblemDiagnosisDisplayProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  if (diagnosisType === 'existing_solutions') {
-    if (problems && problems.length >0) {
+  if (diagnosisType === 'existing_solutions' || diagnosisType === 'issue_matches' || diagnosisType === 'problem_matches') {
+    if (problems && problems.length > 0) {
       return (
         <DiagnosisLayout icon="magnify" title={t('diagnosis.similarProblems.title')}>
           <ExistingSolutionsDisplay

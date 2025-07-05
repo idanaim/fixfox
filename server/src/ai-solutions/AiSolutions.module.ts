@@ -15,15 +15,36 @@ import { ProblemController } from './controllers/problem.controller';
 import { ChatModule } from './chat.module';
 import { SolutionController } from './controllers/solution.controller';
 import { NotificationModule } from '../notifications/notification.module';
+import { Symptom } from './entities/symptom.entity';
+import { SymptomService } from './services/symptom.service';
+import { SymptomController } from './controllers/symptom.controller';
 
 @Module({
   imports: [
     AdminModule,
     ChatModule,
     NotificationModule,
-    TypeOrmModule.forFeature([Solution, Problem, Equipment, Issue, Business]),
+    TypeOrmModule.forFeature([
+      Solution,
+      Problem,
+      Equipment,
+      Issue,
+      Business,
+      Symptom,
+    ]),
   ],
-  controllers: [IssueController, ProblemController, SolutionController],
-  providers: [SolutionService, ProblemService, IssueService, EquipmentService],
+  controllers: [
+    IssueController,
+    ProblemController,
+    SolutionController,
+    SymptomController,
+  ],
+  providers: [
+    SolutionService,
+    ProblemService,
+    IssueService,
+    EquipmentService,
+    SymptomService,
+  ],
 })
 export class AiSolutionsModule {}

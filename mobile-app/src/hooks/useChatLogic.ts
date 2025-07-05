@@ -10,15 +10,23 @@ import {
 import { useTranslation } from 'react-i18next';
 import { QuestionAnswer } from './useFollowUpQuestions';
 import authStore from '../store/auth.store';
+import { NavigationProp } from '@react-navigation/native';
 
 interface UseChatLogicProps {
   sessionId: number | null;
   userId: number;
   businessId: number;
   selectedBusinessId: number | null;
+  navigation: NavigationProp<any>;
 }
 
-export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId }: UseChatLogicProps) => {
+export const useChatLogic = ({
+  sessionId,
+  userId,
+  businessId,
+  selectedBusinessId,
+  navigation,
+}: UseChatLogicProps) => {
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   const {
@@ -53,8 +61,6 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     setInput,
     reset,
     setLoading,
-    setApplianceOptions,
-    setShowEquipmentForm,
     setSelectedEquipment,
     setDiagnosisResult,
     setInitialIssueDescription,
@@ -103,6 +109,14 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     try {
       setCurrentStep('appliance_recognition');
       const searchParameter = description.toLowerCase().trim();
+      
+      const searchingMsg = await chatApi.addMessage(
+        sessionId,
+        t('equipment.searching'),
+        'system'
+      );
+      addMessage(searchingMsg);
+
       const equipmentList = await chatApi.searchEquipment(
         sessionId,
         selectedBusinessId || businessId,
@@ -114,21 +128,32 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
         const sysMsg = await chatApi.addMessage(
           sessionId,
           t('equipment.found_matching', { count: equipmentList.length }),
-          'system'
+          'system',
+          {
+            type: 'appliance_selector',
+            options: equipmentList
+          }
         );
         addMessage(sysMsg);
-        setApplianceOptions(equipmentList);
       } else {
         const sysMsg = await chatApi.addMessage(
           sessionId,
           t('equipment.no_matching'),
-          'system'
+          'system',
+          {
+            type: 'equipment_form'
+          }
         );
         addMessage(sysMsg);
-        setShowEquipmentForm(true);
       }
     } catch (error) {
       console.error('Error in appliance recognition', error);
+      const errorMsg = await chatApi.addMessage(
+        sessionId,
+        t('errors.appliance_recognition'),
+        'system'
+      );
+      addMessage(errorMsg);
     }
   };
 
@@ -150,20 +175,15 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
         const sysMsg = await chatApi.addMessage(
           sessionId,
           t('chat.found_open_issues', { count: openIssuesResponse.length }),
-          'system'
-        );
-        addMessage(sysMsg);
-        // Add confirmation message
-        const confirmMsg = await chatApi.addMessage(
-          sessionId,
-          t('chat.confirm_continue_new_issue'),
           'system',
           {
-            type: 'confirmation',
-            action: 'continue_new_issue'
+            type: 'open_issues',
+            openIssues: openIssuesResponse
           }
         );
-        addMessage(confirmMsg);
+        addMessage(sysMsg);
+        // Don't add confirmation dialog here - let the user choose first
+        setCurrentStep('open_issues_display');
       } else {
         // If no open issues, proceed directly to follow-up questions
         setCurrentStep('follow_up_questions');
@@ -218,6 +238,50 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
     try {
       setCurrentStep('matching_solutions');
+      
+      // First, check for symptom matches
+      const systemMsg = await chatApi.addMessage(
+        sessionId,
+        t('chat.checking_symptoms'),
+        'system'
+      );
+      addMessage(systemMsg);
+
+      const problems = await chatApi.checkSymptoms(
+        sessionId,
+        description,
+        selectedEquipment
+      );
+
+      console.log('Symptom check response:', problems);
+
+      if (problems && problems.length > 0) {
+        // Extract all solutions from problems
+        const allSolutions = problems.flatMap(problem => 
+          problem.solutions || []
+        );
+
+        console.log('Extracted solutions:', allSolutions);
+
+        if (allSolutions.length > 0) {
+          setCurrentStep('solution_presentation');
+          
+          const solutionsMsg = await chatApi.addMessage(
+            sessionId,
+            t('chat.found_solutions', { count: allSolutions.length }),
+            'system',
+            {
+              type: 'solution',
+              solutions: allSolutions
+            }
+          );
+          console.log('Solutions message added:', solutionsMsg);
+          addMessage(solutionsMsg);
+          return;
+        }
+      }
+
+      // If no symptom matches, try the existing problem matching logic
       const problemMatches = await chatApi.getMatchingProblems(
         sessionId,
         description,
@@ -416,12 +480,11 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
   // Existing methods updated to work with the new flow
 
   const handleApproveEnhancedDescription = async (approvedDescription: string) => {
-    if (!sessionId) return;
+    if (!sessionId || !selectedEquipment) return;
 
     try {
-      setEnhancedDescription(approvedDescription);
-      setShowEnhancedDescriptionApproval(false);
       setAwaitingDescriptionApproval(false);
+      setShowEnhancedDescriptionApproval(false);
 
       const approvalMsg = await chatApi.addMessage(
         sessionId,
@@ -430,10 +493,27 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       );
       addMessage(approvalMsg);
 
-      // Proceed to step 5: Check similar issues
-      await checkSimilarIssues(approvedDescription);
+      // After approval, proceed to find solutions (Step 5-6)
+      setCurrentStep('matching_solutions');
+      const problems = await chatApi.findSolutionsForSymptom(
+        sessionId,
+        approvedDescription,
+        selectedEquipment
+      );
+
+      if (problems && problems.length > 0) {
+        // Step 6: Show the solution list
+        setCurrentStep('solution_presentation');
+        setDiagnosisResult({
+          type: 'problem_matches',
+          problems: problems,
+        });
+      } else {
+        // If no solutions are found from symptoms, proceed to AI diagnosis
+        await suggestAISolutions(approvedDescription);
+      }
     } catch (error) {
-      console.error('Error approving enhanced description', error);
+      console.error('Error approving enhanced description:', error);
     }
   };
 
@@ -483,7 +563,10 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
     try {
       setSelectedEquipment(equipment);
-      setApplianceOptions(null);
+      // setApplianceOptions(null);
+      // The component that was showing options is now part of a message, 
+      // so we might need a way to remove or disable it.
+      // For now, we assume selecting an option makes the message inactive.
 
       const selectionMsg = await chatApi.addMessage(
         sessionId,
@@ -510,7 +593,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       });
 
       setSelectedEquipment(newEquipment);
-      setShowEquipmentForm(false);
+      // setShowEquipmentForm(false); // No longer needed
 
       const creationMsg = await chatApi.addMessage(
         sessionId,
@@ -571,6 +654,10 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
       setEnhancedDescription(enhancementResult.enhancedDescription);
       setShowEnhancedDescriptionApproval(true);
       setAwaitingDescriptionApproval(true);
+
+      // Only show the enhanced description for approval
+      // Do NOT find solutions here - wait for user approval
+      
     } catch (error) {
       console.error('Error improving description', error);
     } finally {
@@ -591,18 +678,12 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
 
   const handleSelectOpenIssue = async (issue: any) => {
     try {
-      // Add a message about selecting an existing issue
-      const message = t('chat.selecting_existing_issue', { issueId: issue.id });
+      // Navigate to the Issue Details screen
+      navigation.navigate('IssueDetails', { issueId: issue.id });
+
+      // Add a system message to confirm navigation
+      const message = t('chat.navigating_to_issue', { issueId: issue.id });
       await chatApi.addMessage(sessionId!, message, 'system');
-
-      // Update the diagnosis result with the selected issue
-      setDiagnosisResult({
-        type: 'issue_matches',
-        issues: [issue]
-      });
-
-      // Move to solution presentation step
-      setCurrentStep('solution_presentation');
     } catch (error) {
       console.error('Error selecting open issue:', error);
       const errorMessage = t('errors.selecting_issue');
@@ -611,38 +692,46 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
   };
 
   const handleContinueWithNewIssue = async () => {
+    if (!sessionId) return;
     try {
-      // Add a message about continuing with a new issue
-      const message = t('chat.continuing_with_new_issue');
-      await chatApi.addMessage(sessionId!, message, 'system');
+      // Set a new step to signify we are waiting for confirmation.
+      // This will cause the OpenIssuesDisplay to disappear from the UI.
+      setCurrentStep('user_confirmation');
 
-      // Add a confirmation request message
-      const confirmMessage = t('chat.confirm_continue_new_issue');
-      await chatApi.addMessage(sessionId!, confirmMessage, 'system', {
-        type: 'confirmation',
-        action: 'continue_new_issue'
-      });
-
-      // Don't automatically move to follow-up questions
-      // The user needs to confirm first via handleUserConfirmation
+      // Add a confirmation request message to the chat
+      const confirmMessage = await chatApi.addMessage(
+        sessionId,
+        t('chat.confirm_continue_new_issue'),
+        'system',
+        {
+          type: 'confirmation',
+          action: 'continue_new_issue'
+        }
+      );
+      addMessage(confirmMessage);
     } catch (error) {
       console.error('Error continuing with new issue:', error);
-      const errorMessage = t('errors.continuing_with_new_issue');
-      await chatApi.addMessage(sessionId!, errorMessage, 'system');
     }
   };
 
   const handleUserConfirmation = async (action: string, confirmed: boolean) => {
+    if (!sessionId) return;
+    
+    // Remove the confirmation message from the chat
+    const currentMessages = messages.filter(msg => msg.metadata?.type !== 'confirmation');
+    setMessages(currentMessages);
+    
     if (action === 'continue_new_issue' && confirmed) {
-      // User confirmed to continue with new issue
       const message = t('chat.starting_follow_up');
-      await chatApi.addMessage(sessionId!, message, 'system');
+      const confirmMsg = await chatApi.addMessage(sessionId, message, 'system');
+      addMessage(confirmMsg);
       setCurrentStep('follow_up_questions');
+      setFollowUpQuestions(true);
     } else if (action === 'continue_new_issue' && !confirmed) {
-      // User declined to continue with new issue
-      const message = t('chat.cancelled_new_issue');
-      await chatApi.addMessage(sessionId!, message, 'system');
-      // Stay on the current step to let user choose an existing issue
+      const message = t('chat.session_ended_goodbye');
+      const cancelMsg = await chatApi.addMessage(sessionId, message, 'system');
+      addMessage(cancelMsg);
+      // Optionally, we could disable the input here
     }
   };
 
@@ -680,8 +769,7 @@ export const useChatLogic = ({ sessionId, userId, businessId, selectedBusinessId
     handleSolutionRejected,
     handleExistingSolutionSelect,
     handleRequestMoreInfo,
-    setApplianceOptions,
-    setShowEquipmentForm,
+    setSelectedEquipment,
     handleImproveDescription,
     handleAssignToTechnician,
     handleGetAISolutions,

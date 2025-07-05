@@ -17,13 +17,13 @@ export class ChatMessage {
   @JoinColumn({ name: 'sessionId' })
   session: ChatSession;
 
-  @Column({ type: 'text' })
+  @Column('text')
   content: string;
 
   @Column({ type: 'varchar', length: 50 })
   type: string; // 'user', 'system', 'ai'
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp', name: 'createdAt' })
   createdAt: Date;
 
   @Column({ type: 'jsonb', nullable: true })

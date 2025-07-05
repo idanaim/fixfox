@@ -7,6 +7,8 @@ export type FlowStep =
   | 'appliance_recognition'      // Step 2: AI appliance recognition
   | 'appliance_selection'        // Step 2: User selects from list or adds new
   | 'checking_open_issues'       // Step 3: Check open issues for selected appliance
+  | 'open_issues_display'        // Step 3a: Display open issues for user to choose
+  | 'user_confirmation'          // Step 3b: User confirms whether to proceed
   | 'follow_up_questions'        // Step 4: Follow-up questions for symptom enhancement
   | 'checking_similar_issues'    // Step 5: Check if symptom+appliance+business combination exists
   | 'matching_solutions'         // Step 6: Get matching symptoms/problems/solutions

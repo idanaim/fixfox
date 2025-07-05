@@ -68,7 +68,7 @@ export class ChatService {
   async addMessage(
     sessionId: number,
     content: string,
-    type: 'user' | 'system' | 'ai',
+    type: 'user' | 'system' | 'assistant',
     metadata?: any
   ): Promise<ChatMessage> {
     const session = await this.chatSessionRepository.findOne({
@@ -687,5 +687,18 @@ export class ChatService {
       console.error('Error assigning issue to technician:', error);
       throw error;
     }
+  }
+
+  /**
+   * Finds potential solutions by matching an enhanced description against the symptoms knowledge base.
+   * @param description The enhanced problem description.
+   * @param equipment The equipment related to the issue.
+   * @returns A list of problems, each populated with its potential solutions.
+   */
+  async findSolutionsForSymptom(
+    description: string,
+    equipment: Equipment,
+  ): Promise<Problem[]> {
+    return this.aiService.findProblemsBySymptom(description, equipment);
   }
 }

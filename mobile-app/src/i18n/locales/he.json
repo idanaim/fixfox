@@ -21,6 +21,23 @@
     "continue_anyway": "המשך עם תקלה חדשה",
     "confirm": "כן, המשך"
   },
+  "flow": {
+    "step1": "תיאור ראשוני",
+    "step2a": "זיהוי מכשיר",
+    "step2b": "בחירת מכשיר",
+    "step3": "בדיקת תקלות פתוחות",
+    "step4": "שאלות המשך",
+    "step5": "בדיקת תקלות דומות",
+    "step6": "התאמת פתרונות",
+    "step7": "הצגת פתרון",
+    "step8": "בדיקת פתרון",
+    "step9": "משוב על הפתרון",
+    "step10": "יצירת פתרון בינה מלאכותית",
+    "step11": "בדיקת פתרון בינה מלאכותית",
+    "step12": "הקצאת טכנאי",
+    "completed": "הושלם",
+    "step_progress": "שלב {{current}} מתוך {{total}}"
+  },
   "dashboard": {
     "selectBusiness": "בחר עסק",
     "selectBusinessToViewStats": "בחר עסק כדי לצפות בסטטיסטיקות",
@@ -35,7 +52,7 @@
     "select_equipment": "בחירת ציוד",
     "equipment_form_title": "הוסף ציוד חדש",
     "equipment_name": "שם הציוד",
-    "equipment_type": "סוג הציוד",
+    "equipment_type": "סוג ציוד",
     "manufacturer": "יצרן",
     "model": "דגם",
     "serial_number": "מספר סידורי",
@@ -43,7 +60,10 @@
     "unknown_category": "ציוד",
     "active": "פעיל",
     "add_new_equipment": "הוסף ציוד חדש",
-    "no_matching": "לא מצאנו מכשיר תואם. אנא ספק פרטים נוספים להלן."
+    "no_matching": "לא מצאנו מכשיר תואם. אנא ספק פרטים נוספים להלן.",
+    "searching": "מחפש ציוד...",
+    "selected": "נבחר: {{name}}",
+    "created": "נוצר ציוד חדש: {{name}}"
   },
   "chat": {
     "session_started": "במה אוכל לעזור?",
@@ -56,7 +76,7 @@
     "suggested_solutions": "פתרונות מוצעים",
     "ai_enhanced": "משופר על ידי בינה מלאכותית",
     "diagnosing": "מאבחן את הבעיה...",
-    "equipment_selected": "הציוד שנבחר",
+    "equipment_selected": "הציוד נבחר",
     "enhancing_description": "משפר את תיאור הבעיה בהתבסס על הציוד שנבחר...",
     "found_similar_problems": "נמצאו {{count}} בעיות דומות.",
     "no_similar_problems": "לא נמצאו בעיות דומות.",
@@ -64,13 +84,27 @@
     "using_original_description": "משתמש בתיאור המקורי לאבחון.",
     "additional_info_prompt": "תודה על המידע הנוסף. האם יש משהו נוסף שתרצה להוסיף?",
     "open_issues_found": "נמצאו תקלות פתוחות",
+    "found_open_issues": "נמצאו {{count}} תקלות פתוחות לציוד זה",
     "open_issues_description": "מצאנו מספר תקלות פתוחות לציוד זה. האם תרצה לצפות באחת מהתקלות הקיימות או להמשיך עם תקלה חדשה?",
     "selecting_existing_issue": "צופה בתקלה קיימת מספר {{issueId}}",
     "continuing_with_new_issue": "ממשיך עם תקלה חדשה",
     "confirm_continue_new_issue": "האם תרצה להמשיך ביצירת תקלה חדשה? זה יעזור לנו לאסוף מידע נוסף על הבעיה הספציפית שלך.",
-    "starting_follow_up": "מצוין! בוא נאסוף עוד מידע על התקלה שלך.",
-    "cancelled_new_issue": "בסדר, אתה יכול לבחור תקלה קיימת או לנסות שוב כשתהיה מוכן.",
-    "follow_up_summary": "סיכום שאלות המשך: {{summary}}"
+    "starting_follow_up": "מצוין, בוא נמשיך. יש לי כמה שאלות נוספות עבורך.",
+    "cancelled_new_issue": "הפעולה בוטלה. באפשרותך לבחור קריאה קיימת מהרשימה.",
+    "session_ended_goodbye": "אין בעיה. אתם מוזמנים לפתוח צ'אט חדש אם תצטרכו עזרה בעתיד. להתראות!",
+    "navigating_to_issue": "מעביר אותך לקריאה מספר {{issueId}}...",
+    "follow_up_summary": "בהתבסס על תשובותיך, הנה סיכום: {{summary}}",
+    "found_matching_solutions_from_symptoms": "בהתבסס על התיאור שלך, מצאתי כמה פתרונות שעבדו עבור תסמינים דומים:",
+    "found_similar_problems_other_businesses": "נמצאו בעיות דומות מעסקים אחרים:",
+    "solution_worked": "מעולה! הפתרון עבד.",
+    "solution_not_worked": "הפתרון לא עבד. בוא ננסה משהו אחר.",
+    "checking_symptoms": "בודק תסמינים דומים...",
+    "found_solutions": "מצאתי {{count}} פתרונות אפשריים שעשויים לעזור.",
+    "loading_questions": "טוען שאלות...",
+    "processing_answers": "מעבד את התשובות שלך...",
+    "description_approved": "התיאור אושר ומוכן לאבחון.",
+    "ai_solutions_generated": "נוצרו פתרונות בינה מלאכותית.",
+    "generating_ai_solutions": "מייצר פתרונות בינה מלאכותית..."
   },
   "admin": {
     "dashboard": {
@@ -375,7 +409,7 @@
     }
   },
   "errors": {
-    "selecting_issue": "אירעה שגיאה בבחירת התקלה הקיימת. אנא נסה שוב.",
-    "continuing_with_new_issue": "אירעה שגיאה בהמשך לתקלה חדשה. אנא נסה שוב."
+    "appliance_recognition": "מצטער, לא הצלחתי למצוא ציוד תואם. אנא נסה לתאר את הציוד שלך בצורה שונה.",
+    "selecting_issue": "שגיאה בבחירת התקלה. אנא נסה שוב."
   }
 }

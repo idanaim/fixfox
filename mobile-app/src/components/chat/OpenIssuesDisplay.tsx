@@ -36,7 +36,9 @@ const OpenIssuesDisplay: React.FC<OpenIssuesDisplayProps> = ({
         {t('chat.open_issues_description')}
       </Text>
       <ScrollView style={styles.issuesList}>
-        {issues.map((issue) => (
+        {issues
+          .filter(issue => issue && issue.problem)
+          .map((issue) => (
           <TouchableOpacity
             key={issue.id}
             style={styles.issueItem}
@@ -63,32 +65,33 @@ const OpenIssuesDisplay: React.FC<OpenIssuesDisplayProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
-    margin: 8,
+    margin: 6,
   },
   title: {
     ...typography.h3,
+    fontSize: 18,
     color: colors.dark,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   subtitle: {
-    ...typography.body1,
+    ...typography.body2,
     color: colors.medium,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   issuesList: {
-    maxHeight: 200,
+    maxHeight: 180,
   },
   issueItem: {
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 6,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   issueDescription: {
-    ...typography.body1,
+    ...typography.body2,
     color: colors.dark,
     marginBottom: 4,
   },
@@ -97,8 +100,8 @@ const styles = StyleSheet.create({
     color: colors.medium,
   },
   continueButton: {
-    marginTop: 16,
-    padding: 12,
+    marginTop: 12,
+    padding: 10,
     backgroundColor: colors.lightGray,
     borderRadius: 6,
     alignItems: 'center',

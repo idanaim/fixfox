@@ -18,8 +18,9 @@ module.exports = new DataSource({
   cli: {
     migrationsDir: 'src/migrations'
   },
-  // Adding SSL configuration for RDS
-  ssl: {
-    rejectUnauthorized: false // Required for RDS, but consider a more secure setup for production
-  }
+  ssl: false,
+  extra: {
+    ssl: false
+  },
+  options: '-c ssl=false'
 });

@@ -175,10 +175,10 @@ const SolutionSuggestion: React.FC<SolutionSuggestionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
+    marginVertical: 6,
     borderRadius: 6,
     overflow: 'hidden',
-    maxHeight: 500,
+    maxHeight: 450,
     backgroundColor: colors.white,
     ...Platform.select({
       ios: {
@@ -195,19 +195,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
     backgroundColor: colors.white,
-    minHeight: 56,
+    minHeight: 48,
   },
   headerIcon: {
-    marginRight: 12,
+    marginRight: 8,
   },
   headerTitle: {
     ...typography.h3,
+    fontSize: 18,
     color: colors.dark,
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
   },
   sourceBadge: {
     flexDirection: 'row',
@@ -215,87 +214,72 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lightGray,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 12,
   },
   sourceBadgeIcon: {
     marginRight: 4,
   },
   sourceBadgeText: {
     ...typography.caption,
-    color: colors.dark,
-    fontSize: 12,
-    fontWeight: '500',
+    color: colors.medium,
   },
   divider: {
     backgroundColor: colors.border,
     height: 1,
   },
   solutionContent: {
-    flex: 1,
-    maxHeight: 320,
-    padding: 16,
-    backgroundColor: colors.white,
+    padding: 12,
   },
   solutionInfo: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   solutionTitle: {
-    ...typography.h3,
+    ...typography.body1,
     color: colors.dark,
-    marginBottom: 8,
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 22,
+    marginBottom: 4,
   },
   resolvedBy: {
     ...typography.caption,
     color: colors.medium,
-    fontStyle: 'italic',
-    fontSize: 12,
   },
   stepsContainer: {
-    marginBottom: 16,
+    marginTop: 8,
   },
   stepItem: {
     flexDirection: 'row',
-    marginBottom: 12,
     alignItems: 'flex-start',
+    marginBottom: 8,
   },
   stepNumberContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.lightGray,
     alignItems: 'center',
-    marginRight: 12,
+    justifyContent: 'center',
+    marginRight: 8,
     marginTop: 2,
   },
   stepNumber: {
     ...typography.caption,
-    color: colors.white,
-    fontWeight: 'bold',
-    fontSize: 12,
+    color: colors.dark,
   },
   stepText: {
-    ...typography.body1,
-    color: colors.dark,
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  partsContainer: {
-    backgroundColor: colors.lightGray,
-    padding: 12,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-  partsSectionTitle: {
     ...typography.body2,
     color: colors.dark,
-    fontWeight: 'bold',
+    flex: 1,
+  },
+  partsContainer: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: colors.lightGray,
+    borderRadius: 6,
+  },
+  partsSectionTitle: {
+    ...typography.body1,
+    fontWeight: '600',
+    color: colors.dark,
     marginBottom: 8,
-    fontSize: 14,
   },
   partItem: {
     flexDirection: 'row',
@@ -307,59 +291,42 @@ const styles = StyleSheet.create({
   },
   partText: {
     ...typography.body2,
-    color: colors.medium,
-    fontSize: 13,
+    color: colors.dark,
+    flex: 1,
   },
   footer: {
-    padding: 16,
+    padding: 12,
     backgroundColor: colors.white,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    minHeight: 100,
   },
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
-  },
-  nextButton: {
-    flex: 1,
-    borderRadius: 6,
-  },
-  nextButtonText: {
-    ...typography.button,
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  acceptButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 6,
-    width: '100%',
+    marginBottom: 8,
   },
   assignButton: {
-    borderColor: colors.primary,
-    backgroundColor: colors.white,
     flex: 1,
-    borderRadius: 6,
+    marginRight: 8,
   },
   assignButtonText: {
     ...typography.button,
     color: colors.primary,
-    fontSize: 14,
-    fontWeight: '500',
   },
-  buttonContent: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    minHeight: 40,
+  nextButton: {
+    flex: 1,
+  },
+  nextButtonText: {
+    ...typography.button,
+    color: colors.primary,
+  },
+  acceptButton: {
+    backgroundColor: colors.primary,
   },
   acceptButtonText: {
     ...typography.button,
     color: colors.white,
-    fontSize: 14,
-    fontWeight: '500',
+  },
+  buttonContent: {
+    height: 36,
   },
 });
 

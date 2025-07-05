@@ -12,6 +12,7 @@ import { User } from '../admin/entities/user.entity';
 import { Business } from '../admin/entities/business.entity';
 import { Problem } from './entities/problem.entity';
 import { Solution } from './entities/solution.entity';
+import { Symptom } from './entities/symptom.entity';
 import { AIService } from './services/ai.service';
 import { ProblemService } from './services/problem.service';
 import { SolutionService } from './services/solution.service';
@@ -27,6 +28,7 @@ import { SolutionService } from './services/solution.service';
       Business,
       Problem,
       Solution,
+      Symptom,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

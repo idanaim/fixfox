@@ -6,10 +6,12 @@ import {
   OneToMany,
   CreateDateColumn,
   JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { Equipment } from '../../entities/equipment.entity';
 import { User } from '../../admin/entities/user.entity';
 import { Solution } from './solution.entity';
+import { Symptom } from './symptom.entity';
 
 @Entity('problem')
 export class Problem {
@@ -32,4 +34,7 @@ export class Problem {
 
   @OneToMany(() => Solution, (solution) => solution.problem)
   solutions: Solution[];
+
+  @ManyToMany(() => Symptom, (symptom) => symptom.problems)
+  symptoms: Symptom[];
 }
